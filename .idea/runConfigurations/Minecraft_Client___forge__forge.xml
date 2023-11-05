@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Minecraft Client (:forge)" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="dev.architectury.transformer.TransformerRuntime" />
+    <module name="resource_explorer.forge.main" />
+    <option name="PROGRAM_PARAMETERS" value="" />
+    <option name="VM_PARAMETERS" value="-Dfabric.dli.config=C:\Users\bentr\IdeaProjects\resource_explorer\forge\.gradle\loom-cache\launch.cfg -Dfabric.dli.env=client -Djava.net.preferIPv6Addresses=system -p C:\Users\bentr\.gradle\caches\modules-2\files-2.1\net.minecraftforge\bootstrap\1.2.0\ef7d81393a75915531d76e4f51743b65859e82f6\bootstrap-1.2.0.jar;C:\Users\bentr\.gradle\caches\modules-2\files-2.1\net.minecraftforge\securemodules\2.2.3\5a784c87cf99b4b6db15d576f5110b00af25ced0\securemodules-2.2.3.jar;C:\Users\bentr\.gradle\caches\modules-2\files-2.1\net.minecraftforge\unsafe\0.9.2\33bad02861cabd77c54a8c9d1205e8638bbbbb4f\unsafe-0.9.2.jar;C:\Users\bentr\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm\9.6\aa205cf0a06dbd8e04ece91c0b37c3f5d567546a\asm-9.6.jar;C:\Users\bentr\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm-tree\9.6\c0cdda9d211e965d2a4448aa3fd86110f2f8c2de\asm-tree-9.6.jar;C:\Users\bentr\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm-util\9.6\f77caf84eb93786a749b2baa40865b9613e3eaee\asm-util-9.6.jar;C:\Users\bentr\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm-commons\9.6\f1a9e5508eff490744144565c47326c8648be309\asm-commons-9.6.jar;C:\Users\bentr\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm-analysis\9.6\9ce6c7b174bd997fc2552dff47964546bd7a5ec3\asm-analysis-9.6.jar;C:\Users\bentr\.gradle\caches\modules-2\files-2.1\net.minecraftforge\JarJarFileSystems\0.3.19\2464eb7d6b9ddb9db36a82cf8a95193e5c6fe020\JarJarFileSystems-0.3.19.jar;C:\Users\bentr\.gradle\caches\modules-2\files-2.1\com.google.guava\guava\32.1.2-jre\5e64ec7e056456bef3a4bc4c6fdaef71e8ab6318\guava-32.1.2-jre.jar;C:\Users\bentr\.gradle\caches\modules-2\files-2.1\com.google.guava\failureaccess\1.0.1\1dcf1de382a0bf95a3d8b0849546c88bac1292c9\failureaccess-1.0.1.jar --add-modules ALL-MODULE-PATH --add-exports jdk.naming.dns/com.sun.jndi.dns=java.naming -Dfabric.dli.main=net.minecraftforge.bootstrap.BootstrapLauncher -Darchitectury.main.class=C:\Users\bentr\IdeaProjects\resource_explorer\forge\.gradle\architectury\.main_class -Darchitectury.runtime.transformer=C:\Users\bentr\IdeaProjects\resource_explorer\forge\.gradle\architectury\.transforms -Darchitectury.properties=C:\Users\bentr\IdeaProjects\resource_explorer\forge\.gradle\architectury\.properties -Djdk.attach.allowAttachSelf=true -javaagent:C:\Users\bentr\IdeaProjects\resource_explorer\.gradle\architectury\architectury-transformer-agent.jar" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/forge/run/" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+    <envs>
+      <env name="MCP_MAPPINGS" value="loom.stub"/>
+    </envs>
+    <shortenClasspath name="ARGS_FILE" />
+  </configuration>
+</component>

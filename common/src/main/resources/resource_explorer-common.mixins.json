@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "traben.resource_explorer.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "TextureManagerAccessor"
+  ],
+  "client": [
+    "MixinDefaultResourcePack",
+    "MixinOptionsScreen",
+    "MixinPathUtil",
+    "MixinZipResourcePack"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fabric/resource_explorer.fabric.iml" filepath="$PROJECT_DIR$/.idea/modules/fabric/resource_explorer.fabric.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/forge/resource_explorer.forge.iml" filepath="$PROJECT_DIR$/.idea/modules/forge/resource_explorer.forge.iml" />
+    </modules>
+  </component>
+</project>
