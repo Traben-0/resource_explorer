@@ -27,6 +27,9 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
 
     abstract Identifier getIcon(boolean hovered);
 
+    Identifier getIcon2OrNull(boolean hovered){return null;}
+    Identifier getIcon3OrNull(boolean hovered){return null;}
+
     @Override
     public Text getNarration() {
         return Text.of(getDisplayName());
@@ -79,6 +82,14 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
 
         }
         context.drawTexture(getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+        Identifier secondaryIcon = getIcon2OrNull(hovered);
+        if(secondaryIcon != null) {
+            context.drawTexture(secondaryIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+        }
+        Identifier thirdIcon = getIcon3OrNull(hovered);
+        if(thirdIcon != null) {
+            context.drawTexture(thirdIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+        }
         OrderedText orderedText = getDisplayText();
         MultilineText multilineText = MultilineText.createFromTexts(MinecraftClient.getInstance().textRenderer, getExtraText());
 

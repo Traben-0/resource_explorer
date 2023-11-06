@@ -71,10 +71,12 @@ public class ResourceExplorer
 				namesSpaceFoldersRoot.addLast(namespaceFolder);
 			}
 			namespaceFolderMap.put(nameSpace,namespaceFolder);
+
 		}
 		//fabric api all in 1
 		if(!fabricApiFolders.isEmpty()) {
 			REResourceFolderEntry fabricApiFolder =  new REResourceFolderEntry("fabric-api");
+			fabricApiFolder.contentIcon = new Identifier("fabricloader","icon.png");
 			fabricApiFolders.forEach(fabricApiFolder::addSubFolder);
 			namesSpaceFoldersRoot.addFirst(fabricApiFolder);
 		}
@@ -115,6 +117,15 @@ public class ResourceExplorer
 	public static final Identifier ICON_FOLDER_MOJANG = new Identifier("resource_explorer:folder_mojang.png");
 	public static final Identifier ICON_FOLDER_OPTIFINE = new Identifier("resource_explorer:folder_optifine.png");
 	public static final Identifier ICON_FILE_SMILE = new Identifier("resource_explorer:file_smile.png");
+	public static final Identifier ICON_FOLDER_CORNER = new Identifier("resource_explorer:folder_corner.png");
+	public static final Identifier ICON_FILE_BLANK = new Identifier("resource_explorer:file_blank.png");
+	public static final Identifier ICON_FILE_JSON = new Identifier("resource_explorer:file_json.png");
+	public static final Identifier ICON_FOLDER_UP = new Identifier("resource_explorer:folder_up.png");
+	public static final Identifier ICON_FOLDER_UP_SELECTED = new Identifier("resource_explorer:folder_up_selected.png");
+	public static final Identifier ICON_FILE_ZIP = new Identifier("resource_explorer:file_zip.png");
+	public static final Identifier ICON_FILE_JEM = new Identifier("resource_explorer:file_jem.png");
+	public static final Identifier ICON_HAS_META = new Identifier("resource_explorer:has_meta.png");
+	public static final Identifier ICON_FOLDER_FABRIC = new Identifier("resource_explorer:folder_fabric.png");
 
 
 
