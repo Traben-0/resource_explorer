@@ -115,7 +115,8 @@ public class REResourceFileEntry extends REResourceEntry {
                     in.close();
                     NativeImageBackedTexture imageBackedTexture = new NativeImageBackedTexture(img);
                     MinecraftClient.getInstance().getTextureManager().registerTexture(identifier, imageBackedTexture);
-
+                    width = img.getWidth();
+                    height = img.getHeight();
                     return identifier;
                 } catch (Exception e) {
                     //resource.close();
@@ -125,6 +126,9 @@ public class REResourceFileEntry extends REResourceEntry {
         }
         return resource == null? ResourceExplorer.ICON_FILE_BUILT : type.getDefaultIcon();
     }
+
+    public int height = 0;
+    public int width = 0;
 
 
     Boolean hasMetaData = null;
@@ -149,7 +153,8 @@ public class REResourceFileEntry extends REResourceEntry {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         System.out.println("clicked: " + getDisplayName());
-        return false;
+        REDrawableFile.setSelectedFile(this);
+        return true;
     }
 
     public enum Type{
@@ -220,4 +225,6 @@ public class REResourceFileEntry extends REResourceEntry {
 
 
     }
+
+
 }

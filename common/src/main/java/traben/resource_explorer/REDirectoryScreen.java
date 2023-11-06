@@ -36,6 +36,7 @@ public class REDirectoryScreen extends Screen {
 //        this.selectedPackList = new PackListWidget(this.client, this, 200, this.height, Text.translatable("pack.selected.title"));
 //        this.selectedPackList.setLeftPos(this.width / 2 + 4);
 //        this.addSelectableChild(this.selectedPackList);
+        this.addDrawableChild( new REDrawableFile(this.width / 2 + 4,0,200, this.height));
 //        this.addDrawableChild(ButtonWidget.builder(Text.translatable("pack.openFolder"), (button) -> {
 //            Util.getOperatingSystem().open(this.file.toUri());
 //        }).dimensions(this.width / 2 - 154, this.height - 48, 150, 20).tooltip(Tooltip.of(FOLDER_INFO)).build());
@@ -62,7 +63,7 @@ public class REDirectoryScreen extends Screen {
     public void close() {
         this.fileList.close();
         super.close();
-
+        REDrawableFile.setSelectedFile(null);
         //reading resources this way has some... damage to the resource system
         // thus a resource reload is required
         MinecraftClient.getInstance().reloadResources();
