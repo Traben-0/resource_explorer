@@ -118,7 +118,8 @@ public class REResourceFileEntry extends REResourceEntry {
             }
             case OTHER -> {
                 if(readTextByLineBreaks != null){
-                    lines.add(trimmedTextToWidth(" as raw text data: "));
+                    lines.add(trimmedTextToWidth(""));
+                    lines.add(trimmedTextToWidth(" raw text data: "));
                     lines.add(trimmedTextToWidth(" - lines: " + height));
                     lines.add(trimmedTextToWidth(" - character count: " + width));
                 }

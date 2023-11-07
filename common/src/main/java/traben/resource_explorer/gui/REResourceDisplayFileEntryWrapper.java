@@ -27,7 +27,7 @@ public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWi
                     case TXT, PROPERTIES, JEM, JPM , JSON ->  fileEntry.getTextLines().count() * 10;
                     case OGG -> 100;
                     case ZIP -> 100;
-                    case OTHER -> 100;
+                    case OTHER -> 50+ fileEntry.height*((entryWidth+0f)/fileEntry.width) + fileEntry.getTextLines().count() * 10;
                     case BLANK -> 100;
                 });
     }
@@ -64,44 +64,45 @@ public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWi
         offset += extraText.count()*11;
 
         switch (fileEntry.type){
-            case PNG -> {
-                float sizeScale = ((float)displaySquareMaximum) / fileEntry.width;
-
-                int displayX2 = (int) (fileEntry.width * sizeScale) ;
-                int displayY2 = (int) (fileEntry.height * sizeScale);
-
-
-                offset += 11;
-                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Image:"), displayX, displayY+offset, 16777215);
-                offset += 13;
-
-                context.fill(displayX-2,displayY+offset-2, displayX+displayX2+2,displayY+offset+displayY2+2, ColorHelper.Argb.getArgb(255,255,255,255));
-                context.fill(displayX,displayY+offset, displayX+displayX2,displayY+offset+displayY2, -16777216);
-                //context.fill(displayX,displayY+offset, displayX2, displayY2, 0);
-
-                context.drawTexture(fileEntry.identifier,displayX,displayY+offset, 0,0, displayX2, displayY2, displayX2, displayY2);
-            }
-            case TXT, PROPERTIES, JEM, JPM , JSON, OTHER -> {
-                offset += 11;
-                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Text:"), displayX, displayY+offset, 16777215);
-                offset += 11;
-
-                MultilineText rawTextData = fileEntry.getTextLines();
-                rawTextData.drawWithShadow(context, displayX, displayY + offset, 10, -8355712);
-                offset += rawTextData.count()*11;
-            }
-            case OGG -> {
-
-            }
-            case ZIP -> {
-
-            }
-            case BLANK -> {
-
+            case PNG -> offset = drawImage(context, offset,displaySquareMaximum, displayX, displayY);
+            case TXT, PROPERTIES, JEM, JPM , JSON -> offset = drawText(context, offset, displayX, displayY);
+            case OTHER -> {
+                offset = drawText(context, offset, displayX, displayY);
+                offset = drawImage(context, offset,displaySquareMaximum, displayX, displayY);
             }
         };
     }
 
+
+    private int drawImage(DrawContext context ,int offset, int displaySquareMaximum, int displayX, int displayY){
+        float sizeScale = ((float)displaySquareMaximum) / fileEntry.width;
+
+        int displayX2 = (int) (fileEntry.width * sizeScale) ;
+        int displayY2 = (int) (fileEntry.height * sizeScale);
+
+
+        offset += 11;
+        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Image:"), displayX, displayY+offset, 16777215);
+        offset += 13;
+
+        context.fill(displayX-2,displayY+offset-2, displayX+displayX2+2,displayY+offset+displayY2+2, ColorHelper.Argb.getArgb(255,255,255,255));
+        context.fill(displayX,displayY+offset, displayX+displayX2,displayY+offset+displayY2, -16777216);
+        //context.fill(displayX,displayY+offset, displayX2, displayY2, 0);
+
+        context.drawTexture(fileEntry.identifier,displayX,displayY+offset, 0,0, displayX2, displayY2, displayX2, displayY2);
+
+        return offset;
+    }
+    private int drawText(DrawContext context ,int offset, int displayX, int displayY){
+        offset += 11;
+        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Text:"), displayX, displayY+offset, 16777215);
+        offset += 11;
+
+        MultilineText rawTextData = fileEntry.getTextLines();
+        rawTextData.drawWithShadow(context, displayX, displayY + offset, 10, -8355712);
+        offset += rawTextData.count()*10;
+        return offset;
+    }
 
     @Override
     public int compareTo(@NotNull REResourceDisplayFileEntryWrapper o) {
