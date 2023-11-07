@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 
 @Mixin(ZipResourcePack.class)
-public abstract class MixinZipResourcePack {
+public abstract class ZipResourcePackMixin {
 
 
     @ModifyArg(method = "findResources", at = @At(value = "INVOKE", target = "Ljava/lang/String;startsWith(Ljava/lang/String;)Z"), index = 0)

@@ -5,6 +5,8 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import traben.resource_explorer.gui.REResourceEntry;
 import traben.resource_explorer.gui.REResourceFileEntry;
 import traben.resource_explorer.gui.REResourceFolderEntry;
@@ -18,15 +20,31 @@ import java.util.Set;
 public class ResourceExplorer
 {
 	public static final String MOD_ID = "resource_explorer";
+	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public static void init() {
-		
+
+	}
+
+	public static void log(Object message){
+		LOGGER.info("[resource_explorer]: " + message.toString());
+	}
+	public static void logWarn(Object message){
+		LOGGER.warn("[resource_explorer]: " + message.toString());
+	}
+	public static void logError(Object message){
+		LOGGER.error("[resource_explorer]: " + message.toString());
 	}
 
 	public static LinkedList<REResourceEntry> getResourceFolderRoot() {
 		ObjectLinkedOpenHashSet<REResourceFileEntry> allFilesList = new ObjectLinkedOpenHashSet<>();
-		System.out.println("/START/");
-		System.out.println("/START/READ/");
+
+		boolean print = REConfig.getInstance().logFullFileTree;
+
+		if(print) {
+			log("/START/");
+			log("/START/READ/");
+		}
 		try {
 			Map<Identifier, Resource> resourceMap = MinecraftClient.getInstance().getResourceManager().findResources("resource_explorer$search", (id) -> true);
 			resourceMap.forEach((k, v) -> {
@@ -49,9 +67,10 @@ public class ResourceExplorer
 			allFilesList.add(new REResourceFileEntry(k,null));
 		});
 
-		System.out.println("/END/READ/");
-		System.out.println("/START/FOLDER_SORT/");
-
+		if(print) {
+			log("/END/READ/");
+			log("/START/FOLDER_SORT/");
+		}
 		Set<String> namespaces = MinecraftClient.getInstance().getResourceManager().getAllNamespaces();
 
 
@@ -83,25 +102,32 @@ public class ResourceExplorer
 			fabricApiFolders.forEach(fabricApiFolder::addSubFolder);
 			namesSpaceFoldersRoot.addFirst(fabricApiFolder);
 		}
+		//get filter
+		final REConfig.REFileFilter filter = REConfig.getInstance().filterMode;
+
 		//minecraft at the top
-		namesSpaceFoldersRoot.addFirst(minecraftFolder);
+		if(filter != REConfig.REFileFilter.ONLY_FROM_PACKS_NO_GENERATED)
+			namesSpaceFoldersRoot.addFirst(minecraftFolder);
 
 		//here allFilesAndFoldersRoot is only empty namespace directories
 
 		//iterate over all files and give them folder structure
 		for (REResourceFileEntry resourceFile:
 			 allFilesList) {
-			String namespace = resourceFile.identifier.getNamespace();
-			REResourceFolderEntry namespaceFolder = namespaceFolderMap.get(namespace);
-			if(namespaceFolder != null){
-				namespaceFolder.addResourceFile(resourceFile);
+			if(filter.allows(resourceFile)) {
+				String namespace = resourceFile.identifier.getNamespace();
+				REResourceFolderEntry namespaceFolder = namespaceFolderMap.get(namespace);
+				if (namespaceFolder != null) {
+					namespaceFolder.addResourceFile(resourceFile);
+				}
 			}
 		}
 
-		namesSpaceFoldersRoot.forEach(System.out::println);
-
-		System.out.println("/END/FOLDER_SORT/");
-		System.out.println("/END/");
+		if(print) {
+			namesSpaceFoldersRoot.forEach(System.out::println);
+			log("/END/FOLDER_SORT/");
+			log("/END/");
+		}
 
 		return namesSpaceFoldersRoot;
 	}
@@ -116,10 +142,10 @@ public class ResourceExplorer
 	public static final Identifier ICON_FILE_PROPERTY = new Identifier("resource_explorer:file_property.png");
 	public static final Identifier ICON_FILE_OGG = new Identifier("resource_explorer:file_ogg.png");
 	public static final Identifier ICON_FILE_UNKNOWN = new Identifier("resource_explorer:file_unknown.png");
-	public static final Identifier ICON_FILE_MOJANG = new Identifier("resource_explorer:file_mojang.png");
+//	public static final Identifier ICON_FILE_MOJANG = new Identifier("resource_explorer:file_mojang.png");
 	public static final Identifier ICON_FOLDER_MOJANG = new Identifier("resource_explorer:folder_mojang.png");
 	public static final Identifier ICON_FOLDER_OPTIFINE = new Identifier("resource_explorer:folder_optifine.png");
-	public static final Identifier ICON_FILE_SMILE = new Identifier("resource_explorer:file_smile.png");
+//	public static final Identifier ICON_FILE_SMILE = new Identifier("resource_explorer:file_smile.png");
 	public static final Identifier ICON_FOLDER_CORNER = new Identifier("resource_explorer:folder_corner.png");
 	public static final Identifier ICON_FILE_BLANK = new Identifier("resource_explorer:file_blank.png");
 	public static final Identifier ICON_FILE_JSON = new Identifier("resource_explorer:file_json.png");

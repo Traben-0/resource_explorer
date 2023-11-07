@@ -4,14 +4,13 @@
   "package": "traben.resource_explorer.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "EntryListWidgetAccessor",
-    "TextureManagerAccessor"
   ],
   "client": [
-    "MixinDefaultResourcePack",
-    "MixinOptionsScreen",
-    "MixinPathUtil",
-    "MixinZipResourcePack"
+    "EntryListWidgetAccessor",
+    "PathUtilMixin",
+    "ZipResourcePackMixin",
+    "OptionsScreenMixin",
+    "TextureManagerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

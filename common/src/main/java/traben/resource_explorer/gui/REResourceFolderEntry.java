@@ -81,7 +81,7 @@ public class REResourceFolderEntry extends REResourceEntry {
     }
 
     public Identifier contentIcon = null;
-    private REResourceFileEntry.Type contentType = null;
+    private REResourceFileEntry.FileType contentFileType = null;
 
 
 
@@ -94,16 +94,16 @@ public class REResourceFolderEntry extends REResourceEntry {
             }
 
             //figure out if folder contains only 1 content type and no folders
-            if(contentType == null){
-                contentType = resourceFile.type;
-            }else if(contentType != REResourceFileEntry.Type.BLANK){
-                if(contentType != resourceFile.type){
-                    contentType = REResourceFileEntry.Type.BLANK;
+            if(contentFileType == null){
+                contentFileType = resourceFile.fileType;
+            }else if(contentFileType != REResourceFileEntry.FileType.BLANK){
+                if(contentFileType != resourceFile.fileType){
+                    contentFileType = REResourceFileEntry.FileType.BLANK;
                 }
             }
         }else{
             //mark folder to have no extra icon
-            contentType = REResourceFileEntry.Type.BLANK;
+            contentFileType = REResourceFileEntry.FileType.BLANK;
             //find next sub folder to move into and remove it from the file search list
             String subFolderName = resourceFile.folderStructureList.getFirst();
             resourceFile.folderStructureList.removeFirst();
@@ -168,8 +168,8 @@ public class REResourceFolderEntry extends REResourceEntry {
     private Identifier getHoverIcon(){
         if(hoverIcon == null){
             if (contentIcon == null) {
-                if(contentType != null && subFolders.isEmpty()){
-                    contentIcon = contentType.getDefaultIcon();
+                if(contentFileType != null && subFolders.isEmpty()){
+                    contentIcon = contentFileType.getDefaultIcon();
                     hoverIcon = ResourceExplorer.ICON_FOLDER_BACK;
                 }else {
                     hoverIcon = ResourceExplorer.ICON_FOLDER_OPEN;

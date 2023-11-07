@@ -71,7 +71,7 @@ public class REDirectoryScreen extends Screen {
         this.fileList.close();
         super.close();
         currentDisplay = null;
-        MinecraftClient.getInstance().setScreen(parent);
+        //MinecraftClient.getInstance().setScreen(parent);
 
         //reading resources this way has some... affects to the resource system
         //thus a resource reload is required
