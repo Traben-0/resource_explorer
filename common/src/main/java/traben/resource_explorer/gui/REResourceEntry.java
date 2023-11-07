@@ -1,4 +1,4 @@
-package traben.resource_explorer;
+package traben.resource_explorer.gui;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
@@ -21,7 +21,7 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
 
     abstract String getDisplayName();
     abstract OrderedText getDisplayText();
-    abstract List<Text> getExtraText();
+    abstract List<Text> getExtraText(boolean smallMode);
 
     abstract String toString(int indent);
 
@@ -35,8 +35,8 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
         return Text.of(getDisplayName());
     }
 
-    protected REDirectoryScreen.REResourceListWidget widget = null;
-    public void setWidget(REDirectoryScreen.REResourceListWidget widget){
+    protected REResourceListWidget widget = null;
+    public void setWidget(REResourceListWidget widget){
         this.widget = widget;
     }
 
@@ -56,8 +56,17 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
             return text;
         }
     }
-
-
+    protected static String trimmedStringToWidth(String string, int width) {
+        Text text = Text.of(string);
+        MinecraftClient client = MinecraftClient.getInstance();
+        int i = client.textRenderer.getWidth(text);
+        if (i > width) {
+            StringVisitable stringVisitable = StringVisitable.concat(client.textRenderer.trimToWidth(text, width - client.textRenderer.getWidth("...")), StringVisitable.plain("..."));
+            return stringVisitable.getString();
+        } else {
+            return string;
+        }
+    }
 
     public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
 //        ResourcePackCompatibility resourcePackCompatibility = this.pack.getCompatibility();
@@ -91,7 +100,7 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
             context.drawTexture(thirdIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
         }
         OrderedText orderedText = getDisplayText();
-        MultilineText multilineText = MultilineText.createFromTexts(MinecraftClient.getInstance().textRenderer, getExtraText());
+        MultilineText multilineText = MultilineText.createFromTexts(MinecraftClient.getInstance().textRenderer, getExtraText(true));
 
 
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 32 + 2, y + 1, 16777215);

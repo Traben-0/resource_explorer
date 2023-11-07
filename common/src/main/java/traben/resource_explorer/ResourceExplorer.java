@@ -5,6 +5,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
+import traben.resource_explorer.gui.REResourceEntry;
+import traben.resource_explorer.gui.REResourceFileEntry;
+import traben.resource_explorer.gui.REResourceFolderEntry;
 import traben.resource_explorer.mixin.TextureManagerAccessor;
 
 import java.util.HashMap;

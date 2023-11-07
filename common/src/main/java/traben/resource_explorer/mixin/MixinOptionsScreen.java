@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import traben.resource_explorer.REDirectoryScreen;
+import traben.resource_explorer.gui.REDirectoryScreen;
 import traben.resource_explorer.ResourceExplorer;
 
 
@@ -50,7 +50,7 @@ public abstract class MixinOptionsScreen extends Screen {
                             this,
                             Text.of("Resource Explorer"),
                             ResourceExplorer.getResourceFolderRoot(),
-                            "assets"
+                            "assets/"
                     ));
                 },
                 Text.of("Open Resource Explorer")){
