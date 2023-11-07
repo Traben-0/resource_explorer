@@ -23,17 +23,17 @@ public class REConfig {
 
 
     public enum REFileFilter{
-        ALL_RESOURCES("",
+        ALL_RESOURCES("Filter: all",
                 (fileEntry)->true),
-        ALL_RESOURCES_NO_GENERATED("",
+        ALL_RESOURCES_NO_GENERATED("Filter: files only",
                 (fileEntry)->fileEntry.resource!= null),
-        ONLY_FROM_PACKS_NO_GENERATED("",
+        ONLY_FROM_PACKS_NO_GENERATED("Filter: packs only",
                 (fileEntry)->fileEntry.resource!= null && !"vanilla".equals(fileEntry.resource.getResourcePackName())),
-        ONLY_TEXTURES("",
+        ONLY_TEXTURES("Filter: textures only",
                 (fileEntry)->fileEntry.fileType == REResourceFileEntry.FileType.PNG),
-        ONLY_TEXTURE_NO_GENERATED("",
+        ONLY_TEXTURE_NO_GENERATED("Filter: texture files only",
                 (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFileEntry.FileType.PNG),
-        ONLY_TEXTURE_FROM_PACKS_NO_GENERATED("",
+        ONLY_TEXTURE_FROM_PACKS_NO_GENERATED("Filter: pack texture files only",
                 (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFileEntry.FileType.PNG && !"vanilla".equals(fileEntry.resource.getResourcePackName()));
 
         public String getKey() {

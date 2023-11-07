@@ -3,11 +3,13 @@ package traben.resource_explorer.gui;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import org.jetbrains.annotations.Nullable;
+import traben.resource_explorer.REConfig;
 
 import java.util.LinkedList;
 
@@ -46,10 +48,24 @@ public class REDirectoryScreen extends Screen {
 
         this.doneButton = this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, (button) -> {
             this.close();
-        }).dimensions(this.width / 2 + 4, this.height - 48, 150, 20).build());
-//        this.refresh();
+        }).dimensions(this.width / 2 + 4, this.height - 48, 150, 20).tooltip(Tooltip.of(Text.of("Return to tile screen"))) .build());
 
+        Tooltip warn = Tooltip.of(Text.of("Applying a new filter will close the explorer and reload resources"));
+
+        ButtonWidget apply = this.addDrawableChild(ButtonWidget.builder(Text.of("Apply"), (button) -> {
+            this.close();
+            REConfig.getInstance().filterMode = filterChoice;
+        }).dimensions(this.width / 2 - 4 - 46, this.height - 48, 46, 20).tooltip(warn).build());
+        apply.active = false;
+
+        this.addDrawableChild(ButtonWidget.builder(Text.of( REConfig.getInstance().filterMode.getKey()), (button) -> {
+            filterChoice = filterChoice.next();
+            button.setMessage(Text.of(filterChoice.getKey()));
+            apply.active = filterChoice != REConfig.getInstance().filterMode;
+        }).dimensions(this.width / 2 - 4 - 200, this.height - 48, 150, 20).tooltip(warn).build());
     }
+
+    private REConfig.REFileFilter filterChoice = REConfig.getInstance().filterMode;
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -71,12 +87,11 @@ public class REDirectoryScreen extends Screen {
         this.fileList.close();
         super.close();
         currentDisplay = null;
-        //MinecraftClient.getInstance().setScreen(parent);
-
         //reading resources this way has some... affects to the resource system
         //thus a resource reload is required
         MinecraftClient.getInstance().reloadResources();
     }
+
 
 
 }

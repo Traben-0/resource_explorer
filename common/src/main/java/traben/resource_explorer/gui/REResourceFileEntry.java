@@ -247,7 +247,6 @@ public class REResourceFileEntry extends REResourceEntry {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        System.out.println("clicked: " + getDisplayName());
         if(REDirectoryScreen.currentDisplay != null) {
             REDirectoryScreen.currentDisplay.setSelectedFile(this.wrapEntryAsDetailed());
         }
@@ -289,7 +288,6 @@ public class REResourceFileEntry extends REResourceEntry {
         public boolean isRawTextType() {
             return switch (this){
                 case TXT, JSON, JPM, JEM, PROPERTIES -> true;
-                case OTHER -> true; // todo setting
                 default -> false;
             };
         }

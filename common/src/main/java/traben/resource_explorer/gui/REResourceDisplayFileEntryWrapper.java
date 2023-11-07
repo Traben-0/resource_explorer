@@ -3,6 +3,7 @@ package traben.resource_explorer.gui;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.sound.Sound;
@@ -15,6 +16,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import traben.resource_explorer.ResourceExplorer;
 
 public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWidget.Entry<REResourceDisplayFileEntryWrapper> implements Comparable<REResourceDisplayFileEntryWrapper> {
 
@@ -26,13 +28,24 @@ public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWi
     REResourceDisplayFileEntryWrapper(REResourceFileEntry fileEntry){
         this.fileEntry = fileEntry;
 
-        //does button need to be initiated as a sound player?
+        //does button need to be initiated?
         if(fileEntry.fileType == REResourceFileEntry.FileType.OGG){
             RESound easySound = new RESound(fileEntry);
             multiUseButton = new ButtonWidget.Builder(Text.of("Play sound"),
                     (button) -> MinecraftClient.getInstance().getSoundManager().play(easySound)
             ).dimensions(0, 0, 150, 20).build();
             multiUseButton.active = fileEntry.resource != null;
+        } else if (fileEntry.resource != null && (fileEntry.fileType.isRawTextType() || fileEntry.fileType == REResourceFileEntry.FileType.PNG)) {
+            multiUseButton = new ButtonWidget.Builder(Text.of("Export to output pack"),
+                    (button) -> {
+                        button.active = false;
+                        button.setMessage(Text.of(
+                                ResourceExplorer.outputResourceToPack(fileEntry) ?
+                                "Exported into output pack" :
+                                "Export failed :("
+                        ));
+                    }
+            ).dimensions(0, 0, 150, 20).tooltip(Tooltip.of(Text.of("Look for the [resource_explorer] resource-pack in your resource-pack list and folder :)"))).build();
         }
     }
 
@@ -40,8 +53,8 @@ public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWi
         int entryWidth = 178;
         int heightMargin = 100 + (fileEntry.getExtraText(false).size() * 11);
         return (int) (heightMargin + switch (fileEntry.fileType){
-                    case PNG ->  fileEntry.height*((entryWidth+0f)/fileEntry.width);
-                    case TXT, PROPERTIES, JEM, JPM , JSON ->  fileEntry.getTextLines().count() * 10;
+                    case PNG -> 40+  fileEntry.height*((entryWidth+0f)/fileEntry.width);
+                    case TXT, PROPERTIES, JEM, JPM , JSON -> 64+  fileEntry.getTextLines().count() * 10;
                     case OGG -> 100;
                     case ZIP -> 100;
                     case OTHER -> 50+ fileEntry.height*((entryWidth+0f)/fileEntry.width) + fileEntry.getTextLines().count() * 10;
@@ -84,13 +97,19 @@ public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWi
         offset += extraText.count()*11;
 
         switch (fileEntry.fileType){
-            case PNG -> drawAsImage(context, offset,displaySquareMaximum, displayX, displayY);
-            case TXT, PROPERTIES, JEM, JPM , JSON -> offset = drawAsText(context, offset, displayX, displayY);
+            case PNG -> {
+                offset = drawAsImage(context, offset,displaySquareMaximum, displayX, displayY);
+                drawButton(Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+            }
+            case TXT, PROPERTIES, JEM, JPM , JSON -> {
+                offset = drawAsText(context, offset, displayX, displayY);
+                drawButton(Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+            }
             case OTHER -> {
                 offset = drawAsText(context, offset, displayX, displayY);
                 drawAsImage(context, offset,displaySquareMaximum, displayX, displayY);
             }
-            case OGG -> drawAsSound(context, offset, displayX, displayY, mouseX, mouseY);
+            case OGG -> drawButton(Text.of("Sound:"), context, offset, displayX, displayY, mouseX, mouseY);
         };
     }
 
@@ -112,6 +131,7 @@ public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWi
         //image
         context.drawTexture(fileEntry.identifier,displayX,displayY+offset, 0,0, displayX2, displayY2, displayX2, displayY2);
 
+        offset += displayY2;
         return offset;
     }
     private int drawAsText(DrawContext context ,int offset, int displayX, int displayY){
@@ -125,9 +145,9 @@ public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWi
         return offset;
     }
 
-    private int drawAsSound(DrawContext context ,int offset, int displayX, int displayY, int mouseX, int mouseY){
+    private int drawButton(Text text ,DrawContext context ,int offset, int displayX, int displayY, int mouseX, int mouseY){
         offset += 11;
-        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Sound:"), displayX, displayY+offset, 16777215);
+        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, text, displayX, displayY+offset, 16777215);
         offset += 11;
 
         multiUseButton.setX(displayX);

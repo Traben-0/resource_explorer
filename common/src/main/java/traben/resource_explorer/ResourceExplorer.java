@@ -3,6 +3,7 @@ package traben.resource_explorer;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.AbstractTexture;
+import net.minecraft.client.texture.NativeImage;
 import net.minecraft.resource.Resource;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -12,10 +13,13 @@ import traben.resource_explorer.gui.REResourceFileEntry;
 import traben.resource_explorer.gui.REResourceFolderEntry;
 import traben.resource_explorer.mixin.TextureManagerAccessor;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.*;
 
 public class ResourceExplorer
 {
@@ -103,7 +107,7 @@ public class ResourceExplorer
 			namesSpaceFoldersRoot.addFirst(fabricApiFolder);
 		}
 		//get filter
-		final REConfig.REFileFilter filter = REConfig.getInstance().filterMode;
+		REConfig.REFileFilter filter = REConfig.getInstance().filterMode;
 
 		//minecraft at the top
 		if(filter != REConfig.REFileFilter.ONLY_FROM_PACKS_NO_GENERATED)
@@ -132,6 +136,92 @@ public class ResourceExplorer
 		return namesSpaceFoldersRoot;
 	}
 
+	@SuppressWarnings("ResultOfMethodCallIgnored")
+	public static boolean outputResourceToPack(REResourceFileEntry reResourceFileEntry){
+
+		//only save png resources
+		if(reResourceFileEntry.resource == null)
+			return false;
+
+		Path resourcePackFolder = MinecraftClient.getInstance().getResourcePackDir();
+		File thisPackFolder = new File(resourcePackFolder.toFile(),"resource_explorer/");
+		if(!thisPackFolder.exists()){
+			String mcmeta = """
+					{
+					\t"pack": {
+					\t\t"pack_format": 15,
+					\t\t"supported_formats":[0,99],
+					\t\t"description": "Output file for the Resource Explorer mod"
+					\t}
+					}""";
+			if(thisPackFolder.mkdir()) {
+				File thisMetaFolder = new File(thisPackFolder,"pack.mcmeta");
+				try {
+					FileWriter fileWriter = new FileWriter(thisMetaFolder);
+					fileWriter.write(mcmeta);
+					fileWriter.close();
+					log(" output resource-pack created.");
+				} catch (IOException e) {
+					log(" output resource-pack not created.");
+				}
+				File thisIconFile = new File(thisPackFolder,"pack.png");
+				Optional<Resource> image = MinecraftClient.getInstance().getResourceManager().getResource(ICON_FOLDER_BUILT);
+				if(image.isPresent()) {
+					try {
+						InputStream stream = image.get().getInputStream();
+						NativeImage.read(stream).writeTo(thisIconFile);
+						log(" output resource-pack icon created.");
+					} catch (IOException e) {
+						log(" output resource-pack icon not created.");
+					}
+				}
+			}
+		}
+		if(thisPackFolder.exists()){
+			File assets = new File(thisPackFolder,"assets");
+			if(!assets.exists()) {
+				assets.mkdir();
+			}
+			File namespace = new File(assets,reResourceFileEntry.identifier.getNamespace());
+			if(!namespace.exists()) {
+				namespace.mkdir();
+			}
+			String[] pathList = reResourceFileEntry.identifier.getPath().split("/");
+			String file = pathList[pathList.length-1];
+			String directories = reResourceFileEntry.identifier.getPath().replace(file,"");
+			File directoryFolder = new File(namespace,directories);
+			if(!directoryFolder.exists()){
+				directoryFolder.mkdirs();
+			}
+			if(directoryFolder.exists()){
+				if(reResourceFileEntry.fileType.isRawTextType()){
+					File txtFile = new File(directoryFolder,file);
+					try {
+						FileWriter fileWriter = new FileWriter(txtFile);
+						fileWriter.write(new String(reResourceFileEntry.resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
+						fileWriter.close();
+						log(" output resource file created.");
+						return true;
+					} catch (IOException e) {
+						log(" output resource file not created.");
+					}
+				}else if(reResourceFileEntry.fileType == REResourceFileEntry.FileType.PNG){
+					File thisImgFile = new File(directoryFolder,file + (file.endsWith(".png") ? "" : ".png"));
+					try {
+						InputStream stream = reResourceFileEntry.resource.getInputStream();
+						NativeImage.read(stream).writeTo(thisImgFile);
+						log(" output resource image created.");
+						return true;
+					} catch (IOException e) {
+						log(" output resource image not created.");
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+
 	public static final Identifier ICON_FILE_BUILT = new Identifier("resource_explorer:file_built.png");
 	public static final Identifier ICON_FOLDER_BUILT = new Identifier("resource_explorer:folder_built.png");
 	public static final Identifier ICON_FOLDER = new Identifier("resource_explorer:folder.png");
@@ -145,6 +235,8 @@ public class ResourceExplorer
 //	public static final Identifier ICON_FILE_MOJANG = new Identifier("resource_explorer:file_mojang.png");
 	public static final Identifier ICON_FOLDER_MOJANG = new Identifier("resource_explorer:folder_mojang.png");
 	public static final Identifier ICON_FOLDER_OPTIFINE = new Identifier("resource_explorer:folder_optifine.png");
+	public static final Identifier ICON_FOLDER_ETF = new Identifier("resource_explorer:folder_etf.png");
+	public static final Identifier ICON_FOLDER_EMF = new Identifier("resource_explorer:folder_emf.png");
 //	public static final Identifier ICON_FILE_SMILE = new Identifier("resource_explorer:file_smile.png");
 	public static final Identifier ICON_FOLDER_CORNER = new Identifier("resource_explorer:folder_corner.png");
 	public static final Identifier ICON_FILE_BLANK = new Identifier("resource_explorer:file_blank.png");
@@ -155,6 +247,7 @@ public class ResourceExplorer
 	public static final Identifier ICON_FILE_JEM = new Identifier("resource_explorer:file_jem.png");
 	public static final Identifier ICON_HAS_META = new Identifier("resource_explorer:has_meta.png");
 	public static final Identifier ICON_FOLDER_FABRIC = new Identifier("resource_explorer:folder_fabric.png");
+	public static final Identifier ICON_MOD = new Identifier("resource_explorer:icon.png");
 
 
 

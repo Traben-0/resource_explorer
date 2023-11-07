@@ -141,6 +141,9 @@ public class REResourceFolderEntry extends REResourceEntry {
             folderIcon = switch (displayName){
                 case "optifine"-> ResourceExplorer.ICON_FOLDER_OPTIFINE;
                 case "minecraft", "realms"-> ResourceExplorer.ICON_FOLDER_MOJANG;
+                case "resource_explorer"-> ResourceExplorer.ICON_MOD;
+                case "etf"-> ResourceExplorer.ICON_FOLDER_ETF;
+                case "emf"-> ResourceExplorer.ICON_FOLDER_EMF;
                 default -> {
                     if(displayName.startsWith("fabric")) yield  ResourceExplorer.ICON_FOLDER_FABRIC;
 
