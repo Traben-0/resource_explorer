@@ -146,15 +146,16 @@ public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWi
     }
 
     private int drawButton(Text text ,DrawContext context ,int offset, int displayX, int displayY, int mouseX, int mouseY){
-        offset += 11;
-        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, text, displayX, displayY+offset, 16777215);
-        offset += 11;
-
-        multiUseButton.setX(displayX);
-        multiUseButton.setY(displayY+offset);
-        multiUseButton.render(context, mouseX, mouseY, 0);
-
-        return offset + 20;
+        if(multiUseButton != null) {
+            offset += 11;
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, text, displayX, displayY+offset, 16777215);
+            offset += 11;
+            multiUseButton.setX(displayX);
+            multiUseButton.setY(displayY + offset);
+            multiUseButton.render(context, mouseX, mouseY, 0);
+            offset += 20;
+        }
+        return offset ;
     }
 
     private ButtonWidget multiUseButton = null;
