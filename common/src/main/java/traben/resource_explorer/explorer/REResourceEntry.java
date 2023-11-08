@@ -1,4 +1,4 @@
-package traben.resource_explorer.gui;
+package traben.resource_explorer.explorer;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;

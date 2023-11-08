@@ -1,4 +1,4 @@
-package traben.resource_explorer.gui;
+package traben.resource_explorer.explorer;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
@@ -16,16 +16,15 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import traben.resource_explorer.ResourceExplorer;
 
-public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWidget.Entry<REResourceDisplayFileEntryWrapper> implements Comparable<REResourceDisplayFileEntryWrapper> {
+public class REResourceFileEntryDisplayWrapper extends AlwaysSelectedEntryListWidget.Entry<REResourceFileEntryDisplayWrapper> implements Comparable<REResourceFileEntryDisplayWrapper> {
 
     public REResourceFileEntry getFileEntry() {
         return fileEntry;
     }
 
     private final REResourceFileEntry fileEntry;
-    REResourceDisplayFileEntryWrapper(REResourceFileEntry fileEntry){
+    REResourceFileEntryDisplayWrapper(REResourceFileEntry fileEntry){
         this.fileEntry = fileEntry;
 
         //does button need to be initiated?
@@ -40,7 +39,7 @@ public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWi
                     (button) -> {
                         button.active = false;
                         button.setMessage(Text.of(
-                                ResourceExplorer.outputResourceToPack(fileEntry) ?
+                                REExplorer.outputResourceToPack(fileEntry) ?
                                 "Exported into output pack" :
                                 "Export failed :("
                         ));
@@ -161,7 +160,7 @@ public class REResourceDisplayFileEntryWrapper extends AlwaysSelectedEntryListWi
     private ButtonWidget multiUseButton = null;
 
     @Override
-    public int compareTo(@NotNull REResourceDisplayFileEntryWrapper o) {
+    public int compareTo(@NotNull REResourceFileEntryDisplayWrapper o) {
         return fileEntry.getDisplayName().compareTo(o.fileEntry.getDisplayName());
     }
 

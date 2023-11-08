@@ -16,10 +16,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import traben.resource_explorer.REConfig;
-import traben.resource_explorer.gui.REDirectoryScreen;
-import traben.resource_explorer.ResourceExplorer;
+import traben.resource_explorer.explorer.REExplorer;
+import traben.resource_explorer.explorer.REExplorerScreen;
 
-import static traben.resource_explorer.ResourceExplorer.MOD_ID;
+import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 
 
 @Mixin(OptionsScreen.class)
@@ -40,14 +40,10 @@ public abstract class OptionsScreenMixin extends Screen {
                     y,
                     16,
                     16,
-                    new ButtonTextures(ResourceExplorer.ICON_FOLDER, ResourceExplorer.ICON_FOLDER_OPEN),
+                    new ButtonTextures(REExplorer.ICON_FOLDER, REExplorer.ICON_FOLDER_OPEN),
                     (button) -> {
                         assert this.client != null;
-                        this.client.setScreen(new REDirectoryScreen(
-                                this,null,
-                                ResourceExplorer.getResourceFolderRoot(),
-                                "assets/"
-                        ));
+                        this.client.setScreen(new REExplorerScreen(this));
                     },
                     Text.translatable(MOD_ID+".open_tooltip")) {
                 {
@@ -56,7 +52,7 @@ public abstract class OptionsScreenMixin extends Screen {
                 //override required because textured button widget just doesnt work
                 @Override
                 public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-                    Identifier identifier = this.isSelected() ? ResourceExplorer.ICON_FOLDER_OPEN : ResourceExplorer.ICON_FOLDER;
+                    Identifier identifier = this.isSelected() ? REExplorer.ICON_FOLDER_OPEN : REExplorer.ICON_FOLDER;
                     context.drawTexture(identifier, this.getX(), this.getY(), 0, 0, this.width, this.height, 16, 16);
                 }
             });

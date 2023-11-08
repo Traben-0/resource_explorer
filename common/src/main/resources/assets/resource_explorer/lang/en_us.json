@@ -20,5 +20,7 @@
   "resource_explorer.export_warn.pack": "Do not re-distribute other pack maker's assets without getting permission!",
   "resource_explorer.export_warn.mod": "Do not re-distribute un-edited mod assets without the mod maker's permission!",
   "resource_explorer.export_warn": "Asset exported successfully",
-  "resource_explorer.export_warn.fail": "Asset exporting failed"
+  "resource_explorer.export_warn.fail": "Asset exporting failed",
+  "resource_explorer.stats.title": "Resource Explorer Statistics",
+  "resource_explorer.explorer.stats": "Stats"
 }

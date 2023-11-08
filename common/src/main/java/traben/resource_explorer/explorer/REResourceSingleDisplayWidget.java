@@ -1,4 +1,4 @@
-package traben.resource_explorer.gui;
+package traben.resource_explorer.explorer;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -8,7 +8,7 @@ import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.mixin.EntryListWidgetAccessor;
 
-public class REResourceDisplayWidget extends AlwaysSelectedEntryListWidget<REResourceDisplayFileEntryWrapper> {
+public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget<REResourceFileEntryDisplayWrapper> {
 
 
 
@@ -17,12 +17,12 @@ public class REResourceDisplayWidget extends AlwaysSelectedEntryListWidget<RERes
 
 
 
-    public REResourceDisplayWidget(MinecraftClient minecraftClient, int width, int height) {
+    public REResourceSingleDisplayWidget(MinecraftClient minecraftClient, int width, int height) {
         super(minecraftClient, width, height, 32, height - 55 + 4, 32);
         this.centerListVertically = false;
     }
 
-    void setSelectedFile(@Nullable REResourceDisplayFileEntryWrapper newFile){
+    void setSelectedFile(@Nullable REResourceFileEntryDisplayWrapper newFile){
         setScrollAmount(0);
         clearEntries();
         if(newFile != null) {

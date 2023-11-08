@@ -1,7 +1,8 @@
-package traben.resource_explorer.gui;
+package traben.resource_explorer.explorer;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
+import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.resource.Resource;
@@ -10,7 +11,6 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
-import traben.resource_explorer.ResourceExplorer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,11 +43,32 @@ public class REResourceFileEntry extends REResourceEntry {
     public final Resource resource;
     public final FileType fileType;
 
-    public final LinkedList<String> folderStructureList;
+    final AbstractTexture abstractTexture;
 
+    public final LinkedList<String> folderStructureList;
+    public REResourceFileEntry(Identifier identifier, AbstractTexture texture){
+        this.identifier = identifier;
+        this.resource = null;
+        this.abstractTexture = texture;
+        this.fileType = FileType.getType(this.identifier);
+
+        //split out folder hierarchy
+        String[] splitDirectories = this.identifier.getPath().split("/");
+        LinkedList<String> directories = new LinkedList<>(List.of(splitDirectories));
+
+        //final entry is display file name
+        displayName = directories.getLast();
+        directories.removeLast();
+
+        //remainder is folder hierarchy, which can be empty
+        folderStructureList = directories;
+
+        this.displayText = trimmedTextToWidth(displayName).asOrderedText();
+    }
     public REResourceFileEntry(Identifier identifier,@Nullable Resource resource){
         this.identifier = identifier;
         this.resource = resource;
+        this.abstractTexture = null;
         this.fileType = FileType.getType(this.identifier);
 
         //split out folder hierarchy
@@ -216,15 +237,15 @@ public class REResourceFileEntry extends REResourceEntry {
                 }
             } catch (Exception ignored) {}
         }
-        return resource == null? ResourceExplorer.ICON_FILE_BUILT : fileType.getDefaultIcon();
+        return resource == null? REExplorer.ICON_FILE_BUILT : fileType.getDefaultIcon();
     }
 
     public int height = 1;
     public int width = 1;
 
 
-    public REResourceDisplayFileEntryWrapper wrapEntryAsDetailed(){
-        return new REResourceDisplayFileEntryWrapper(this);
+    public REResourceFileEntryDisplayWrapper wrapEntryAsDetailed(){
+        return new REResourceFileEntryDisplayWrapper(this);
     }
     Boolean hasMetaData = null;
     @Override
@@ -241,29 +262,29 @@ public class REResourceFileEntry extends REResourceEntry {
                 hasMetaData = false;
             }
         }
-        return hasMetaData ? ResourceExplorer.ICON_HAS_META : null;
+        return hasMetaData ? REExplorer.ICON_HAS_META : null;
     }
 
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if(REDirectoryScreen.currentDisplay != null) {
-            REDirectoryScreen.currentDisplay.setSelectedFile(this.wrapEntryAsDetailed());
+        if(REExplorerScreen.currentDisplay != null) {
+            REExplorerScreen.currentDisplay.setSelectedFile(this.wrapEntryAsDetailed());
         }
         return true;
     }
 
     public enum FileType {
-        PNG(ResourceExplorer.ICON_FILE_PNG),
-        TXT(ResourceExplorer.ICON_FILE_TEXT),
-        JSON(ResourceExplorer.ICON_FILE_JSON),
-        PROPERTIES(ResourceExplorer.ICON_FILE_PROPERTY),
-        OGG(ResourceExplorer.ICON_FILE_OGG),
-        ZIP(ResourceExplorer.ICON_FILE_ZIP),
-        JEM(ResourceExplorer.ICON_FILE_JEM),
-        JPM(ResourceExplorer.ICON_FILE_JEM),
-        OTHER(ResourceExplorer.ICON_FILE_UNKNOWN),
-        BLANK(ResourceExplorer.ICON_FILE_BLANK);
+        PNG(REExplorer.ICON_FILE_PNG),
+        TXT(REExplorer.ICON_FILE_TEXT),
+        JSON(REExplorer.ICON_FILE_JSON),
+        PROPERTIES(REExplorer.ICON_FILE_PROPERTY),
+        OGG(REExplorer.ICON_FILE_OGG),
+        ZIP(REExplorer.ICON_FILE_ZIP),
+        JEM(REExplorer.ICON_FILE_JEM),
+        JPM(REExplorer.ICON_FILE_JEM),
+        OTHER(REExplorer.ICON_FILE_UNKNOWN),
+        BLANK(REExplorer.ICON_FILE_BLANK);
 
         public Identifier getDefaultIcon() {
             return defaultIcon;

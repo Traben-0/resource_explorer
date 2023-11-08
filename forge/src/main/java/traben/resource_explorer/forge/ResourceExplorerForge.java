@@ -6,9 +6,9 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import traben.resource_explorer.REConfig;
-import traben.resource_explorer.ResourceExplorer;
+import traben.resource_explorer.ResourceExplorerClient;
 
-@Mod(ResourceExplorer.MOD_ID)
+@Mod(ResourceExplorerClient.MOD_ID)
 public class ResourceExplorerForge {
     public ResourceExplorerForge() {
 
@@ -18,9 +18,9 @@ public class ResourceExplorerForge {
                         ConfigScreenHandler.ConfigScreenFactory.class,
                         () -> new ConfigScreenHandler.ConfigScreenFactory((minecraftClient, screen) -> new REConfig.REConfigScreen(screen)));
             } catch (NoClassDefFoundError e) {
-                ResourceExplorer.logError(" Mod config screen broken, download latest forge version");
+                ResourceExplorerClient.logError(" Mod config screen broken, download latest forge version");
             }
-            ResourceExplorer.init();
+            ResourceExplorerClient.init();
         } else {
 
             throw new UnsupportedOperationException("Attempting to load a clientside only mod [resource_explorer] on the server, refusing");

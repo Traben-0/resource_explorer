@@ -1,4 +1,4 @@
-package traben.resource_explorer.gui;
+package traben.resource_explorer.explorer;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -8,38 +8,50 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.REConfig;
 
 import java.util.LinkedList;
 
-import static traben.resource_explorer.ResourceExplorer.MOD_ID;
+import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 
-public class REDirectoryScreen extends Screen {
+public class REExplorerScreen extends Screen {
 
     @Nullable
-    static public REResourceDisplayWidget currentDisplay = null;
+    static public REResourceSingleDisplayWidget currentDisplay = null;
 
-
+    @Nullable
+    static public REStats currentStats = null;
 
     private REResourceListWidget fileList;
 
     public Screen vanillaParent;
-    public REDirectoryScreen reParent;
+
+    @Nullable
+    public REExplorerScreen reParent;
 
     final String cumulativePath;
 
-    public final LinkedList<REResourceEntry> entries;
-    public REDirectoryScreen(Screen vanillaParent, @Nullable REDirectoryScreen reParent, LinkedList<REResourceEntry> entries, String cumulativePath) {
+    public final LinkedList<REResourceEntry> entriesInThisDirectory;
+
+    public REExplorerScreen(Screen vanillaParent) {
+        super(Text.translatable(MOD_ID+".title"));
+        this.cumulativePath = "assets/";
+        this.entriesInThisDirectory = REExplorer.getResourceFolderRoot();
+        this.vanillaParent = vanillaParent;
+        this.reParent = null;
+    }
+    public REExplorerScreen(Screen vanillaParent, @NotNull REExplorerScreen reParent, LinkedList<REResourceEntry> entries, String cumulativePath) {
         super(Text.translatable(MOD_ID+".title"));
         this.cumulativePath = cumulativePath;
-        this.entries = entries;
+        this.entriesInThisDirectory = entries;
         this.vanillaParent = vanillaParent;
         this.reParent = reParent;
     }
 
     protected void init() {
-        if(currentDisplay == null) currentDisplay = new REResourceDisplayWidget(client,200, this.height);
+        if(currentDisplay == null) currentDisplay = new REResourceSingleDisplayWidget(client,200, this.height);
 
         this.fileList = new REResourceListWidget(this.client, this, 200, this.height);
         this.fileList.setLeftPos(this.width / 2 - 4 - 200);
@@ -70,6 +82,10 @@ public class REDirectoryScreen extends Screen {
             this.close();
             MinecraftClient.getInstance().setScreen(new REConfig.REConfigScreen(null));
         }).dimensions(this.width / 2 - 4 - 200, this.height - 24, 150, 20).build());
+
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID+".explorer.stats"), (button) -> {
+            if(currentStats != null) MinecraftClient.getInstance().setScreen(currentStats.getAsScreen(this));
+        }).dimensions(this.width / 2 - 4 - 46, this.height - 24, 46, 20).tooltip(warn).build());
     }
 
     private REConfig.REFileFilter filterChoice = REConfig.getInstance().filterMode;
@@ -93,7 +109,10 @@ public class REDirectoryScreen extends Screen {
     public void close() {
         this.fileList.close();
         super.close();
+
         currentDisplay = null;
+        currentStats = null;
+
         //reading resources this way has some... affects to the resource system
         //thus a resource reload is required
         MinecraftClient.getInstance().reloadResources();

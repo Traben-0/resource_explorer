@@ -12,8 +12,9 @@ import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import traben.resource_explorer.gui.REDirectoryScreen;
-import traben.resource_explorer.gui.REResourceFileEntry;
+import traben.resource_explorer.explorer.REExplorer;
+import traben.resource_explorer.explorer.REExplorerScreen;
+import traben.resource_explorer.explorer.REResourceFileEntry;
 
 import java.io.File;
 import java.io.FileReader;
@@ -22,7 +23,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import static traben.resource_explorer.ResourceExplorer.MOD_ID;
+import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 
 public class REConfig {
 
@@ -77,7 +78,7 @@ public class REConfig {
                     fileReader.close();
                     saveConfig();
                 } catch (IOException e) {
-                    ResourceExplorer.logError("Config could not be loaded, using defaults");
+                    ResourceExplorerClient.logError("Config could not be loaded, using defaults");
                 }
             } else {
                 instance = new REConfig();
@@ -104,7 +105,7 @@ public class REConfig {
             fileWriter.write(gson.toJson(instance));
             fileWriter.close();
         } catch (IOException e) {
-            ResourceExplorer.logError("Config could not be saved");
+            ResourceExplorerClient.logError("Config could not be saved");
         }
     }
 
@@ -168,7 +169,7 @@ public class REConfig {
 
         public REConfigScreen(Screen parent) {
             super(Text.translatable(MOD_ID+".settings.title"));
-            if (parent instanceof REDirectoryScreen) {
+            if (parent instanceof REExplorerScreen) {
                 this.parent = null;
             } else {
                 this.parent = parent;
@@ -236,14 +237,10 @@ public class REConfig {
             int square = (int) Math.min(this.height * 0.6, this.width * 0.45);
             this.addDrawableChild(new TexturedButtonWidget(
                     x, y, square, square,
-                    new ButtonTextures(ResourceExplorer.ICON_FOLDER, ResourceExplorer.ICON_FOLDER_OPEN),
+                    new ButtonTextures(REExplorer.ICON_FOLDER, REExplorer.ICON_FOLDER_OPEN),
                     (button) -> {
                         assert this.client != null;
-                        this.client.setScreen(new REDirectoryScreen(
-                                this,null,
-                                ResourceExplorer.getResourceFolderRoot(),
-                                "assets/"
-                        ));
+                        this.client.setScreen(new REExplorerScreen(this));
                     },
                     Text.translatable(MOD_ID+".open_tooltip")) {
                 {
@@ -252,7 +249,7 @@ public class REConfig {
                 //override required because textured button widget just doesnt work
                 @Override
                 public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-                    Identifier identifier = this.isSelected() ? ResourceExplorer.ICON_FOLDER_OPEN : ResourceExplorer.ICON_MOD;
+                    Identifier identifier = this.isSelected() ? REExplorer.ICON_FOLDER_OPEN : REExplorer.ICON_MOD;
                     context.drawTexture(identifier, this.getX(), this.getY(), 0, 0, this.width, this.height, this.width, this.height);
                 }
 
