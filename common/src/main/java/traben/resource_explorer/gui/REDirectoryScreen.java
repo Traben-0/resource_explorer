@@ -67,6 +67,7 @@ public class REDirectoryScreen extends Screen {
         }).dimensions(this.width / 2 - 4 - 200, this.height - 48, 150, 20).tooltip(warn).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.translatable( MOD_ID+".explorer.settings"), (button) -> {
+            this.close();
             MinecraftClient.getInstance().setScreen(new REConfig.REConfigScreen(null));
         }).dimensions(this.width / 2 - 4 - 200, this.height - 24, 150, 20).build());
     }

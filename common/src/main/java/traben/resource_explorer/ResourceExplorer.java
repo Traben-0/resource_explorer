@@ -4,7 +4,10 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.toast.SystemToast;
+import net.minecraft.client.toast.ToastManager;
 import net.minecraft.resource.Resource;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,87 +142,127 @@ public class ResourceExplorer
 	@SuppressWarnings("ResultOfMethodCallIgnored")
 	public static boolean outputResourceToPack(REResourceFileEntry reResourceFileEntry){
 
-		//only save png resources
+		//only save existing file resources
 		if(reResourceFileEntry.resource == null)
 			return false;
 
 		Path resourcePackFolder = MinecraftClient.getInstance().getResourcePackDir();
 		File thisPackFolder = new File(resourcePackFolder.toFile(),"resource_explorer/");
-		if(!thisPackFolder.exists()){
-			String mcmeta = """
-					{
-					\t"pack": {
-					\t\t"pack_format": 15,
-					\t\t"supported_formats":[0,99],
-					\t\t"description": "Output file for the Resource Explorer mod"
-					\t}
-					}""";
-			if(thisPackFolder.mkdir()) {
-				File thisMetaFolder = new File(thisPackFolder,"pack.mcmeta");
-				try {
-					FileWriter fileWriter = new FileWriter(thisMetaFolder);
-					fileWriter.write(mcmeta);
-					fileWriter.close();
-					log(" output resource-pack created.");
-				} catch (IOException e) {
-					log(" output resource-pack not created.");
+
+		if(validateOutputResourcePack(thisPackFolder)) {
+			if (thisPackFolder.exists()) {
+				File assets = new File(thisPackFolder, "assets");
+				if (!assets.exists()) {
+					assets.mkdir();
 				}
-				File thisIconFile = new File(thisPackFolder,"pack.png");
-				Optional<Resource> image = MinecraftClient.getInstance().getResourceManager().getResource(ICON_FOLDER_BUILT);
-				if(image.isPresent()) {
-					try {
-						InputStream stream = image.get().getInputStream();
-						NativeImage.read(stream).writeTo(thisIconFile);
-						log(" output resource-pack icon created.");
-					} catch (IOException e) {
-						log(" output resource-pack icon not created.");
+				File namespace = new File(assets, reResourceFileEntry.identifier.getNamespace());
+				if (!namespace.exists()) {
+					namespace.mkdir();
+				}
+				String[] pathList = reResourceFileEntry.identifier.getPath().split("/");
+				String file = pathList[pathList.length - 1];
+				String directories = reResourceFileEntry.identifier.getPath().replace(file, "");
+				File directoryFolder = new File(namespace, directories);
+				if (!directoryFolder.exists()) {
+					directoryFolder.mkdirs();
+				}
+				if (directoryFolder.exists()) {
+					if (reResourceFileEntry.fileType.isRawTextType()) {
+						File txtFile = new File(directoryFolder, file);
+						try {
+							FileWriter fileWriter = new FileWriter(txtFile);
+							fileWriter.write(new String(reResourceFileEntry.resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
+							fileWriter.close();
+							log(" output resource file created.");
+							showExportToast(reResourceFileEntry);
+							return true;
+						} catch (IOException e) {
+							log(" output resource file not created.");
+						}
+					} else if (reResourceFileEntry.fileType == REResourceFileEntry.FileType.PNG) {
+						File thisImgFile = new File(directoryFolder, file + (file.endsWith(".png") ? "" : ".png"));
+						try {
+							InputStream stream = reResourceFileEntry.resource.getInputStream();
+							NativeImage.read(stream).writeTo(thisImgFile);
+							log(" output resource image created.");
+							showExportToast(reResourceFileEntry);
+							return true;
+						} catch (IOException e) {
+							log(" output resource image not created.");
+						}
 					}
 				}
 			}
 		}
-		if(thisPackFolder.exists()){
-			File assets = new File(thisPackFolder,"assets");
-			if(!assets.exists()) {
-				assets.mkdir();
+		showExportToast(null);
+		return false;
+	}
+
+	private static void showExportToast(REResourceFileEntry fileEntry) {
+		ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
+		if(fileEntry == null){
+			SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION, Text.translatable(MOD_ID+".export_warn"), Text.translatable(MOD_ID+".export_warn.fail"));
+		}
+		Text message;
+		if(fileEntry.resource != null){
+			if("minecraft".equals(fileEntry.identifier.getNamespace())){
+				message = "vanilla".equals(fileEntry.resource.getResourcePackName()) ?
+						Text.translatable(MOD_ID+".export_warn.vanilla"):
+						Text.translatable(MOD_ID+".export_warn.pack");
+			}else{
+				message = Text.translatable(MOD_ID+".export_warn.mod");
 			}
-			File namespace = new File(assets,reResourceFileEntry.identifier.getNamespace());
-			if(!namespace.exists()) {
-				namespace.mkdir();
+		}else{
+			message = Text.translatable("error");
+		}
+		SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION, Text.translatable(MOD_ID+".export_warn"), message);
+	}
+
+	private static boolean validateOutputResourcePack(File packFolder){
+		if(!packFolder.exists()){
+			if(packFolder.mkdir()) {
+				return validateOutputResourcePackMeta(packFolder);
 			}
-			String[] pathList = reResourceFileEntry.identifier.getPath().split("/");
-			String file = pathList[pathList.length-1];
-			String directories = reResourceFileEntry.identifier.getPath().replace(file,"");
-			File directoryFolder = new File(namespace,directories);
-			if(!directoryFolder.exists()){
-				directoryFolder.mkdirs();
-			}
-			if(directoryFolder.exists()){
-				if(reResourceFileEntry.fileType.isRawTextType()){
-					File txtFile = new File(directoryFolder,file);
-					try {
-						FileWriter fileWriter = new FileWriter(txtFile);
-						fileWriter.write(new String(reResourceFileEntry.resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
-						fileWriter.close();
-						log(" output resource file created.");
-						return true;
-					} catch (IOException e) {
-						log(" output resource file not created.");
-					}
-				}else if(reResourceFileEntry.fileType == REResourceFileEntry.FileType.PNG){
-					File thisImgFile = new File(directoryFolder,file + (file.endsWith(".png") ? "" : ".png"));
-					try {
-						InputStream stream = reResourceFileEntry.resource.getInputStream();
-						NativeImage.read(stream).writeTo(thisImgFile);
-						log(" output resource image created.");
-						return true;
-					} catch (IOException e) {
-						log(" output resource image not created.");
-					}
-				}
-			}
+		}else {
+			return validateOutputResourcePackMeta(packFolder);
 		}
 		return false;
 	}
+	private static boolean validateOutputResourcePackMeta(File packFolder){
+		File thisMetaFile = new File(packFolder,"pack.mcmeta");
+		if (thisMetaFile.exists()) {
+			return true;
+		}
+		String mcmeta = """
+				{
+				\t"pack": {
+				\t\t"pack_format": 15,
+				\t\t"supported_formats":[0,99],
+				\t\t"description": "Output file for the Resource Explorer mod"
+				\t}
+				}""";
+		try {
+			FileWriter fileWriter = new FileWriter(thisMetaFile);
+			fileWriter.write(mcmeta);
+			fileWriter.close();
+			log(" output resource-pack created.");
+		} catch (IOException e) {
+			log(" output resource-pack not created.");
+		}
+		File thisIconFile = new File(packFolder, "pack.png");
+		Optional<Resource> image = MinecraftClient.getInstance().getResourceManager().getResource(ICON_FOLDER_BUILT);
+		if (image.isPresent()) {
+			try {
+				InputStream stream = image.get().getInputStream();
+				NativeImage.read(stream).writeTo(thisIconFile);
+				log(" output resource-pack icon created.");
+			} catch (IOException e) {
+				log(" output resource-pack icon not created.");
+			}
+		}
+		return thisMetaFile.exists();
+	}
+
 
 
 	public static final Identifier ICON_FILE_BUILT = new Identifier("resource_explorer:textures/file_built.png");
