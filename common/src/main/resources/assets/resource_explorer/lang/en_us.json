@@ -1,0 +1,19 @@
+{
+  "resource_explorer.title": "Resource Explorer",
+  "resource_explorer.explorer.apply_warn": "Applying a new filter will close the explorer and reload resources",
+  "resource_explorer.explorer.apply": "Apply",
+  "resource_explorer.explorer.settings": "More Settings",
+  "resource_explorer.settings.title": "Resource Explorer Settings",
+  "resource_explorer.settings.options_button": "Show options menu button: ",
+  "resource_explorer.settings.options_button.tooltip": "Enable / Disable the button in the vanilla options screen",
+  "resource_explorer.settings.log_files": "Log file tree after search: ",
+  "resource_explorer.settings.log_files.tooltip": "Enable / Disable printing out the full resource file tree to the log after every search",
+  "resource_explorer.open_tooltip": "click to open the Resource Explorer",
+  "resource_explorer.filter.0": "Filter: all",
+  "resource_explorer.filter.1": "Filter: files only",
+  "resource_explorer.filter.2": "Filter: packs only",
+  "resource_explorer.filter.3": "Filter: textures only",
+  "resource_explorer.filter.4": "Filter: texture files only",
+  "resource_explorer.filter.5": "Filter: pack texture files only",
+  "resource_explorer.filter.tooltip": "Sets the filter determining what types of files show up in the Resource Explorer"
+}

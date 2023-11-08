@@ -5,6 +5,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.GridWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.text.Text;
@@ -17,6 +18,8 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.gui.REDirectoryScreen;
 import traben.resource_explorer.ResourceExplorer;
+
+import static traben.resource_explorer.ResourceExplorer.MOD_ID;
 
 
 @Mixin(OptionsScreen.class)
@@ -41,13 +44,15 @@ public abstract class OptionsScreenMixin extends Screen {
                     (button) -> {
                         assert this.client != null;
                         this.client.setScreen(new REDirectoryScreen(
-                                this,
-                                Text.of("Resource Explorer"),
+                                this,null,
                                 ResourceExplorer.getResourceFolderRoot(),
                                 "assets/"
                         ));
                     },
-                    Text.of("Open Resource Explorer")) {
+                    Text.translatable(MOD_ID+".open_tooltip")) {
+                {
+                    setTooltip(Tooltip.of(Text.translatable(MOD_ID+".open_tooltip")));
+                }
                 //override required because textured button widget just doesnt work
                 @Override
                 public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {

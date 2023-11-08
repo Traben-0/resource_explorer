@@ -12,7 +12,15 @@
   "icon": "icon.png",
 
   "environment": "client",
-  "entrypoints": {},
+  "entrypoints": {
+    "client": [
+      "traben.resource_explorer.fabric.ResourceExplorerFabric"
+    ],
+    "modmenu": [
+      "traben.resource_explorer.fabric.ModMenuEntry"
+    ]
+  },
+
   "mixins": [
     "resource_explorer.mixins.json",
     "resource_explorer-common.mixins.json"

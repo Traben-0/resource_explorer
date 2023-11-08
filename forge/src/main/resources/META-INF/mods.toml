@@ -27,7 +27,7 @@ displayName="Resource Explorer" #mandatory
 # A URL for the "homepage" for this mod, displayed in the mod UI
 displayURL="test"
 # A file name (in the root of the mod JAR) containing a logo for display
-logoFile="icon.png" #optional
+logoFile="resource_explorer/icon.png" #optional
 # A text field displayed in the mod UI
 #credits="Thanks for this example mod goes to Java" #optional
 # A text field displayed in the mod UI
@@ -55,7 +55,7 @@ test
    # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
    ordering="NONE"
    # Side this dependency is applied on - BOTH, CLIENT or SERVER
-   side="BOTH"
+   side="CLIENT"
 # Here's another dependency
 [[dependencies.resource_explorer]]
    modId="minecraft"
@@ -63,4 +63,4 @@ test
    # This version range declares a minimum of the current minecraft version up to but not including the next major version
    versionRange="[1.20.2,1.21)"
    ordering="NONE"
-   side="BOTH"
+   side="CLIENT"

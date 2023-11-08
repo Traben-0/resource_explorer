@@ -102,7 +102,7 @@ public class ResourceExplorer
 		//fabric api all in 1
 		if(!fabricApiFolders.isEmpty()) {
 			REResourceFolderEntry fabricApiFolder =  new REResourceFolderEntry("fabric-api");
-			fabricApiFolder.contentIcon = new Identifier("fabricloader","icon.png");
+			fabricApiFolder.contentIcon = new Identifier("fabricloader", "icon.png");
 			fabricApiFolders.forEach(fabricApiFolder::addSubFolder);
 			namesSpaceFoldersRoot.addFirst(fabricApiFolder);
 		}
@@ -222,32 +222,32 @@ public class ResourceExplorer
 	}
 
 
-	public static final Identifier ICON_FILE_BUILT = new Identifier("resource_explorer:file_built.png");
-	public static final Identifier ICON_FOLDER_BUILT = new Identifier("resource_explorer:folder_built.png");
-	public static final Identifier ICON_FOLDER = new Identifier("resource_explorer:folder.png");
-	public static final Identifier ICON_FOLDER_OPEN = new Identifier("resource_explorer:folder_open.png");
-	public static final Identifier ICON_FOLDER_BACK = new Identifier("resource_explorer:folder_back.png");
-	public static final Identifier ICON_FILE_PNG = new Identifier("resource_explorer:file_png.png");
-	public static final Identifier ICON_FILE_TEXT = new Identifier("resource_explorer:file_text.png");
-	public static final Identifier ICON_FILE_PROPERTY = new Identifier("resource_explorer:file_property.png");
-	public static final Identifier ICON_FILE_OGG = new Identifier("resource_explorer:file_ogg.png");
-	public static final Identifier ICON_FILE_UNKNOWN = new Identifier("resource_explorer:file_unknown.png");
+	public static final Identifier ICON_FILE_BUILT = new Identifier("resource_explorer:textures/file_built.png");
+	public static final Identifier ICON_FOLDER_BUILT = new Identifier("resource_explorer:textures/folder_built.png");
+	public static final Identifier ICON_FOLDER = new Identifier("resource_explorer:textures/folder.png");
+	public static final Identifier ICON_FOLDER_OPEN = new Identifier("resource_explorer:textures/folder_open.png");
+	public static final Identifier ICON_FOLDER_BACK = new Identifier("resource_explorer:textures/folder_back.png");
+	public static final Identifier ICON_FILE_PNG = new Identifier("resource_explorer:textures/file_png.png");
+	public static final Identifier ICON_FILE_TEXT = new Identifier("resource_explorer:textures/file_text.png");
+	public static final Identifier ICON_FILE_PROPERTY = new Identifier("resource_explorer:textures/file_property.png");
+	public static final Identifier ICON_FILE_OGG = new Identifier("resource_explorer:textures/file_ogg.png");
+	public static final Identifier ICON_FILE_UNKNOWN = new Identifier("resource_explorer:textures/file_unknown.png");
 //	public static final Identifier ICON_FILE_MOJANG = new Identifier("resource_explorer:file_mojang.png");
-	public static final Identifier ICON_FOLDER_MOJANG = new Identifier("resource_explorer:folder_mojang.png");
-	public static final Identifier ICON_FOLDER_OPTIFINE = new Identifier("resource_explorer:folder_optifine.png");
-	public static final Identifier ICON_FOLDER_ETF = new Identifier("resource_explorer:folder_etf.png");
-	public static final Identifier ICON_FOLDER_EMF = new Identifier("resource_explorer:folder_emf.png");
+	public static final Identifier ICON_FOLDER_MOJANG = new Identifier("resource_explorer:textures/folder_mojang.png");
+	public static final Identifier ICON_FOLDER_OPTIFINE = new Identifier("resource_explorer:textures/folder_optifine.png");
+	public static final Identifier ICON_FOLDER_ETF = new Identifier("resource_explorer:textures/folder_etf.png");
+	public static final Identifier ICON_FOLDER_EMF = new Identifier("resource_explorer:textures/folder_emf.png");
 //	public static final Identifier ICON_FILE_SMILE = new Identifier("resource_explorer:file_smile.png");
-	public static final Identifier ICON_FOLDER_CORNER = new Identifier("resource_explorer:folder_corner.png");
-	public static final Identifier ICON_FILE_BLANK = new Identifier("resource_explorer:file_blank.png");
-	public static final Identifier ICON_FILE_JSON = new Identifier("resource_explorer:file_json.png");
-	public static final Identifier ICON_FOLDER_UP = new Identifier("resource_explorer:folder_up.png");
-	public static final Identifier ICON_FOLDER_UP_SELECTED = new Identifier("resource_explorer:folder_up_selected.png");
-	public static final Identifier ICON_FILE_ZIP = new Identifier("resource_explorer:file_zip.png");
-	public static final Identifier ICON_FILE_JEM = new Identifier("resource_explorer:file_jem.png");
-	public static final Identifier ICON_HAS_META = new Identifier("resource_explorer:has_meta.png");
-	public static final Identifier ICON_FOLDER_FABRIC = new Identifier("resource_explorer:folder_fabric.png");
-	public static final Identifier ICON_MOD = new Identifier("resource_explorer:icon.png");
+	public static final Identifier ICON_FOLDER_CORNER = new Identifier("resource_explorer:textures/folder_corner.png");
+	public static final Identifier ICON_FILE_BLANK = new Identifier("resource_explorer:textures/file_blank.png");
+	public static final Identifier ICON_FILE_JSON = new Identifier("resource_explorer:textures/file_json.png");
+	public static final Identifier ICON_FOLDER_UP = new Identifier("resource_explorer:textures/folder_up.png");
+	public static final Identifier ICON_FOLDER_UP_SELECTED = new Identifier("resource_explorer:textures/folder_up_selected.png");
+	public static final Identifier ICON_FILE_ZIP = new Identifier("resource_explorer:textures/file_zip.png");
+	public static final Identifier ICON_FILE_JEM = new Identifier("resource_explorer:textures/file_jem.png");
+	public static final Identifier ICON_HAS_META = new Identifier("resource_explorer:textures/has_meta.png");
+	public static final Identifier ICON_FOLDER_FABRIC = new Identifier("resource_explorer:textures/folder_fabric.png");
+	public static final Identifier ICON_MOD = new Identifier("resource_explorer:textures/icon.png");
 
 
 

@@ -205,7 +205,7 @@ public class REResourceFolderEntry extends REResourceEntry {
         String path = "fabric-api".equals(getDisplayName()) ? parent.cumulativePath : parent.cumulativePath+getDisplayName() + "/";
 
         LinkedList<REResourceEntry> content = getContent();
-        MinecraftClient.getInstance().setScreen(new REDirectoryScreen(parent, Text.of(getDisplayName()), content, path));
+        MinecraftClient.getInstance().setScreen(new REDirectoryScreen(parent.vanillaParent, parent, content, path));
         return false;
     }
 
@@ -216,7 +216,7 @@ public class REResourceFolderEntry extends REResourceEntry {
         }
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            Screen parent = this.widget.screen.parent;
+            Screen parent = this.widget.screen.reParent;
             MinecraftClient.getInstance().setScreen(parent);
            // this.widget.screen.close();
             return false;

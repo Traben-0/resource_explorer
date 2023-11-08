@@ -1,13 +1,11 @@
 package traben.resource_explorer.fabric;
 
-import net.fabricmc.api.ModInitializer;
+import net.fabricmc.api.ClientModInitializer;
 import traben.resource_explorer.ResourceExplorer;
 
-public class ResourceExplorerFabric implements ModInitializer {
+public class ResourceExplorerFabric implements ClientModInitializer {
     @Override
-    public void onInitialize() {
+    public void onInitializeClient() {
         ResourceExplorer.init();
-
-
     }
 }

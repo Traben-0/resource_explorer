@@ -13,6 +13,8 @@ import traben.resource_explorer.REConfig;
 
 import java.util.LinkedList;
 
+import static traben.resource_explorer.ResourceExplorer.MOD_ID;
+
 public class REDirectoryScreen extends Screen {
 
     @Nullable
@@ -21,19 +23,19 @@ public class REDirectoryScreen extends Screen {
 
 
     private REResourceListWidget fileList;
-    private ButtonWidget doneButton;
 
-    public Screen parent;
-
+    public Screen vanillaParent;
+    public REDirectoryScreen reParent;
 
     final String cumulativePath;
 
     public final LinkedList<REResourceEntry> entries;
-    public REDirectoryScreen(Screen parent, Text title, LinkedList<REResourceEntry> entries, String cumulativePath) {
-        super(title);
+    public REDirectoryScreen(Screen vanillaParent, @Nullable REDirectoryScreen reParent, LinkedList<REResourceEntry> entries, String cumulativePath) {
+        super(Text.translatable(MOD_ID+".title"));
         this.cumulativePath = cumulativePath;
         this.entries = entries;
-        this.parent = parent;
+        this.vanillaParent = vanillaParent;
+        this.reParent = reParent;
     }
 
     protected void init() {
@@ -46,23 +48,27 @@ public class REDirectoryScreen extends Screen {
         currentDisplay.setDimensions(width / 2 + 4, 200, this.height);
         this.addSelectableChild(currentDisplay);
 
-        this.doneButton = this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, (button) -> {
+        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, (button) -> {
             this.close();
-        }).dimensions(this.width / 2 + 4, this.height - 48, 150, 20).tooltip(Tooltip.of(Text.of("Return to tile screen"))) .build());
+        }).dimensions(this.width / 2 + 4, this.height - 48, 150, 20).build());
 
-        Tooltip warn = Tooltip.of(Text.of("Applying a new filter will close the explorer and reload resources"));
+        Tooltip warn = Tooltip.of(Text.translatable(MOD_ID+".explorer.apply_warn"));
 
-        ButtonWidget apply = this.addDrawableChild(ButtonWidget.builder(Text.of("Apply"), (button) -> {
+        ButtonWidget apply = this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID+".explorer.apply"), (button) -> {
             this.close();
             REConfig.getInstance().filterMode = filterChoice;
         }).dimensions(this.width / 2 - 4 - 46, this.height - 48, 46, 20).tooltip(warn).build());
         apply.active = false;
 
-        this.addDrawableChild(ButtonWidget.builder(Text.of( REConfig.getInstance().filterMode.getKey()), (button) -> {
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable( REConfig.getInstance().filterMode.getKey()), (button) -> {
             filterChoice = filterChoice.next();
-            button.setMessage(Text.of(filterChoice.getKey()));
+            button.setMessage(Text.translatable(filterChoice.getKey()));
             apply.active = filterChoice != REConfig.getInstance().filterMode;
         }).dimensions(this.width / 2 - 4 - 200, this.height - 48, 150, 20).tooltip(warn).build());
+
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable( MOD_ID+".explorer.settings"), (button) -> {
+            MinecraftClient.getInstance().setScreen(new REConfig.REConfigScreen(null));
+        }).dimensions(this.width / 2 - 4 - 200, this.height - 24, 150, 20).build());
     }
 
     private REConfig.REFileFilter filterChoice = REConfig.getInstance().filterMode;
@@ -90,6 +96,11 @@ public class REDirectoryScreen extends Screen {
         //reading resources this way has some... affects to the resource system
         //thus a resource reload is required
         MinecraftClient.getInstance().reloadResources();
+        if(vanillaParent instanceof REConfig.REConfigScreen configScreen){
+            configScreen.tempConfig.filterMode = REConfig.getInstance().filterMode;
+            configScreen.reset();
+        }
+        MinecraftClient.getInstance().setScreen(vanillaParent);
     }
 
 
