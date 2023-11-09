@@ -2,11 +2,12 @@ package traben.resource_explorer.explorer;
 
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.MultilineText;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -15,63 +16,84 @@ import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 public class REStats {
 
 
-    final int totalResources;
-    final int totalFileResources;
+    int totalResources = 0;
+    int totalFileResources = 0;
     int totalAllowedResources = 0;
     int totalAllowedFileResources = 0;
     int totalTextureResources = 0;
     int totalTextureFileResources = 0;
     int folderCount = 0;
 
-    Object2IntArrayMap<REResourceFileEntry.FileType> totalPerFileType = new Object2IntArrayMap<>(){{defRetValue=0;}};
-    Object2IntArrayMap<String> totalPerNameSpace = new Object2IntArrayMap<>(){{defRetValue=0;}};
-    Object2IntArrayMap<String> totalTexturesPerNameSpace = new Object2IntArrayMap<>(){{defRetValue=0;}};
-    Object2IntArrayMap<String> totalPerResourcepack = new Object2IntArrayMap<>(){{defRetValue=0;}};
-    Object2IntArrayMap<String> totalTexturesPerResourcepack = new Object2IntArrayMap<>(){{defRetValue=0;}};
+    Object2IntArrayMap<REResourceFileEntry.FileType> totalPerFileType = new Object2IntArrayMap<>() {{
+        defRetValue = 0;
+    }};
+    Object2IntArrayMap<String> totalPerNameSpace = new Object2IntArrayMap<>() {{
+        defRetValue = 0;
+    }};
+    Object2IntArrayMap<String> totalTexturesPerNameSpace = new Object2IntArrayMap<>() {{
+        defRetValue = 0;
+    }};
+    Object2IntArrayMap<String> totalPerResourcepack = new Object2IntArrayMap<>() {{
+        defRetValue = 0;
+    }};
+    Object2IntArrayMap<String> totalTexturesPerResourcepack = new Object2IntArrayMap<>() {{
+        defRetValue = 0;
+    }};
 
-    REStats(int totalResources, int totalFileResources){
-        this.totalResources = totalResources;
-        this.totalFileResources = totalFileResources;
+    REStats() {
     }
 
-    void incrementMap(Object2IntArrayMap<String> map,String key){
-        map.put(key,map.getInt(key)+1);
+    void incrementMap(Object2IntArrayMap<String> map, String key) {
+        map.put(key, map.getInt(key) + 1);
     }
 
 
-    void addEntryStatistic(REResourceFileEntry entry, boolean allowedByFilter){
+    void addEntryStatistic(REResourceFileEntry entry, boolean allowedByFilter) {
         boolean isFile = entry.resource != null;
         boolean isTexture = entry.fileType == REResourceFileEntry.FileType.PNG;
 
-        totalPerFileType.put(entry.fileType,totalPerFileType.getInt(entry.fileType)+1);
+        //top level
+        totalResources++;
+        if (isFile)
+            totalFileResources++;
 
-        if(isTexture){
-            totalTextureResources++;
-            if(isFile){
-                totalTextureFileResources++;
-            }
-        }
-
-        incrementMap(totalPerNameSpace, entry.identifier.getNamespace());
-        if(isTexture)
-            incrementMap(totalTexturesPerNameSpace, entry.identifier.getNamespace());
-
-        if(isFile) {
-            incrementMap(totalPerResourcepack, entry.resource.getResourcePackName());
-            if (isTexture)
-                incrementMap(totalTexturesPerResourcepack, entry.resource.getResourcePackName());
-        }
-
-        if(allowedByFilter){
+        //filtered
+        if (allowedByFilter) {
             totalAllowedResources++;
-            if(isFile)
+            if (isFile)
                 totalAllowedFileResources++;
+
+            //per file type
+            totalPerFileType.put(entry.fileType, totalPerFileType.getInt(entry.fileType) + 1);
+
+            //textures only
+            if (isTexture) {
+                totalTextureResources++;
+                if (isFile) {
+                    totalTextureFileResources++;
+                }
+            }
+
+            //by namespace
+            incrementMap(totalPerNameSpace, entry.identifier.getNamespace());
+            if (isTexture)
+                incrementMap(totalTexturesPerNameSpace, entry.identifier.getNamespace());
+
+            //by resourcepack
+            if (isFile) {
+                incrementMap(totalPerResourcepack, entry.resource.getResourcePackName());
+                if (isTexture)
+                    incrementMap(totalTexturesPerResourcepack, entry.resource.getResourcePackName());
+            }
+
+
+
 
         }
     }
 
-    REStatsScreen getAsScreen(Screen parent){
-        return new REStatsScreen(parent,this);
+    REStatsScreen getAsScreen(Screen parent) {
+        return new REStatsScreen(parent, this);
     }
 
     private static class REStatsScreen extends Screen {
@@ -79,8 +101,9 @@ public class REStats {
         private final Screen parent;
 
         private final REStats stats;
+
         public REStatsScreen(Screen parent, REStats stats) {
-            super(Text.translatable(MOD_ID+".stats.title"));
+            super(Text.translatable(MOD_ID + ".stats.title"));
             this.stats = stats;
             this.parent = parent;
 
@@ -97,17 +120,79 @@ public class REStats {
 
         }
 
+
         @Override
         public void render(DrawContext context, int mouseX, int mouseY, float delta) {
             super.render(context, mouseX, mouseY, delta);
-            int offset = 0;
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("shsfdghdf"), 0, 0, 16777215);
-            offset += 11;
 
-            MultilineText identifierText = MultilineText.create(MinecraftClient.getInstance().textRenderer, Text.of("dfhf"),0);
-            identifierText.drawWithShadow(context, 0, 0, 11, -8355712);
-            offset += 11+ identifierText.count()*11;
-            //todo draw stats
+            int offset;
+            int projectedHeight = 110+stats.totalPerFileType.size()*11+stats.totalPerNameSpace.size()*11+stats.totalPerResourcepack.size()*11;
+            if(projectedHeight > this.height*0.7){
+                int offsetMax = (int) (projectedHeight - this.height*0.8)+ 64;
+                float mouseScroll = (((float)mouseY)/this.height ) *1.15f;
+                offset = (int) (this.height*0.25 - (mouseScroll > 1 ? 1 : mouseScroll )*offsetMax);
+            }else{
+                offset = (int) (this.height*0.15);
+            }
+
+            TextDisplayUtil outText = new TextDisplayUtil(context,MinecraftClient.getInstance().textRenderer, this.width, this.height, offset);
+
+            outText.renderSubtitle("totals:","  All | Files");//todo translate and split the data types better
+            outText.renderValue("All resources:", stats.totalResources, stats.totalFileResources);
+            outText.renderValue("All texture resources:", stats.totalTextureResources, stats.totalTextureFileResources);
+            outText.renderValue("After filtering resources:", stats.totalAllowedResources, stats.totalAllowedFileResources);
+            outText.renderSubtitle("By FileType:","All |     ");
+            stats.totalPerFileType.forEach((k,v)->{
+                outText.renderValue(k.name(), v, -1);
+            });
+            outText.renderSubtitle("By namespace:","        All | Textures");
+            stats.totalPerNameSpace.forEach((k,v)->{
+                outText.renderValue(k, v, stats.totalTexturesPerNameSpace.getInt(k));
+            });
+            outText.renderSubtitle("By resource-pack:","        All | Textures");
+            stats.totalPerResourcepack.forEach((k,v)->{
+                outText.renderValue(k, v, stats.totalTexturesPerResourcepack.getInt(k));
+            });
+        }
+
+        private static class TextDisplayUtil{
+            int offset;
+            int min;
+            int max;
+            final private TextRenderer renderer;
+            final private DrawContext context;
+            final private int width;
+            TextDisplayUtil(DrawContext context,TextRenderer renderer, int width, int height, int offset){
+                this.renderer = renderer;
+                this.context = context;
+                this.width = width;
+                this.min = (int) (height*0.05);
+                this.max = (int) (height*0.85);
+                this.offset = offset;
+            }
+
+            private boolean inRenderRange(){
+                return offset >= min && offset <= max;
+            }
+            void renderValue(String valueName, int value, int valueFile){
+                if(inRenderRange()) {
+                    context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable(valueName), width / 7, offset, 11184810);
+
+                    context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(value + " |"), (int) (width *0.75) - renderer.getWidth(value + " |"), offset, 16777215);
+                    if (valueFile != -1)
+                        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(" "+valueFile), (int) (width *0.75), offset, 16777215);
+                }
+                offset += 11;
+            }
+            void renderSubtitle(String text, @Nullable String dataTypes){
+                offset += 11;
+                if(inRenderRange()) {
+                    context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("§l" + Text.translatable(text).getString()), width / 8, offset, 16777215);
+                    if (dataTypes != null)
+                        context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable(dataTypes), (int) (width *0.75), offset, 16777215);
+                }
+                offset += 11;
+            }
         }
     }
 

@@ -50,110 +50,115 @@ public class REExplorer {
     public static final Identifier ICON_MOD = new Identifier("resource_explorer:textures/icon.png");
 
     public static LinkedList<REResourceEntry> getResourceFolderRoot() {
-
-
-        ObjectLinkedOpenHashSet<REResourceFileEntry> allFilesList = new ObjectLinkedOpenHashSet<>();
-
-        boolean print = REConfig.getInstance().logFullFileTree;
-
-        if(print) {
-            ResourceExplorerClient.log("/START/");
-            ResourceExplorerClient.log("/START/READ/");
-        }
-
-        //perform vanilla search with placeholder string that will trigger a blanket resource search
         try {
-            Map<Identifier, Resource> resourceMap = MinecraftClient.getInstance().getResourceManager().findResources("resource_explorer$search", (id) -> true);
-            resourceMap.forEach((k, v) -> {
-                allFilesList.add(new REResourceFileEntry(k,v));
+
+            ObjectLinkedOpenHashSet<REResourceFileEntry> allFilesList = new ObjectLinkedOpenHashSet<>();
+
+            boolean print = REConfig.getInstance().logFullFileTree;
+
+            if (print) {
+                ResourceExplorerClient.log("/START/");
+                ResourceExplorerClient.log("/START/READ/");
+            }
+
+            //perform vanilla search with placeholder string that will trigger a blanket resource search
+            try {
+                Map<Identifier, Resource> resourceMap = MinecraftClient.getInstance().getResourceManager().findResources("resource_explorer$search", (id) -> true);
+                resourceMap.forEach((k, v) -> {
+                    allFilesList.add(new REResourceFileEntry(k, v));
+                });
+
+            } catch (Exception ignored) {
+                //the method I use to explore all resources will cause an exception once at the end of the resource list as I need to search for blank file names
+            }
+
+            //fabric resources allow direct blank searches so catch those too
+            Map<Identifier, Resource> resourceMap2 = MinecraftClient.getInstance().getResourceManager().findResources("", (id) -> true);
+            resourceMap2.forEach((k, v) -> {
+                allFilesList.add(new REResourceFileEntry(k, v));
             });
 
-        }catch (Exception ignored){
-            //the method I use to explore all resources will cause an exception once at the end of the resource list as I need to search for blank file names
-        }
-
-        //fabric resources allow direct blank searches so catch those too
-        Map<Identifier, Resource> resourceMap2 = MinecraftClient.getInstance().getResourceManager().findResources("",(id)->true);
-        resourceMap2.forEach((k,v)->{
-            allFilesList.add(new REResourceFileEntry(k,v));
-        });
-
-        //search for generated texture assets
-        Map<Identifier, AbstractTexture> textures = ((TextureManagerAccessor)MinecraftClient.getInstance().getTextureManager()).getTextures();
-        textures.forEach((k,v)->{
-            allFilesList.add(new REResourceFileEntry(k,v));
-        });
+            //search for generated texture assets
+            Map<Identifier, AbstractTexture> textures = ((TextureManagerAccessor) MinecraftClient.getInstance().getTextureManager()).getTextures();
+            textures.forEach((k, v) -> {
+                allFilesList.add(new REResourceFileEntry(k, v));
+            });
 
 
-        REStats statistics = new REStats(allFilesList.size(),allFilesList.size() - textures.values().size());
-
-        if(print) {
-            ResourceExplorerClient.log("/END/READ/");
-            ResourceExplorerClient.log("/START/FOLDER_SORT/");
-        }
-        Set<String> namespaces = MinecraftClient.getInstance().getResourceManager().getAllNamespaces();
-
-        LinkedList<REResourceEntry> namesSpaceFoldersRoot = new LinkedList<>();
-        Map<String, REResourceFolderEntry> namespaceFolderMap = new HashMap<>();
-
-        LinkedList<REResourceFolderEntry> fabricApiFolders = new LinkedList<>();
-
-        REResourceFolderEntry minecraftFolder = new REResourceFolderEntry("minecraft");
-        namespaceFolderMap.put("minecraft",minecraftFolder);
-        namespaces.remove("minecraft");
-
-        for (String nameSpace:
-             namespaces) {
-            REResourceFolderEntry namespaceFolder = new REResourceFolderEntry(nameSpace);
-
-            if("fabric".equals(nameSpace) || nameSpace.matches("(fabric-.*|renderer-registries)(renderer|api|-v\\d).*")){
-                fabricApiFolders.add(namespaceFolder);
-            }else{
-                namesSpaceFoldersRoot.addLast(namespaceFolder);
+            if (print) {
+                ResourceExplorerClient.log("/END/READ/");
+                ResourceExplorerClient.log("/START/FOLDER_SORT/");
             }
-            namespaceFolderMap.put(nameSpace,namespaceFolder);
+            Set<String> namespaces = MinecraftClient.getInstance().getResourceManager().getAllNamespaces();
 
-        }
-        //fabric api all in 1
-        if(!fabricApiFolders.isEmpty()) {
-            REResourceFolderEntry fabricApiFolder =  new REResourceFolderEntry("fabric-api");
-            fabricApiFolder.contentIcon = new Identifier("fabricloader", "icon.png");
-            fabricApiFolders.forEach(fabricApiFolder::addSubFolder);
-            namesSpaceFoldersRoot.addFirst(fabricApiFolder);
-        }
-        //get filter
-        REConfig.REFileFilter filter = REConfig.getInstance().filterMode;
+            LinkedList<REResourceEntry> namesSpaceFoldersRoot = new LinkedList<>();
+            Map<String, REResourceFolderEntry> namespaceFolderMap = new HashMap<>();
 
-        //minecraft at the top
-        if(filter != REConfig.REFileFilter.ONLY_FROM_PACKS_NO_GENERATED)
-            namesSpaceFoldersRoot.addFirst(minecraftFolder);
+            LinkedList<REResourceFolderEntry> fabricApiFolders = new LinkedList<>();
 
-        //here allFilesAndFoldersRoot is only empty namespace directories
+            REResourceFolderEntry minecraftFolder = new REResourceFolderEntry("minecraft");
+            namespaceFolderMap.put("minecraft", minecraftFolder);
+            namespaces.remove("minecraft");
 
-        //iterate over all files and give them folder structure
-        for (REResourceFileEntry resourceFile:
-             allFilesList) {
-            if(filter.allows(resourceFile)) {
-                String namespace = resourceFile.identifier.getNamespace();
-                REResourceFolderEntry namespaceFolder = namespaceFolderMap.get(namespace);
-                if (namespaceFolder != null) {
-                    namespaceFolder.addResourceFile(resourceFile, statistics);
+            for (String nameSpace :
+                    namespaces) {
+                REResourceFolderEntry namespaceFolder = new REResourceFolderEntry(nameSpace);
+
+                if ("fabric".equals(nameSpace) || nameSpace.matches("(fabric-.*|renderer-registries)(renderer|api|-v\\d).*")) {
+                    fabricApiFolders.add(namespaceFolder);
+                } else {
+                    namesSpaceFoldersRoot.addLast(namespaceFolder);
                 }
-                statistics.addEntryStatistic(resourceFile,true);
-            }else{
-                statistics.addEntryStatistic(resourceFile,false);
+                namespaceFolderMap.put(nameSpace, namespaceFolder);
+
             }
+            //fabric api all in 1
+            if (!fabricApiFolders.isEmpty()) {
+                REResourceFolderEntry fabricApiFolder = new REResourceFolderEntry("fabric-api");
+                fabricApiFolder.contentIcon = new Identifier("fabricloader", "icon.png");
+                fabricApiFolders.forEach(fabricApiFolder::addSubFolder);
+                namesSpaceFoldersRoot.addFirst(fabricApiFolder);
+            }
+            //get filter
+            REConfig.REFileFilter filter = REConfig.getInstance().filterMode;
+
+            //minecraft at the top
+            if (filter != REConfig.REFileFilter.ONLY_FROM_PACKS_NO_GENERATED)
+                namesSpaceFoldersRoot.addFirst(minecraftFolder);
+
+            //here allFilesAndFoldersRoot is only empty namespace directories
+
+            REStats statistics = new REStats();
+
+            //iterate over all files and give them folder structure
+            for (REResourceFileEntry resourceFile :
+                    allFilesList) {
+                if (filter.allows(resourceFile)) {
+                    String namespace = resourceFile.identifier.getNamespace();
+                    REResourceFolderEntry namespaceFolder = namespaceFolderMap.get(namespace);
+                    if (namespaceFolder != null) {
+                        namespaceFolder.addResourceFile(resourceFile, statistics);
+                    }
+                    statistics.addEntryStatistic(resourceFile, true);
+                } else {
+                    statistics.addEntryStatistic(resourceFile, false);
+                }
+            }
+
+            if (print) {
+                namesSpaceFoldersRoot.forEach(System.out::println);
+                ResourceExplorerClient.log("/END/FOLDER_SORT/");
+                ResourceExplorerClient.log("/END/");
+            }
+
+            REExplorerScreen.currentStats = statistics;
+
+            return namesSpaceFoldersRoot;
+        }catch (Exception e){
+            LinkedList<REResourceEntry> fail = new LinkedList<>();
+            fail.add(REResourceFileEntry.FAILED_FILE);
+            return fail;
         }
-
-        if(print) {
-            namesSpaceFoldersRoot.forEach(System.out::println);
-            ResourceExplorerClient.log("/END/FOLDER_SORT/");
-            ResourceExplorerClient.log("/END/");
-        }
-
-        REExplorerScreen.currentStats = statistics;
-
-        return namesSpaceFoldersRoot;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

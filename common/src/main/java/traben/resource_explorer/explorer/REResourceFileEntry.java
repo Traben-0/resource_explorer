@@ -46,6 +46,18 @@ public class REResourceFileEntry extends REResourceEntry {
     final AbstractTexture abstractTexture;
 
     public final LinkedList<String> folderStructureList;
+
+    public static REResourceFileEntry FAILED_FILE = new REResourceFileEntry();
+    private REResourceFileEntry(){
+        //failed file
+        this.identifier = new Identifier("search_failed:fail");
+        this.resource = null;
+        this.abstractTexture = null;
+        this.fileType = FileType.OTHER;
+        displayName = "search_failed";
+        folderStructureList = new LinkedList<>();
+        this.displayText = Text.of("search_failed").asOrderedText();
+    }
     public REResourceFileEntry(Identifier identifier, AbstractTexture texture){
         this.identifier = identifier;
         this.resource = null;

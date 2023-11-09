@@ -22,5 +22,6 @@
   "resource_explorer.export_warn": "Asset exported successfully",
   "resource_explorer.export_warn.fail": "Asset exporting failed",
   "resource_explorer.stats.title": "Resource Explorer Statistics",
-  "resource_explorer.explorer.stats": "Stats"
+  "resource_explorer.explorer.stats": "Stats",
+  "resource_explorer.explorer.stats.button": "Open statistics"
 }
