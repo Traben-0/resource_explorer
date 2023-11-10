@@ -198,20 +198,20 @@ public class REExplorer {
                             FileWriter fileWriter = new FileWriter(txtFile);
                             fileWriter.write(new String(reResourceFileEntry.resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
                             fileWriter.close();
-                            ResourceExplorerClient.log(" output resource file created.");
+                            //ResourceExplorerClient.log(" output resource file created.");
                             return true;
                         } catch (IOException e) {
-                            ResourceExplorerClient.log(" output resource file not created.");
+                            ResourceExplorerClient.log(" output resource file not created for: "+reResourceFileEntry.identifier);
                         }
                     } else if (reResourceFileEntry.fileType == REResourceFileEntry.FileType.PNG) {
                         File thisImgFile = new File(directoryFolder, file + (file.endsWith(".png") ? "" : ".png"));
                         try {
                             InputStream stream = reResourceFileEntry.resource.getInputStream();
                             NativeImage.read(stream).writeTo(thisImgFile);
-                            ResourceExplorerClient.log(" output resource image created.");
+                            //ResourceExplorerClient.log(" output resource image created.");
                             return true;
                         } catch (IOException e) {
-                            ResourceExplorerClient.log(" output resource image not created.");
+                            ResourceExplorerClient.log(" output resource image not created for: "+reResourceFileEntry.identifier);
                         }
                     }
                 }
