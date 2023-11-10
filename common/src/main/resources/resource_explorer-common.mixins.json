@@ -4,9 +4,9 @@
   "package": "traben.resource_explorer.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "MinecraftClientMixin"
   ],
   "client": [
+    "MinecraftClientMixin",
     "EntryListWidgetAccessor",
     "OptionsScreenMixin",
     "PathUtilMixin",

@@ -45,6 +45,6 @@
   "resource_explorer.explorer.stats.filetype": "By FileType:",
   "resource_explorer.explorer.stats.namespace": "By namespace:",
   "resource_explorer.explorer.stats.packs": "By resource-pack:",
-  "resource_explorer.settings.fail_toast": "Add exception message to pop-up",
+  "resource_explorer.settings.fail_toast": "Exception message in toast: ",
   "resource_explorer.settings.fail_toast.tooltip": "When enabled this will add the Exception message to the Toast pop-up on the top right of the screen after a resource reload failure"
 }
