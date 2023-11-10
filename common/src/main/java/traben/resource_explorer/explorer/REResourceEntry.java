@@ -3,7 +3,9 @@ package traben.resource_explorer.explorer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
@@ -14,10 +16,21 @@ import java.util.List;
 
 public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entry<REResourceEntry> implements Comparable<REResourceEntry> {
 
+    private final ButtonWidget exportButton;
+    REResourceEntry(){
+            exportButton = ButtonWidget.builder(Text.translatable("resource_explorer.export"), button->{
+                REExplorer.REExportContext context = new REExplorer.REExportContext();
+                this.exportToOutputPack(context);
+                context.showExportToast();
+            }).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip"))).dimensions(0,0,48,15).build();
+    }
+
     @Override
     public int compareTo(@NotNull REResourceEntry o) {
         return getDisplayName().compareTo(o.getDisplayName());
     }
+
+    abstract boolean canExport();
 
     abstract String getDisplayName();
     abstract OrderedText getDisplayText();
@@ -43,7 +56,21 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
     private boolean isSelectable(){return true;}
 
     @Override
-    public abstract boolean mouseClicked(double mouseX, double mouseY, int button);
+    public boolean mouseClicked(double mouseX, double mouseY, int button){
+        if (exportButton != null && exportButton.isMouseOver(mouseX,mouseY)){
+            exportButton.onPress();
+            return true;
+        }else{
+            return mouseClickExplorer();
+        }
+    }
+
+
+    abstract boolean mouseClickExplorer();
+
+
+    abstract void exportToOutputPack(REExplorer.REExportContext context);
+
 
     protected static Text trimmedTextToWidth(String string) {
         Text text = Text.of(string);
@@ -73,9 +100,10 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
 //        if (!resourcePackCompatibility.isCompatible()) {
 //            context.fill(x - 1, y - 1, x + entryWidth - 3, y + entryHeight + 1, -8978432);
 //        }
+        int entryWidthSmaller = entryWidth - 10;
 
-        if (this.isSelectable() && ((Boolean) MinecraftClient.getInstance().options.getTouchscreen().getValue() || hovered || this.widget.getSelectedOrNull() == this && this.widget.isFocused())) {
-            context.fill(x, y, x + entryWidth, y + 32, -1601138544);
+        if (this.isSelectable() && (MinecraftClient.getInstance().options.getTouchscreen().getValue() || hovered || this.widget.getSelectedOrNull() == this && this.widget.isFocused())) {
+            context.fill(x, y, x + entryWidthSmaller, y + 32, -1601138544);
 //            int i = mouseX - x;
 //            int j = mouseY - y;
 //            if (!this.pack.getCompatibility().isCompatible()) {
@@ -88,6 +116,11 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
 //                } else {
 //                    context.drawGuiTexture(SELECT_TEXTURE, x, y, 32, 32);
 //                }
+            if (canExport() && hovered){
+                exportButton.setX(x + entryWidthSmaller-52);
+                exportButton.setY(y+13);
+                exportButton.render(context,mouseX,mouseY,tickDelta);
+            }
 
         }
         context.drawTexture(getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
@@ -106,5 +139,6 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 32 + 2, y + 1, 16777215);
         multilineText.drawWithShadow(context, x + 32 + 2, y + 12, 10, -8355712);
     }
+
 
 }

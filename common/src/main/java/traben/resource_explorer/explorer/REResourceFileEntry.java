@@ -20,6 +20,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import static traben.resource_explorer.explorer.REExplorer.outputResourceToPackInternal;
+
 public class REResourceFileEntry extends REResourceEntry {
 
     @Override
@@ -47,6 +49,8 @@ public class REResourceFileEntry extends REResourceEntry {
 
     public final LinkedList<String> folderStructureList;
 
+
+
     public static REResourceFileEntry FAILED_FILE = new REResourceFileEntry();
     private REResourceFileEntry(){
         //failed file
@@ -58,6 +62,12 @@ public class REResourceFileEntry extends REResourceEntry {
         folderStructureList = new LinkedList<>();
         this.displayText = Text.of("search_failed").asOrderedText();
     }
+
+    @Override
+    boolean canExport() {
+        return fileType.isExportableType() && resource != null;
+    }
+
     public REResourceFileEntry(Identifier identifier, AbstractTexture texture){
         this.identifier = identifier;
         this.resource = null;
@@ -222,6 +232,11 @@ public class REResourceFileEntry extends REResourceEntry {
     }
 
 
+    public void exportToOutputPack(REExplorer.REExportContext context) {
+        boolean exported = outputResourceToPackInternal(this);
+        context.tried(this, exported);
+    }
+
     boolean imageDone = false;
     @Override
     public Identifier getIcon(boolean hovered) {
@@ -279,7 +294,7 @@ public class REResourceFileEntry extends REResourceEntry {
 
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClickExplorer() {
         if(REExplorerScreen.currentDisplay != null) {
             REExplorerScreen.currentDisplay.setSelectedFile(this.wrapEntryAsDetailed());
         }
@@ -324,6 +339,15 @@ public class REResourceFileEntry extends REResourceEntry {
                 default -> false;
             };
         }
+
+        public boolean isExportableType() {
+            return switch (this){
+                case TXT, JSON, JPM, JEM, PROPERTIES,PNG -> true;
+                default -> false;
+            };
+        }
+
+
 
         private final Identifier defaultIcon;
         FileType(Identifier defaultIcon){

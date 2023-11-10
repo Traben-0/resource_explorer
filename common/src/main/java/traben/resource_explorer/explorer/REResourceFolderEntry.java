@@ -30,6 +30,11 @@ public class REResourceFolderEntry extends REResourceEntry {
     }
 
     @Override
+    boolean canExport() {
+        return containsExportableFiles;
+    }
+
+    @Override
     public String getDisplayName() {
         return displayName;
     }
@@ -82,9 +87,18 @@ public class REResourceFolderEntry extends REResourceEntry {
     public Identifier contentIcon = null;
     private REResourceFileEntry.FileType contentFileType = null;
 
+    @Override
+    public void exportToOutputPack(REExplorer.REExportContext context) {
+        fileContent.forEach(file->file.exportToOutputPack(context));
+        subFolders.values().forEach(file->file.exportToOutputPack(context));
+    }
 
+    private boolean containsExportableFiles = false;
 
     public void addResourceFile(REResourceFileEntry resourceFile, REStats stats) {
+        if(resourceFile.canExport())
+            containsExportableFiles = true;
+
         if(resourceFile.folderStructureList.isEmpty()){
             //file goes here
             fileContent.addLast(resourceFile);
@@ -200,7 +214,7 @@ public class REResourceFolderEntry extends REResourceEntry {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClickExplorer() {
         REExplorerScreen parent = this.widget.screen;
         String path = "fabric-api".equals(getDisplayName()) ? parent.cumulativePath : parent.cumulativePath+getDisplayName() + "/";
 
@@ -215,7 +229,7 @@ public class REResourceFolderEntry extends REResourceEntry {
             super(folderName);
         }
         @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        public boolean mouseClickExplorer() {
             Screen parent = this.widget.screen.reParent;
             MinecraftClient.getInstance().setScreen(parent);
            // this.widget.screen.close();
@@ -229,6 +243,11 @@ public class REResourceFolderEntry extends REResourceEntry {
         @Override
         List<Text> getExtraText(boolean ignored) {
             return List.of(Text.of("§8§o move up directory"));
+        }
+
+        @Override
+        boolean canExport() {
+            return false;
         }
     }
 }

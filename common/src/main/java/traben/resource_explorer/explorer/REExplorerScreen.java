@@ -69,6 +69,7 @@ public class REExplorerScreen extends Screen {
         ButtonWidget apply = this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID+".explorer.apply"), (button) -> {
             this.close();
             REConfig.getInstance().filterMode = filterChoice;
+            REConfig.saveConfig();
         }).dimensions(this.width / 2 - 4 - 46, this.height - 48, 46, 20).tooltip(warn).build());
         apply.active = false;
 

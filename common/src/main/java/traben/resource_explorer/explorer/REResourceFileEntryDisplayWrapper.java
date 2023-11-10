@@ -30,21 +30,25 @@ public class REResourceFileEntryDisplayWrapper extends AlwaysSelectedEntryListWi
         //does button need to be initiated?
         if(fileEntry.fileType == REResourceFileEntry.FileType.OGG){
             RESound easySound = new RESound(fileEntry);
-            multiUseButton = new ButtonWidget.Builder(Text.of("Play sound"),
+            multiUseButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.play_sound"),
                     (button) -> MinecraftClient.getInstance().getSoundManager().play(easySound)
             ).dimensions(0, 0, 150, 20).build();
             multiUseButton.active = fileEntry.resource != null;
         } else if (fileEntry.resource != null && (fileEntry.fileType.isRawTextType() || fileEntry.fileType == REResourceFileEntry.FileType.PNG)) {
-            multiUseButton = new ButtonWidget.Builder(Text.of("Export to output pack"),
+            multiUseButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.export_single"),
                     (button) -> {
                         button.active = false;
-                        button.setMessage(Text.of(
-                                REExplorer.outputResourceToPack(fileEntry) ?
-                                "Exported into output pack" :
-                                "Export failed :("
+
+                        REExplorer.REExportContext context = new REExplorer.REExportContext();
+                        fileEntry.exportToOutputPack(context);
+                        context.showExportToast();
+                        button.setMessage(Text.translatable(
+                                context.getTotatExported() == 1 ?
+                                        "resource_explorer.export_single.success" :
+                                        "resource_explorer.export_single.fail"
                         ));
                     }
-            ).dimensions(0, 0, 150, 20).tooltip(Tooltip.of(Text.of("Look for the [resource_explorer] resource-pack in your resource-pack list and folder :)"))).build();
+            ).dimensions(0, 0, 150, 20).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip"))).build();
         }
     }
 

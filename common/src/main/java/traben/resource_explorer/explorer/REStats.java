@@ -137,19 +137,20 @@ public class REStats {
 
             TextDisplayUtil outText = new TextDisplayUtil(context,MinecraftClient.getInstance().textRenderer, this.width, this.height, offset);
 
-            outText.renderSubtitle("totals:","  All | Files");//todo translate and split the data types better
-            outText.renderValue("All resources:", stats.totalResources, stats.totalFileResources);
-            outText.renderValue("All texture resources:", stats.totalTextureResources, stats.totalTextureFileResources);
-            outText.renderValue("After filtering resources:", stats.totalAllowedResources, stats.totalAllowedFileResources);
-            outText.renderSubtitle("By FileType:","All |     ");
+            outText.renderSubtitle("resource_explorer.explorer.stats.totals",Text.translatable("resource_explorer.explorer.stats.all").getString(), Text.translatable("resource_explorer.explorer.stats.files").getString() );
+
+            outText.renderValue("resource_explorer.explorer.stats.resources", stats.totalResources, stats.totalFileResources);
+            outText.renderValue("resource_explorer.explorer.stats.all_textures", stats.totalTextureResources, stats.totalTextureFileResources);
+            outText.renderValue("resource_explorer.explorer.stats.post_filter", stats.totalAllowedResources, stats.totalAllowedFileResources);
+            outText.renderSubtitle("resource_explorer.explorer.stats.filetype",Text.translatable("resource_explorer.explorer.stats.all").getString(),null);
             stats.totalPerFileType.forEach((k,v)->{
                 outText.renderValue(k.name(), v, -1);
             });
-            outText.renderSubtitle("By namespace:","        All | Textures");
+            outText.renderSubtitle("resource_explorer.explorer.stats.namespace",Text.translatable("resource_explorer.explorer.stats.all").getString(),Text.translatable("resource_explorer.explorer.stats.textures").getString());
             stats.totalPerNameSpace.forEach((k,v)->{
                 outText.renderValue(k, v, stats.totalTexturesPerNameSpace.getInt(k));
             });
-            outText.renderSubtitle("By resource-pack:","        All | Textures");
+            outText.renderSubtitle("resource_explorer.explorer.stats.packs",Text.translatable("resource_explorer.explorer.stats.all").getString(),Text.translatable("resource_explorer.explorer.stats.textures").getString());
             stats.totalPerResourcepack.forEach((k,v)->{
                 outText.renderValue(k, v, stats.totalTexturesPerResourcepack.getInt(k));
             });
@@ -178,18 +179,28 @@ public class REStats {
                 if(inRenderRange()) {
                     context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable(valueName), width / 7, offset, 11184810);
 
-                    context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(value + " |"), (int) (width *0.75) - renderer.getWidth(value + " |"), offset, 16777215);
-                    if (valueFile != -1)
-                        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(" "+valueFile), (int) (width *0.75), offset, 16777215);
+                    if (value != -1) {
+                        int renderLeftOffset = renderer.getWidth(value + " ");
+                        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of(value + " "), (int) (width * 0.75)-renderLeftOffset, offset, 16777215);
+                        if (valueFile != -1) {
+                            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer,Text.of("| " + valueFile), (int) (width * 0.75), offset, 16777215);
+                        }
+                    }
                 }
                 offset += 11;
             }
-            void renderSubtitle(String text, @Nullable String dataTypes){
+            @SuppressWarnings("SameParameterValue")
+            void renderSubtitle(String text, @Nullable String dataType1, @Nullable String dataType2){
                 offset += 11;
                 if(inRenderRange()) {
                     context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("§l" + Text.translatable(text).getString()), width / 8, offset, 16777215);
-                    if (dataTypes != null)
-                        context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable(dataTypes), (int) (width *0.75), offset, 16777215);
+                    if (dataType1 != null) {
+                        int renderLeftOffset = renderer.getWidth(dataType1 + " ");
+                        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable(dataType1), (int) (width * 0.75)-renderLeftOffset, offset, 16777215);
+                        if (dataType2 != null) {
+                            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer,Text.of("| " + Text.translatable(dataType2).getString()), (int) (width * 0.75), offset, 16777215);
+                        }
+                    }
                 }
                 offset += 11;
             }

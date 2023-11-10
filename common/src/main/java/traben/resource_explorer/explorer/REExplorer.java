@@ -49,6 +49,7 @@ public class REExplorer {
     public static final Identifier ICON_FOLDER_FABRIC = new Identifier("resource_explorer:textures/folder_fabric.png");
     public static final Identifier ICON_MOD = new Identifier("resource_explorer:textures/icon.png");
 
+
     public static LinkedList<REResourceEntry> getResourceFolderRoot() {
         try {
 
@@ -161,9 +162,11 @@ public class REExplorer {
         }
     }
 
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static boolean outputResourceToPack(REResourceFileEntry reResourceFileEntry){
 
+
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    static boolean outputResourceToPackInternal(REResourceFileEntry reResourceFileEntry){
         //only save existing file resources
         if(reResourceFileEntry.resource == null)
             return false;
@@ -196,7 +199,6 @@ public class REExplorer {
                             fileWriter.write(new String(reResourceFileEntry.resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
                             fileWriter.close();
                             ResourceExplorerClient.log(" output resource file created.");
-                            showExportToast(reResourceFileEntry);
                             return true;
                         } catch (IOException e) {
                             ResourceExplorerClient.log(" output resource file not created.");
@@ -207,7 +209,6 @@ public class REExplorer {
                             InputStream stream = reResourceFileEntry.resource.getInputStream();
                             NativeImage.read(stream).writeTo(thisImgFile);
                             ResourceExplorerClient.log(" output resource image created.");
-                            showExportToast(reResourceFileEntry);
                             return true;
                         } catch (IOException e) {
                             ResourceExplorerClient.log(" output resource image not created.");
@@ -216,29 +217,10 @@ public class REExplorer {
                 }
             }
         }
-        showExportToast(null);
         return false;
     }
 
-    private static void showExportToast(REResourceFileEntry fileEntry) {
-        ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
-        if(fileEntry == null){
-            SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION, Text.translatable(ResourceExplorerClient.MOD_ID+".export_warn"), Text.translatable(ResourceExplorerClient.MOD_ID+".export_warn.fail"));
-        }
-        Text message;
-        if(fileEntry.resource != null){
-            if("minecraft".equals(fileEntry.identifier.getNamespace())){
-                message = "vanilla".equals(fileEntry.resource.getResourcePackName()) ?
-                        Text.translatable(ResourceExplorerClient.MOD_ID+".export_warn.vanilla"):
-                        Text.translatable(ResourceExplorerClient.MOD_ID+".export_warn.pack");
-            }else{
-                message = Text.translatable(ResourceExplorerClient.MOD_ID+".export_warn.mod");
-            }
-        }else{
-            message = Text.translatable("error");
-        }
-        SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION, Text.translatable(ResourceExplorerClient.MOD_ID+".export_warn"), message);
-    }
+
 
     private static boolean validateOutputResourcePack(File packFolder){
         if(!packFolder.exists()){
@@ -284,5 +266,76 @@ public class REExplorer {
             }
         }
         return thisMetaFile.exists();
+    }
+
+    static class REExportContext{
+
+        int vanillaCount = 0;
+        int packCount = 0;
+        int moddedCount = 0;
+
+        int totalAttempted = 0;
+
+        REExportContext(){}
+
+        public int getTotatExported(){
+            return vanillaCount + packCount +moddedCount;
+        }
+
+        public int getTotatAttempted(){
+            return totalAttempted;
+        }
+
+        public void tried(REResourceFileEntry file, boolean exported){
+            totalAttempted++;
+            if(exported && file.resource != null && file.fileType.isExportableType()){
+                if("minecraft".equals(file.identifier.getNamespace())){
+                    if( "vanilla".equals(file.resource.getResourcePackName())) {
+                        vanillaCount++;
+                    }else {
+                        packCount++;
+                    }
+                }else{
+                    if("vanilla".equals(file.resource.getResourcePackName()) ||
+                       "fabric".equals(file.resource.getResourcePackName()) ||
+                       "forge".equals(file.resource.getResourcePackName())//todo check this is what forge does
+                    ) {
+                        moddedCount++;
+                    }else {
+                        packCount++;
+                    }
+                }
+            }
+        }
+
+        public void showExportToast() {
+            ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
+            boolean partially = getTotatAttempted() != getTotatExported() && totalAttempted != 1 && getTotatExported() != 0;
+            Text title = partially ?
+                    Text.of(Text.translatable("resource_explorer.export_warn.partial")+" "+getTotatExported()+"/"+getTotatAttempted()):
+                    Text.translatable(getTotatAttempted() == getTotatExported() ?
+                        ResourceExplorerClient.MOD_ID+".export_warn":
+                        ResourceExplorerClient.MOD_ID+".export_warn.fail");
+
+            SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION, title, getMessage());
+        }
+
+        private Text getMessage(){
+            if(getTotatExported() == 0){
+                return Text.translatable("resource_explorer.export_warn.none");
+            }
+            if(getTotatAttempted() == 1){
+               return Text.translatable(
+                       packCount >0 ?
+                               "resource_explorer.export_warn.pack" :
+                               moddedCount > 0 ?
+                                       "resource_explorer.export_warn.mod":
+                                       "resource_explorer.export_warn.vanilla"
+               );
+            }else{
+                return Text.translatable("resource_explorer.export_warn.all");
+            }
+        }
+
     }
 }
