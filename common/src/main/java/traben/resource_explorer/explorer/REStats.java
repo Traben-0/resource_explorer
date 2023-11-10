@@ -135,35 +135,35 @@ public class REStats {
                 offset = (int) (this.height*0.15);
             }
 
-            TextDisplayUtil outText = new TextDisplayUtil(context,MinecraftClient.getInstance().textRenderer, this.width, this.height, offset);
+            StatDisplayUtil statText = new StatDisplayUtil(context,MinecraftClient.getInstance().textRenderer, this.width, this.height, offset);
 
-            outText.renderSubtitle("resource_explorer.explorer.stats.totals",Text.translatable("resource_explorer.explorer.stats.all").getString(), Text.translatable("resource_explorer.explorer.stats.files").getString() );
+            statText.renderSubtitle("resource_explorer.explorer.stats.totals",Text.translatable("resource_explorer.explorer.stats.all").getString(), Text.translatable("resource_explorer.explorer.stats.files").getString() );
 
-            outText.renderValue("resource_explorer.explorer.stats.resources", stats.totalResources, stats.totalFileResources);
-            outText.renderValue("resource_explorer.explorer.stats.all_textures", stats.totalTextureResources, stats.totalTextureFileResources);
-            outText.renderValue("resource_explorer.explorer.stats.post_filter", stats.totalAllowedResources, stats.totalAllowedFileResources);
-            outText.renderSubtitle("resource_explorer.explorer.stats.filetype",Text.translatable("resource_explorer.explorer.stats.all").getString(),null);
+            statText.renderValue("resource_explorer.explorer.stats.resources", stats.totalResources, stats.totalFileResources);
+            statText.renderValue("resource_explorer.explorer.stats.all_textures", stats.totalTextureResources, stats.totalTextureFileResources);
+            statText.renderValue("resource_explorer.explorer.stats.post_filter", stats.totalAllowedResources, stats.totalAllowedFileResources);
+            statText.renderSubtitle("resource_explorer.explorer.stats.filetype",Text.translatable("resource_explorer.explorer.stats.all").getString(),null);
             stats.totalPerFileType.forEach((k,v)->{
-                outText.renderValue(k.name(), v, -1);
+                statText.renderValue(k.name(), v, -1);
             });
-            outText.renderSubtitle("resource_explorer.explorer.stats.namespace",Text.translatable("resource_explorer.explorer.stats.all").getString(),Text.translatable("resource_explorer.explorer.stats.textures").getString());
+            statText.renderSubtitle("resource_explorer.explorer.stats.namespace",Text.translatable("resource_explorer.explorer.stats.all").getString(),Text.translatable("resource_explorer.explorer.stats.textures").getString());
             stats.totalPerNameSpace.forEach((k,v)->{
-                outText.renderValue(k, v, stats.totalTexturesPerNameSpace.getInt(k));
+                statText.renderValue(k, v, stats.totalTexturesPerNameSpace.getInt(k));
             });
-            outText.renderSubtitle("resource_explorer.explorer.stats.packs",Text.translatable("resource_explorer.explorer.stats.all").getString(),Text.translatable("resource_explorer.explorer.stats.textures").getString());
+            statText.renderSubtitle("resource_explorer.explorer.stats.packs",Text.translatable("resource_explorer.explorer.stats.all").getString(),Text.translatable("resource_explorer.explorer.stats.textures").getString());
             stats.totalPerResourcepack.forEach((k,v)->{
-                outText.renderValue(k, v, stats.totalTexturesPerResourcepack.getInt(k));
+                statText.renderValue(k, v, stats.totalTexturesPerResourcepack.getInt(k));
             });
         }
 
-        private static class TextDisplayUtil{
+        private static class StatDisplayUtil {
             int offset;
             int min;
             int max;
             final private TextRenderer renderer;
             final private DrawContext context;
             final private int width;
-            TextDisplayUtil(DrawContext context,TextRenderer renderer, int width, int height, int offset){
+            StatDisplayUtil(DrawContext context, TextRenderer renderer, int width, int height, int offset){
                 this.renderer = renderer;
                 this.context = context;
                 this.width = width;

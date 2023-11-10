@@ -35,6 +35,11 @@ public class REResourceFolderEntry extends REResourceEntry {
     }
 
     @Override
+    boolean isFolder() {
+        return true;
+    }
+
+    @Override
     public String getDisplayName() {
         return displayName;
     }

@@ -10,6 +10,7 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -20,14 +21,25 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
     REResourceEntry(){
             exportButton = ButtonWidget.builder(Text.translatable("resource_explorer.export"), button->{
                 REExplorer.REExportContext context = new REExplorer.REExportContext();
-                this.exportToOutputPack(context);
-                context.showExportToast();
-            }).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip"))).dimensions(0,0,48,15).build();
+                if(isFolder()) context.sendLargeFolderWarning();
+
+                Util.getIoWorkerExecutor().execute(()->{
+                    this.exportToOutputPack(context);
+                    context.showExportToast();
+                });
+
+                button.active = false;
+            }).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip." + (isFolder() ? "folder" : "file"))))
+                    .dimensions(0,0,48,15).build();
     }
 
     @Override
     public int compareTo(@NotNull REResourceEntry o) {
         return getDisplayName().compareTo(o.getDisplayName());
+    }
+
+    boolean isFolder(){
+        return false;
     }
 
     abstract boolean canExport();
@@ -83,6 +95,7 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
             return text;
         }
     }
+    @SuppressWarnings("SameParameterValue")
     protected static String trimmedStringToWidth(String string, int width) {
         Text text = Text.of(string);
         MinecraftClient client = MinecraftClient.getInstance();
@@ -96,26 +109,12 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
     }
 
     public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-//        ResourcePackCompatibility resourcePackCompatibility = this.pack.getCompatibility();
-//        if (!resourcePackCompatibility.isCompatible()) {
-//            context.fill(x - 1, y - 1, x + entryWidth - 3, y + entryHeight + 1, -8978432);
-//        }
+
         int entryWidthSmaller = entryWidth - 10;
 
         if (this.isSelectable() && (MinecraftClient.getInstance().options.getTouchscreen().getValue() || hovered || this.widget.getSelectedOrNull() == this && this.widget.isFocused())) {
             context.fill(x, y, x + entryWidthSmaller, y + 32, -1601138544);
-//            int i = mouseX - x;
-//            int j = mouseY - y;
-//            if (!this.pack.getCompatibility().isCompatible()) {
-//                orderedText = this.incompatibleText;
-//                multilineText = this.compatibilityNotificationText;
-//            }
 
-//                if (i < 32) {
-//                    context.drawGuiTexture(SELECT_HIGHLIGHTED_TEXTURE, x, y, 32, 32);
-//                } else {
-//                    context.drawGuiTexture(SELECT_TEXTURE, x, y, 32, 32);
-//                }
             if (canExport() && hovered){
                 exportButton.setX(x + entryWidthSmaller-52);
                 exportButton.setY(y+13);

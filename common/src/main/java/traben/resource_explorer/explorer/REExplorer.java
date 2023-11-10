@@ -201,7 +201,7 @@ public class REExplorer {
                             //ResourceExplorerClient.log(" output resource file created.");
                             return true;
                         } catch (IOException e) {
-                            ResourceExplorerClient.log(" output resource file not created for: "+reResourceFileEntry.identifier);
+                            //ResourceExplorerClient.log(" output resource file not created for: "+reResourceFileEntry.identifier);
                         }
                     } else if (reResourceFileEntry.fileType == REResourceFileEntry.FileType.PNG) {
                         File thisImgFile = new File(directoryFolder, file + (file.endsWith(".png") ? "" : ".png"));
@@ -211,7 +211,7 @@ public class REExplorer {
                             //ResourceExplorerClient.log(" output resource image created.");
                             return true;
                         } catch (IOException e) {
-                            ResourceExplorerClient.log(" output resource image not created for: "+reResourceFileEntry.identifier);
+                            //ResourceExplorerClient.log(" output resource image not created for: "+reResourceFileEntry.identifier);
                         }
                     }
                 }
@@ -269,6 +269,7 @@ public class REExplorer {
     }
 
     static class REExportContext{
+        
 
         int vanillaCount = 0;
         int packCount = 0;
@@ -276,7 +277,15 @@ public class REExplorer {
 
         int totalAttempted = 0;
 
-        REExportContext(){}
+
+        REExportContext(){
+        }
+
+        public void sendLargeFolderWarning(){
+                ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
+                SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION,
+                        Text.translatable("resource_explorer.export_start.1"),Text.translatable("resource_explorer.export_start.2"));
+        }
 
         public int getTotatExported(){
             return vanillaCount + packCount +moddedCount;
@@ -298,7 +307,7 @@ public class REExplorer {
                 }else{
                     if("vanilla".equals(file.resource.getResourcePackName()) ||
                        "fabric".equals(file.resource.getResourcePackName()) ||
-                       "forge".equals(file.resource.getResourcePackName())//todo check this is what forge does
+                       "Mod Resources".equals(file.resource.getResourcePackName())//todo double check this is what forge does
                     ) {
                         moddedCount++;
                     }else {
@@ -306,13 +315,15 @@ public class REExplorer {
                     }
                 }
             }
+
         }
 
         public void showExportToast() {
             ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
+            toastManager.clear();
             boolean partially = getTotatAttempted() != getTotatExported() && totalAttempted != 1 && getTotatExported() != 0;
             Text title = partially ?
-                    Text.of(Text.translatable("resource_explorer.export_warn.partial")+" "+getTotatExported()+"/"+getTotatAttempted()):
+                    Text.of(Text.translatable("resource_explorer.export_warn.partial").getString()+" "+getTotatExported()+"/"+getTotatAttempted()):
                     Text.translatable(getTotatAttempted() == getTotatExported() ?
                         ResourceExplorerClient.MOD_ID+".export_warn":
                         ResourceExplorerClient.MOD_ID+".export_warn.fail");

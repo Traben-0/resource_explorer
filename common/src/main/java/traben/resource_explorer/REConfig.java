@@ -32,6 +32,7 @@ public class REConfig {
         newConfig.showResourcePackButton = showResourcePackButton;
         newConfig.filterMode = filterMode;
         newConfig.logFullFileTree = logFullFileTree;
+        newConfig.addCauseToReloadFailureToast = addCauseToReloadFailureToast;
         return newConfig;
     }
 
@@ -40,12 +41,15 @@ public class REConfig {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         REConfig reConfig = (REConfig) o;
-        return showResourcePackButton == reConfig.showResourcePackButton && logFullFileTree == reConfig.logFullFileTree && filterMode == reConfig.filterMode;
+        return showResourcePackButton == reConfig.showResourcePackButton &&
+                logFullFileTree == reConfig.logFullFileTree &&
+                filterMode == reConfig.filterMode &&
+                addCauseToReloadFailureToast == reConfig.addCauseToReloadFailureToast;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(showResourcePackButton, logFullFileTree, filterMode);
+        return Objects.hash(showResourcePackButton, logFullFileTree, filterMode, addCauseToReloadFailureToast);
     }
     private static REConfig instance;
 
@@ -64,6 +68,8 @@ public class REConfig {
 
     public boolean showResourcePackButton = true;
     public boolean logFullFileTree = false;
+
+    public boolean addCauseToReloadFailureToast = true;
 
     public REFileFilter filterMode = REFileFilter.ALL_RESOURCES;
 
@@ -228,7 +234,13 @@ public class REConfig {
                                 button.setMessage(Text.translatable(tempConfig.filterMode.key));
                             }).tooltip(Tooltip.of(Text.translatable(MOD_ID+".filter.tooltip")))
                     .dimensions((int) (this.width * 0.5), (int) (this.height * 0.4), (int) (this.width * 0.4), 20).build());
-
+            this.addDrawableChild(ButtonWidget.builder(
+                            Text.of(Text.translatable(MOD_ID+".settings.fail_toast").getString() + (ScreenTexts.onOrOff(tempConfig.addCauseToReloadFailureToast).getString())),
+                            (button) -> {
+                                tempConfig.addCauseToReloadFailureToast = ! tempConfig.addCauseToReloadFailureToast;
+                                button.setMessage(Text.of(Text.translatable(MOD_ID+".settings.fail_toast").getString() + (ScreenTexts.onOrOff(tempConfig.addCauseToReloadFailureToast)).getString()));
+                            }).tooltip(Tooltip.of(Text.translatable(MOD_ID+".settings.fail_toast.tooltip")))
+                    .dimensions((int) (this.width * 0.5), (int) (this.height * 0.5), (int) (this.width * 0.4), 20).build());
 
 
             int x =(int) (this.width * 0.1);
