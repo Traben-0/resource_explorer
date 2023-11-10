@@ -24,7 +24,7 @@ public class REStats {
     int totalTextureFileResources = 0;
     int folderCount = 0;
 
-    Object2IntArrayMap<REResourceFileEntry.FileType> totalPerFileType = new Object2IntArrayMap<>() {{
+    Object2IntArrayMap<REResourceFile.FileType> totalPerFileType = new Object2IntArrayMap<>() {{
         defRetValue = 0;
     }};
     Object2IntArrayMap<String> totalPerNameSpace = new Object2IntArrayMap<>() {{
@@ -48,9 +48,9 @@ public class REStats {
     }
 
 
-    void addEntryStatistic(REResourceFileEntry entry, boolean allowedByFilter) {
+    void addEntryStatistic(REResourceFile entry, boolean allowedByFilter) {
         boolean isFile = entry.resource != null;
-        boolean isTexture = entry.fileType == REResourceFileEntry.FileType.PNG;
+        boolean isTexture = entry.fileType == REResourceFile.FileType.PNG;
 
         //top level
         totalResources++;

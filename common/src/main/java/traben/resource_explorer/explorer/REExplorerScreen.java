@@ -86,7 +86,7 @@ public class REExplorerScreen extends Screen {
 
         this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID+".explorer.stats"), (button) -> {
             if(currentStats != null) MinecraftClient.getInstance().setScreen(currentStats.getAsScreen(this));
-        }).dimensions(this.width / 2 - 4 - 46, this.height - 24, 46, 20).tooltip(Tooltip.of(Text.translatable(MOD_ID+".stats.button"))).build());
+        }).dimensions(this.width / 2 - 4 - 46, this.height - 24, 46, 20).build());
     }
 
     private REConfig.REFileFilter filterChoice = REConfig.getInstance().filterMode;

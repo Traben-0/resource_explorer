@@ -53,7 +53,7 @@ public class REExplorer {
     public static LinkedList<REResourceEntry> getResourceFolderRoot() {
         try {
 
-            ObjectLinkedOpenHashSet<REResourceFileEntry> allFilesList = new ObjectLinkedOpenHashSet<>();
+            ObjectLinkedOpenHashSet<REResourceFile> allFilesList = new ObjectLinkedOpenHashSet<>();
 
             boolean print = REConfig.getInstance().logFullFileTree;
 
@@ -66,7 +66,7 @@ public class REExplorer {
             try {
                 Map<Identifier, Resource> resourceMap = MinecraftClient.getInstance().getResourceManager().findResources("resource_explorer$search", (id) -> true);
                 resourceMap.forEach((k, v) -> {
-                    allFilesList.add(new REResourceFileEntry(k, v));
+                    allFilesList.add(new REResourceFile(k, v));
                 });
 
             } catch (Exception ignored) {
@@ -76,13 +76,13 @@ public class REExplorer {
             //fabric resources allow direct blank searches so catch those too
             Map<Identifier, Resource> resourceMap2 = MinecraftClient.getInstance().getResourceManager().findResources("", (id) -> true);
             resourceMap2.forEach((k, v) -> {
-                allFilesList.add(new REResourceFileEntry(k, v));
+                allFilesList.add(new REResourceFile(k, v));
             });
 
             //search for generated texture assets
             Map<Identifier, AbstractTexture> textures = ((TextureManagerAccessor) MinecraftClient.getInstance().getTextureManager()).getTextures();
             textures.forEach((k, v) -> {
-                allFilesList.add(new REResourceFileEntry(k, v));
+                allFilesList.add(new REResourceFile(k, v));
             });
 
 
@@ -93,17 +93,17 @@ public class REExplorer {
             Set<String> namespaces = MinecraftClient.getInstance().getResourceManager().getAllNamespaces();
 
             LinkedList<REResourceEntry> namesSpaceFoldersRoot = new LinkedList<>();
-            Map<String, REResourceFolderEntry> namespaceFolderMap = new HashMap<>();
+            Map<String, REResourceFolder> namespaceFolderMap = new HashMap<>();
 
-            LinkedList<REResourceFolderEntry> fabricApiFolders = new LinkedList<>();
+            LinkedList<REResourceFolder> fabricApiFolders = new LinkedList<>();
 
-            REResourceFolderEntry minecraftFolder = new REResourceFolderEntry("minecraft");
+            REResourceFolder minecraftFolder = new REResourceFolder("minecraft");
             namespaceFolderMap.put("minecraft", minecraftFolder);
             namespaces.remove("minecraft");
 
             for (String nameSpace :
                     namespaces) {
-                REResourceFolderEntry namespaceFolder = new REResourceFolderEntry(nameSpace);
+                REResourceFolder namespaceFolder = new REResourceFolder(nameSpace);
 
                 if ("fabric".equals(nameSpace) || nameSpace.matches("(fabric-.*|renderer-registries)(renderer|api|-v\\d).*")) {
                     fabricApiFolders.add(namespaceFolder);
@@ -115,7 +115,7 @@ public class REExplorer {
             }
             //fabric api all in 1
             if (!fabricApiFolders.isEmpty()) {
-                REResourceFolderEntry fabricApiFolder = new REResourceFolderEntry("fabric-api");
+                REResourceFolder fabricApiFolder = new REResourceFolder("fabric-api");
                 fabricApiFolder.contentIcon = new Identifier("fabricloader", "icon.png");
                 fabricApiFolders.forEach(fabricApiFolder::addSubFolder);
                 namesSpaceFoldersRoot.addFirst(fabricApiFolder);
@@ -132,11 +132,11 @@ public class REExplorer {
             REStats statistics = new REStats();
 
             //iterate over all files and give them folder structure
-            for (REResourceFileEntry resourceFile :
+            for (REResourceFile resourceFile :
                     allFilesList) {
                 if (filter.allows(resourceFile)) {
                     String namespace = resourceFile.identifier.getNamespace();
-                    REResourceFolderEntry namespaceFolder = namespaceFolderMap.get(namespace);
+                    REResourceFolder namespaceFolder = namespaceFolderMap.get(namespace);
                     if (namespaceFolder != null) {
                         namespaceFolder.addResourceFile(resourceFile, statistics);
                     }
@@ -157,7 +157,7 @@ public class REExplorer {
             return namesSpaceFoldersRoot;
         }catch (Exception e){
             LinkedList<REResourceEntry> fail = new LinkedList<>();
-            fail.add(REResourceFileEntry.FAILED_FILE);
+            fail.add(REResourceFile.FAILED_FILE);
             return fail;
         }
     }
@@ -166,9 +166,9 @@ public class REExplorer {
 
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    static boolean outputResourceToPackInternal(REResourceFileEntry reResourceFileEntry){
+    static boolean outputResourceToPackInternal(REResourceFile reResourceFile){
         //only save existing file resources
-        if(reResourceFileEntry.resource == null)
+        if(reResourceFile.resource == null)
             return false;
 
         Path resourcePackFolder = MinecraftClient.getInstance().getResourcePackDir();
@@ -180,33 +180,33 @@ public class REExplorer {
                 if (!assets.exists()) {
                     assets.mkdir();
                 }
-                File namespace = new File(assets, reResourceFileEntry.identifier.getNamespace());
+                File namespace = new File(assets, reResourceFile.identifier.getNamespace());
                 if (!namespace.exists()) {
                     namespace.mkdir();
                 }
-                String[] pathList = reResourceFileEntry.identifier.getPath().split("/");
+                String[] pathList = reResourceFile.identifier.getPath().split("/");
                 String file = pathList[pathList.length - 1];
-                String directories = reResourceFileEntry.identifier.getPath().replace(file, "");
+                String directories = reResourceFile.identifier.getPath().replace(file, "");
                 File directoryFolder = new File(namespace, directories);
                 if (!directoryFolder.exists()) {
                     directoryFolder.mkdirs();
                 }
                 if (directoryFolder.exists()) {
-                    if (reResourceFileEntry.fileType.isRawTextType()) {
+                    if (reResourceFile.fileType.isRawTextType()) {
                         File txtFile = new File(directoryFolder, file);
                         try {
                             FileWriter fileWriter = new FileWriter(txtFile);
-                            fileWriter.write(new String(reResourceFileEntry.resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
+                            fileWriter.write(new String(reResourceFile.resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
                             fileWriter.close();
                             //ResourceExplorerClient.log(" output resource file created.");
                             return true;
                         } catch (IOException e) {
                             //ResourceExplorerClient.log(" output resource file not created for: "+reResourceFileEntry.identifier);
                         }
-                    } else if (reResourceFileEntry.fileType == REResourceFileEntry.FileType.PNG) {
+                    } else if (reResourceFile.fileType == REResourceFile.FileType.PNG) {
                         File thisImgFile = new File(directoryFolder, file + (file.endsWith(".png") ? "" : ".png"));
                         try {
-                            InputStream stream = reResourceFileEntry.resource.getInputStream();
+                            InputStream stream = reResourceFile.resource.getInputStream();
                             NativeImage.read(stream).writeTo(thisImgFile);
                             //ResourceExplorerClient.log(" output resource image created.");
                             return true;
@@ -285,17 +285,18 @@ public class REExplorer {
                 ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
                 SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION,
                         Text.translatable("resource_explorer.export_start.1"),Text.translatable("resource_explorer.export_start.2"));
+
         }
 
-        public int getTotatExported(){
+        public int getTotalExported(){
             return vanillaCount + packCount +moddedCount;
         }
 
-        public int getTotatAttempted(){
+        public int getTotalAttempted(){
             return totalAttempted;
         }
 
-        public void tried(REResourceFileEntry file, boolean exported){
+        public void tried(REResourceFile file, boolean exported){
             totalAttempted++;
             if(exported && file.resource != null && file.fileType.isExportableType()){
                 if("minecraft".equals(file.identifier.getNamespace())){
@@ -321,10 +322,10 @@ public class REExplorer {
         public void showExportToast() {
             ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
             toastManager.clear();
-            boolean partially = getTotatAttempted() != getTotatExported() && totalAttempted != 1 && getTotatExported() != 0;
+            boolean partially = getTotalAttempted() != getTotalExported() && totalAttempted != 1 && getTotalExported() != 0;
             Text title = partially ?
-                    Text.of(Text.translatable("resource_explorer.export_warn.partial").getString()+" "+getTotatExported()+"/"+getTotatAttempted()):
-                    Text.translatable(getTotatAttempted() == getTotatExported() ?
+                    Text.of(Text.translatable("resource_explorer.export_warn.partial").getString()+" "+ getTotalExported()+"/"+ getTotalAttempted()):
+                    Text.translatable(getTotalAttempted() == getTotalExported() ?
                         ResourceExplorerClient.MOD_ID+".export_warn":
                         ResourceExplorerClient.MOD_ID+".export_warn.fail");
 
@@ -332,10 +333,10 @@ public class REExplorer {
         }
 
         private Text getMessage(){
-            if(getTotatExported() == 0){
+            if(getTotalExported() == 0){
                 return Text.translatable("resource_explorer.export_warn.none");
             }
-            if(getTotatAttempted() == 1){
+            if(getTotalAttempted() == 1){
                return Text.translatable(
                        packCount >0 ?
                                "resource_explorer.export_warn.pack" :

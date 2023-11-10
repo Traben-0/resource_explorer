@@ -13,42 +13,47 @@ import net.minecraft.client.sound.WeightedSoundSet;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class REResourceFileEntryDisplayWrapper extends AlwaysSelectedEntryListWidget.Entry<REResourceFileEntryDisplayWrapper> implements Comparable<REResourceFileEntryDisplayWrapper> {
+public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.Entry<REResourceFileDisplayWrapper> implements Comparable<REResourceFileDisplayWrapper> {
 
-    public REResourceFileEntry getFileEntry() {
+    public REResourceFile getFileEntry() {
         return fileEntry;
     }
 
-    private final REResourceFileEntry fileEntry;
-    REResourceFileEntryDisplayWrapper(REResourceFileEntry fileEntry){
+    private final REResourceFile fileEntry;
+    REResourceFileDisplayWrapper(REResourceFile fileEntry){
         this.fileEntry = fileEntry;
 
         //does button need to be initiated?
-        if(fileEntry.fileType == REResourceFileEntry.FileType.OGG){
+        if(fileEntry.fileType == REResourceFile.FileType.OGG){
             RESound easySound = new RESound(fileEntry);
             multiUseButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.play_sound"),
                     (button) -> MinecraftClient.getInstance().getSoundManager().play(easySound)
             ).dimensions(0, 0, 150, 20).build();
             multiUseButton.active = fileEntry.resource != null;
-        } else if (fileEntry.resource != null && (fileEntry.fileType.isRawTextType() || fileEntry.fileType == REResourceFileEntry.FileType.PNG)) {
+        } else if (fileEntry.resource != null && (fileEntry.fileType.isRawTextType() || fileEntry.fileType == REResourceFile.FileType.PNG)) {
             multiUseButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.export_single"),
                     (button) -> {
                         button.active = false;
 
                         REExplorer.REExportContext context = new REExplorer.REExportContext();
-                        fileEntry.exportToOutputPack(context);
-                        context.showExportToast();
-                        button.setMessage(Text.translatable(
-                                context.getTotatExported() == 1 ?
-                                        "resource_explorer.export_single.success" :
-                                        "resource_explorer.export_single.fail"
-                        ));
+                        Util.getIoWorkerExecutor().execute(()->{
+                            fileEntry.exportToOutputPack(context);
+                            context.showExportToast();
+                            button.setMessage(Text.translatable(
+                                    context.getTotalExported() == 1 ?
+                                            "resource_explorer.export_single.success" :
+                                            "resource_explorer.export_single.fail"
+                            ));
+                        });
+
+
                     }
-            ).dimensions(0, 0, 150, 20).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip"))).build();
+            ).dimensions(0, 0, 150, 20).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip.file"))).build();
         }
     }
 
@@ -164,7 +169,7 @@ public class REResourceFileEntryDisplayWrapper extends AlwaysSelectedEntryListWi
     private ButtonWidget multiUseButton = null;
 
     @Override
-    public int compareTo(@NotNull REResourceFileEntryDisplayWrapper o) {
+    public int compareTo(@NotNull REResourceFileDisplayWrapper o) {
         return fileEntry.getDisplayName().compareTo(o.fileEntry.getDisplayName());
     }
 
@@ -179,7 +184,7 @@ public class REResourceFileEntryDisplayWrapper extends AlwaysSelectedEntryListWi
 
         private final String id;
         private final Sound sound;
-        RESound(REResourceFileEntry fileEntry){
+        RESound(REResourceFile fileEntry){
             id ="re_"+fileEntry.getDisplayName()+"2";
             sound = new Sound("re_"+fileEntry.getDisplayName(),(a)->1,(a)->1,1, Sound.RegistrationType.FILE,true,true,1){
                 @Override

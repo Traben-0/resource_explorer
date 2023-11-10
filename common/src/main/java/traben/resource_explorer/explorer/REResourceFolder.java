@@ -12,19 +12,19 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class REResourceFolderEntry extends REResourceEntry {
+public class REResourceFolder extends REResourceEntry {
 
 
 
-    private final LinkedList<REResourceFileEntry> fileContent = new LinkedList<>();
+    private final LinkedList<REResourceFile> fileContent = new LinkedList<>();
 
-    private final Object2ObjectLinkedOpenHashMap<String, REResourceFolderEntry> subFolders = new Object2ObjectLinkedOpenHashMap<>();
+    private final Object2ObjectLinkedOpenHashMap<String, REResourceFolder> subFolders = new Object2ObjectLinkedOpenHashMap<>();
 
     private final String displayName;
     private final OrderedText displayText;
 
     private Identifier folderIcon = null;
-    public REResourceFolderEntry(String folderName){
+    public REResourceFolder(String folderName){
         this.displayName = folderName;
         this.displayText = trimmedTextToWidth(folderName).asOrderedText();
     }
@@ -85,12 +85,12 @@ public class REResourceFolderEntry extends REResourceEntry {
         }
         return builder.toString();
     }
-    public void addSubFolder(REResourceFolderEntry resourceFolder) {
+    public void addSubFolder(REResourceFolder resourceFolder) {
         subFolders.put(resourceFolder.displayName,resourceFolder);
     }
 
     public Identifier contentIcon = null;
-    private REResourceFileEntry.FileType contentFileType = null;
+    private REResourceFile.FileType contentFileType = null;
 
     @Override
     public void exportToOutputPack(REExplorer.REExportContext context) {
@@ -100,7 +100,7 @@ public class REResourceFolderEntry extends REResourceEntry {
 
     private boolean containsExportableFiles = false;
 
-    public void addResourceFile(REResourceFileEntry resourceFile, REStats stats) {
+    public void addResourceFile(REResourceFile resourceFile, REStats stats) {
         if(resourceFile.canExport())
             containsExportableFiles = true;
 
@@ -114,26 +114,26 @@ public class REResourceFolderEntry extends REResourceEntry {
             //figure out if folder contains only 1 content type and no folders
             if(contentFileType == null){
                 contentFileType = resourceFile.fileType;
-            }else if(contentFileType != REResourceFileEntry.FileType.BLANK){
+            }else if(contentFileType != REResourceFile.FileType.BLANK){
                 if(contentFileType != resourceFile.fileType){
-                    contentFileType = REResourceFileEntry.FileType.BLANK;
+                    contentFileType = REResourceFile.FileType.BLANK;
                 }
             }
         }else{
             //mark folder to have no extra icon
-            contentFileType = REResourceFileEntry.FileType.BLANK;
+            contentFileType = REResourceFile.FileType.BLANK;
             //find next sub folder to move into and remove it from the file search list
             String subFolderName = resourceFile.folderStructureList.getFirst();
             resourceFile.folderStructureList.removeFirst();
 
             //add the folder if absent
             if(!subFolders.containsKey(subFolderName)){
-                subFolders.put(subFolderName, new REResourceFolderEntry(subFolderName));
+                subFolders.put(subFolderName, new REResourceFolder(subFolderName));
                 stats.folderCount++;
             }
 
             //iterate placing file into this sub folder
-            REResourceFolderEntry subFolder = subFolders.get(subFolderName);
+            REResourceFolder subFolder = subFolders.get(subFolderName);
             subFolder.addResourceFile(resourceFile,stats);
 
         }
@@ -169,7 +169,7 @@ public class REResourceFolderEntry extends REResourceEntry {
                     if(fileContent.isEmpty()) yield  REExplorer.ICON_FOLDER;
 
                     boolean allBuiltFiles = true;
-                    for (REResourceFileEntry entry:
+                    for (REResourceFile entry:
                          fileContent) {
                         if(entry.resource != null){
                             allBuiltFiles = false;
@@ -228,7 +228,7 @@ public class REResourceFolderEntry extends REResourceEntry {
         return false;
     }
 
-    public static class UpOneDirFolder extends REResourceFolderEntry{
+    public static class UpOneDirFolder extends REResourceFolder {
 
         public UpOneDirFolder(String folderName) {
             super(folderName);

@@ -8,7 +8,7 @@ import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.mixin.EntryListWidgetAccessor;
 
-public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget<REResourceFileEntryDisplayWrapper> {
+public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget<REResourceFileDisplayWrapper> {
 
 
 
@@ -22,7 +22,7 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
         this.centerListVertically = false;
     }
 
-    void setSelectedFile(@Nullable REResourceFileEntryDisplayWrapper newFile){
+    void setSelectedFile(@Nullable REResourceFileDisplayWrapper newFile){
         setScrollAmount(0);
         clearEntries();
         if(newFile != null) {

@@ -22,13 +22,13 @@ import java.util.Objects;
 
 import static traben.resource_explorer.explorer.REExplorer.outputResourceToPackInternal;
 
-public class REResourceFileEntry extends REResourceEntry {
+public class REResourceFile extends REResourceEntry {
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        REResourceFileEntry that = (REResourceFileEntry) o;
+        REResourceFile that = (REResourceFile) o;
         return identifier.equals(that.identifier);
     }
 
@@ -51,8 +51,8 @@ public class REResourceFileEntry extends REResourceEntry {
 
 
 
-    public static REResourceFileEntry FAILED_FILE = new REResourceFileEntry();
-    private REResourceFileEntry(){
+    public static REResourceFile FAILED_FILE = new REResourceFile();
+    private REResourceFile(){
         //failed file
         this.identifier = new Identifier("search_failed:fail");
         this.resource = null;
@@ -68,7 +68,7 @@ public class REResourceFileEntry extends REResourceEntry {
         return fileType.isExportableType() && resource != null;
     }
 
-    public REResourceFileEntry(Identifier identifier, AbstractTexture texture){
+    public REResourceFile(Identifier identifier, AbstractTexture texture){
         this.identifier = identifier;
         this.resource = null;
         this.abstractTexture = texture;
@@ -87,7 +87,7 @@ public class REResourceFileEntry extends REResourceEntry {
 
         this.displayText = trimmedTextToWidth(displayName).asOrderedText();
     }
-    public REResourceFileEntry(Identifier identifier,@Nullable Resource resource){
+    public REResourceFile(Identifier identifier, @Nullable Resource resource){
         this.identifier = identifier;
         this.resource = resource;
         this.abstractTexture = null;
@@ -271,8 +271,8 @@ public class REResourceFileEntry extends REResourceEntry {
     public int width = 1;
 
 
-    public REResourceFileEntryDisplayWrapper wrapEntryAsDetailed(){
-        return new REResourceFileEntryDisplayWrapper(this);
+    public REResourceFileDisplayWrapper wrapEntryAsDetailed(){
+        return new REResourceFileDisplayWrapper(this);
     }
     Boolean hasMetaData = null;
     @Override

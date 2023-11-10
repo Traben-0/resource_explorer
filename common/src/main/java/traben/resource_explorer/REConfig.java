@@ -14,7 +14,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import traben.resource_explorer.explorer.REExplorer;
 import traben.resource_explorer.explorer.REExplorerScreen;
-import traben.resource_explorer.explorer.REResourceFileEntry;
+import traben.resource_explorer.explorer.REResourceFile;
 
 import java.io.File;
 import java.io.FileReader;
@@ -123,11 +123,11 @@ public class REConfig {
         ONLY_FROM_PACKS_NO_GENERATED(MOD_ID+".filter.2",
                 (fileEntry)->fileEntry.resource!= null && !"vanilla".equals(fileEntry.resource.getResourcePackName())),
         ONLY_TEXTURES(MOD_ID+".filter.3",
-                (fileEntry)->fileEntry.fileType == REResourceFileEntry.FileType.PNG),
+                (fileEntry)->fileEntry.fileType == REResourceFile.FileType.PNG),
         ONLY_TEXTURE_NO_GENERATED(MOD_ID+".filter.4",
-                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFileEntry.FileType.PNG),
+                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFile.FileType.PNG),
         ONLY_TEXTURE_FROM_PACKS_NO_GENERATED(MOD_ID+".filter.5",
-                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFileEntry.FileType.PNG && !"vanilla".equals(fileEntry.resource.getResourcePackName()));
+                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFile.FileType.PNG && !"vanilla".equals(fileEntry.resource.getResourcePackName()));
 
         public String getKey() {
             return key;
@@ -135,14 +135,14 @@ public class REConfig {
 
         private final String key;
 
-        private final Predicate<REResourceFileEntry> test;
+        private final Predicate<REResourceFile> test;
 
-        REFileFilter(String key, Predicate<REResourceFileEntry> test){
+        REFileFilter(String key, Predicate<REResourceFile> test){
             this.key = key;
             this.test = test;
         }
 
-        public boolean allows(REResourceFileEntry fileEntry){
+        public boolean allows(REResourceFile fileEntry){
             return test.test(fileEntry);
         }
 
