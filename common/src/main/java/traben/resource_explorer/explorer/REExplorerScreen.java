@@ -105,6 +105,8 @@ public class REExplorerScreen extends Screen {
         this.fileList.close();
         super.close();
 
+        entriesInThisDirectory.clear();
+
         if (currentDisplay != null)
             currentDisplay.close();
         currentDisplay = null;

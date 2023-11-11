@@ -114,6 +114,15 @@ public class REResourceFolder extends REResourceEntry {
         if (resourceFile.canExport())
             containsExportableFiles = true;
 
+        //tracks whether the folder contains only 1 file type
+        if (contentFileType == null) {
+            contentFileType = resourceFile.fileType;
+        } else if (contentFileType != REResourceFile.FileType.BLANK) {
+            if (contentFileType != resourceFile.fileType) {
+                contentFileType = REResourceFile.FileType.BLANK;
+            }
+        }
+
         if (resourceFile.folderStructureList.isEmpty()) {
             //file goes here
             fileContent.addLast(resourceFile);
@@ -121,17 +130,8 @@ public class REResourceFolder extends REResourceEntry {
                 contentIcon = resourceFile.identifier;
             }
 
-            //figure out if folder contains only 1 content type and no folders
-            if (contentFileType == null) {
-                contentFileType = resourceFile.fileType;
-            } else if (contentFileType != REResourceFile.FileType.BLANK) {
-                if (contentFileType != resourceFile.fileType) {
-                    contentFileType = REResourceFile.FileType.BLANK;
-                }
-            }
+
         } else {
-            //mark folder to have no extra icon
-            contentFileType = REResourceFile.FileType.BLANK;
             //find next sub folder to move into and remove it from the file search list
             String subFolderName = resourceFile.folderStructureList.getFirst();
             resourceFile.folderStructureList.removeFirst();
@@ -165,35 +165,25 @@ public class REResourceFolder extends REResourceEntry {
 
     private Identifier getRegularIcon() {
         if (folderIcon == null) {
+
             folderIcon = switch (displayName) {
                 case "optifine" -> REExplorer.ICON_FOLDER_OPTIFINE;
                 case "minecraft", "realms" -> REExplorer.ICON_FOLDER_MOJANG;
-                case "sound", "sounds", "music" -> REExplorer.ICON_FOLDER_OGG;
-                case "textures", "texture", "images" -> REExplorer.ICON_FOLDER_PNG;
+//                case "sound", "sounds", "music" -> REExplorer.ICON_FOLDER_OGG;
+//                case "textures", "texture", "images" -> REExplorer.ICON_FOLDER_PNG;
                 case "resource_explorer" -> REExplorer.ICON_MOD;
                 case "etf", "entity_texture_features" -> REExplorer.ICON_FOLDER_ETF;
                 case "emf", "entity_model_features" -> REExplorer.ICON_FOLDER_EMF;
                 default -> {
-                    if (displayName.startsWith("fabric")) yield REExplorer.ICON_FOLDER_FABRIC;
-
-                    if (fileContent.isEmpty()) yield REExplorer.ICON_FOLDER;
-
-                    boolean allBuiltFiles = true;
-                    for (REResourceFile entry :
-                            fileContent) {
-                        if (entry.resource != null) {
-                            allBuiltFiles = false;
-                            break;
-                        }
-                    }
-                    if (allBuiltFiles)
+                    if (displayName.startsWith("fabric"))
+                        yield REExplorer.ICON_FOLDER_FABRIC;
+                    if (!containsExportableFiles && contentFileType != null)
                         yield REExplorer.ICON_FOLDER_BUILT;
-
-                    if (contentFileType == REResourceFile.FileType.PNG) {
+                    if (contentFileType == REResourceFile.FileType.PNG)
                         yield REExplorer.ICON_FOLDER_PNG;
-                    } else if (contentFileType == REResourceFile.FileType.OGG) {
+                    if (contentFileType == REResourceFile.FileType.OGG)
                         yield REExplorer.ICON_FOLDER_OGG;
-                    }
+
                     yield REExplorer.ICON_FOLDER;
                 }
             };
