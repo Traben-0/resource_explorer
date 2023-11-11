@@ -29,12 +29,10 @@ public class REExplorer {
     public static final Identifier ICON_FILE_PROPERTY = new Identifier("resource_explorer:textures/file_property.png");
     public static final Identifier ICON_FILE_OGG = new Identifier("resource_explorer:textures/file_ogg.png");
     public static final Identifier ICON_FILE_UNKNOWN = new Identifier("resource_explorer:textures/file_unknown.png");
-    //	public static final Identifier ICON_FILE_MOJANG = new Identifier("resource_explorer:file_mojang.png");
     public static final Identifier ICON_FOLDER_MOJANG = new Identifier("resource_explorer:textures/folder_mojang.png");
     public static final Identifier ICON_FOLDER_OPTIFINE = new Identifier("resource_explorer:textures/folder_optifine.png");
     public static final Identifier ICON_FOLDER_ETF = new Identifier("resource_explorer:textures/folder_etf.png");
     public static final Identifier ICON_FOLDER_EMF = new Identifier("resource_explorer:textures/folder_emf.png");
-    //	public static final Identifier ICON_FILE_SMILE = new Identifier("resource_explorer:file_smile.png");
     public static final Identifier ICON_FOLDER_CORNER = new Identifier("resource_explorer:textures/folder_corner.png");
     public static final Identifier ICON_FILE_BLANK = new Identifier("resource_explorer:textures/file_blank.png");
     public static final Identifier ICON_FILE_JSON = new Identifier("resource_explorer:textures/file_json.png");
@@ -44,6 +42,8 @@ public class REExplorer {
     public static final Identifier ICON_FILE_JEM = new Identifier("resource_explorer:textures/file_jem.png");
     public static final Identifier ICON_HAS_META = new Identifier("resource_explorer:textures/has_meta.png");
     public static final Identifier ICON_FOLDER_FABRIC = new Identifier("resource_explorer:textures/folder_fabric.png");
+    public static final Identifier ICON_FOLDER_PNG = new Identifier("resource_explorer:textures/folder_png.png");
+    public static final Identifier ICON_FOLDER_OGG = new Identifier("resource_explorer:textures/folder_ogg.png");
     public static final Identifier ICON_MOD = new Identifier("resource_explorer:textures/icon.png");
 
 
@@ -281,24 +281,18 @@ public class REExplorer {
         }
 
         public void tried(REResourceFile file, boolean exported){
-            totalAttempted++;
-            if(exported && file.resource != null){
-
-                types.add(file.fileType);
-
-                if("minecraft".equals(file.identifier.getNamespace())){
-                    if( "vanilla".equals(file.resource.getResourcePackName())) {
-                        vanillaCount++;
-                    }else {
-                        packCount++;
-                    }
-                }else{
-                    if("vanilla".equals(file.resource.getResourcePackName()) ||
-                       "fabric".equals(file.resource.getResourcePackName()) ||
-                       "mod_resources".equals(file.resource.getResourcePackName())
-                    ) {
+            if(file.resource != null) {
+                totalAttempted++;
+                if (exported) {
+                    types.add(file.fileType);
+                    String packName = file.resource.getResourcePackName();
+                    if("fabric".equals(packName) || "mod_resources".equals(packName)){
                         moddedCount++;
-                    }else {
+                    }else if("vanilla".equals(packName) &&
+                            ("minecraft".equals(file.identifier.getNamespace()) || "realms".equals(file.identifier.getNamespace()))){
+                        vanillaCount++;
+                    }else{
+                        //mod a mod default resource or vanilla
                         packCount++;
                     }
                 }

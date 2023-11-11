@@ -23,8 +23,7 @@ public abstract class MinecraftClientMixin {
             index = 0
     )
     private Throwable re$captureThrowable(Throwable throwable) {
-        if(REConfig.getInstance().addCauseToReloadFailureToast)
-            this.re$exception = throwable;
+        this.re$exception = REConfig.getInstance().addCauseToReloadFailureToast ? throwable : null;
         return throwable;
     }
 
@@ -34,7 +33,7 @@ public abstract class MinecraftClientMixin {
             index = 3
     )
     private Text mixin(Text title) {
-        if(re$exception != null && title == null){
+        if(re$exception != null && title == null && re$exception.getMessage() != null){
             return Text.of(re$exception.getMessage());
         }
         return title;

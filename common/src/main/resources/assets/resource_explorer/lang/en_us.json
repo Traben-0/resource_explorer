@@ -34,7 +34,7 @@
   "resource_explorer.export.tooltip.folder": "Export these resources to the [resource_explorer] output resource-pack",
   "resource_explorer.export_warn": "# Assets exported successfully",
   "resource_explorer.export_warn.fail": "# Assets failed to export",
-  "resource_explorer.export_warn.partial": "# Assets exported out of $.",
+  "resource_explorer.export_warn.partial": "# Assets exported out of $ files",
   "resource_explorer.stats.title": "Resource Explorer Statistics",
   "resource_explorer.explorer.stats": "Stats",
   "resource_explorer.explorer.stats.all": "All",

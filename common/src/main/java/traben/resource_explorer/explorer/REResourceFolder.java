@@ -162,9 +162,11 @@ public class REResourceFolder extends REResourceEntry {
             folderIcon = switch (displayName){
                 case "optifine"-> REExplorer.ICON_FOLDER_OPTIFINE;
                 case "minecraft", "realms"-> REExplorer.ICON_FOLDER_MOJANG;
+                case "sound", "sounds", "music"-> REExplorer.ICON_FOLDER_OGG;
+                case "textures", "texture", "images"-> REExplorer.ICON_FOLDER_PNG;
                 case "resource_explorer"-> REExplorer.ICON_MOD;
-                case "etf"-> REExplorer.ICON_FOLDER_ETF;
-                case "emf"-> REExplorer.ICON_FOLDER_EMF;
+                case "etf","entity_texture_features"-> REExplorer.ICON_FOLDER_ETF;
+                case "emf","entity_model_features"-> REExplorer.ICON_FOLDER_EMF;
                 default -> {
                     if(displayName.startsWith("fabric")) yield  REExplorer.ICON_FOLDER_FABRIC;
 
@@ -180,6 +182,12 @@ public class REResourceFolder extends REResourceEntry {
                     }
                     if(allBuiltFiles)
                         yield REExplorer.ICON_FOLDER_BUILT;
+
+                    if(contentFileType == REResourceFile.FileType.PNG){
+                        yield  REExplorer.ICON_FOLDER_PNG;
+                    }else if(contentFileType == REResourceFile.FileType.OGG){
+                        yield  REExplorer.ICON_FOLDER_OGG;
+                    }
                     yield  REExplorer.ICON_FOLDER;
                 }
             };
