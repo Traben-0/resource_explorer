@@ -15,6 +15,7 @@ public class ResourceExplorerClient
 	public static void log(Object message){
 		LOGGER.info("[resource_explorer]: " + message.toString());
 	}
+	@SuppressWarnings("unused")
 	public static void logWarn(Object message){
 		LOGGER.warn("[resource_explorer]: " + message.toString());
 	}

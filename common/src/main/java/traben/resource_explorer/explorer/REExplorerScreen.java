@@ -60,9 +60,8 @@ public class REExplorerScreen extends Screen {
         currentDisplay.setDimensions(width / 2 + 4, 200, this.height);
         this.addSelectableChild(currentDisplay);
 
-        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, (button) -> {
-            this.close();
-        }).dimensions(this.width / 2 + 4, this.height - 48, 150, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE,
+                (button) -> this.close()).dimensions(this.width / 2 + 4, this.height - 48, 150, 20).build());
 
         Tooltip warn = Tooltip.of(Text.translatable(MOD_ID+".explorer.apply_warn"));
 
@@ -111,6 +110,8 @@ public class REExplorerScreen extends Screen {
         this.fileList.close();
         super.close();
 
+        if(currentDisplay != null)
+            currentDisplay.close();
         currentDisplay = null;
         currentStats = null;
 

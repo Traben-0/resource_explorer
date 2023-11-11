@@ -94,8 +94,10 @@ public class REResourceFolder extends REResourceEntry {
 
     @Override
     public void exportToOutputPack(REExplorer.REExportContext context) {
-        fileContent.forEach(file->file.exportToOutputPack(context));
-        subFolders.values().forEach(file->file.exportToOutputPack(context));
+        //if(canExport()){
+            fileContent.forEach(file->file.exportToOutputPack(context));
+            subFolders.values().forEach(file->file.exportToOutputPack(context));
+        //}
     }
 
     private boolean containsExportableFiles = false;

@@ -61,13 +61,11 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
         int entryWidth = 178;
         int heightMargin = 100 + (fileEntry.getExtraText(false).size() * 11);
         return (int) (heightMargin + switch (fileEntry.fileType){
-                    case PNG -> 40+  fileEntry.height*((entryWidth+0f)/fileEntry.width);
-                    case TXT, PROPERTIES, JEM, JPM , JSON -> 64+  fileEntry.getTextLines().count() * 10;
-                    case OGG -> 100;
-                    case ZIP -> 100;
-                    case OTHER -> 50+ fileEntry.height*((entryWidth+0f)/fileEntry.width) + fileEntry.getTextLines().count() * 10;
-                    case BLANK -> 100;
-                });
+            case PNG -> 40+  fileEntry.height*((entryWidth+0f)/fileEntry.width);
+            case TXT, PROPERTIES, JEM, JPM , JSON -> 64+  fileEntry.getTextLines().count() * 10;
+            case OTHER -> 50+ fileEntry.height*((entryWidth+0f)/fileEntry.width) + fileEntry.getTextLines().count() * 10;
+            case OGG, BLANK, ZIP -> 100;
+        });
     }
 
 
@@ -118,7 +116,7 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
                 drawAsImage(context, offset,displaySquareMaximum, displayX, displayY);
             }
             case OGG -> drawButton(Text.of("Sound:"), context, offset, displayX, displayY, mouseX, mouseY);
-        };
+        }
     }
 
 
@@ -153,7 +151,8 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
         return offset;
     }
 
-    private int drawButton(Text text ,DrawContext context ,int offset, int displayX, int displayY, int mouseX, int mouseY){
+    @SuppressWarnings("UnusedReturnValue")
+    private int drawButton(Text text , DrawContext context , int offset, int displayX, int displayY, int mouseX, int mouseY){
         if(multiUseButton != null) {
             offset += 11;
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, text, displayX, displayY+offset, 16777215);
@@ -259,5 +258,5 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
         public AttenuationType getAttenuationType() {
             return AttenuationType.NONE;
         }
-    };
+    }
 }

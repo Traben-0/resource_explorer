@@ -9,15 +9,12 @@ import net.minecraft.client.toast.ToastManager;
 import net.minecraft.resource.Resource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.apache.commons.io.IOUtils;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.mixin.TextureManagerAccessor;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -65,9 +62,7 @@ public class REExplorer {
             //perform vanilla search with placeholder string that will trigger a blanket resource search
             try {
                 Map<Identifier, Resource> resourceMap = MinecraftClient.getInstance().getResourceManager().findResources("resource_explorer$search", (id) -> true);
-                resourceMap.forEach((k, v) -> {
-                    allFilesList.add(new REResourceFile(k, v));
-                });
+                resourceMap.forEach((k, v) -> allFilesList.add(new REResourceFile(k, v)));
 
             } catch (Exception ignored) {
                 //the method I use to explore all resources will cause an exception once at the end of the resource list as I need to search for blank file names
@@ -75,15 +70,11 @@ public class REExplorer {
 
             //fabric resources allow direct blank searches so catch those too
             Map<Identifier, Resource> resourceMap2 = MinecraftClient.getInstance().getResourceManager().findResources("", (id) -> true);
-            resourceMap2.forEach((k, v) -> {
-                allFilesList.add(new REResourceFile(k, v));
-            });
+            resourceMap2.forEach((k, v) -> allFilesList.add(new REResourceFile(k, v)));
 
             //search for generated texture assets
             Map<Identifier, AbstractTexture> textures = ((TextureManagerAccessor) MinecraftClient.getInstance().getTextureManager()).getTextures();
-            textures.forEach((k, v) -> {
-                allFilesList.add(new REResourceFile(k, v));
-            });
+            textures.forEach((k, v) -> allFilesList.add(new REResourceFile(k, v)));
 
 
             if (print) {
@@ -192,27 +183,17 @@ public class REExplorer {
                     directoryFolder.mkdirs();
                 }
                 if (directoryFolder.exists()) {
-                    if (reResourceFile.fileType.isRawTextType()) {
-                        File txtFile = new File(directoryFolder, file);
-                        try {
-                            FileWriter fileWriter = new FileWriter(txtFile);
-                            fileWriter.write(new String(reResourceFile.resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8));
-                            fileWriter.close();
-                            //ResourceExplorerClient.log(" output resource file created.");
-                            return true;
-                        } catch (IOException e) {
-                            //ResourceExplorerClient.log(" output resource file not created for: "+reResourceFileEntry.identifier);
-                        }
-                    } else if (reResourceFile.fileType == REResourceFile.FileType.PNG) {
-                        File thisImgFile = new File(directoryFolder, file + (file.endsWith(".png") ? "" : ".png"));
-                        try {
-                            InputStream stream = reResourceFile.resource.getInputStream();
-                            NativeImage.read(stream).writeTo(thisImgFile);
-                            //ResourceExplorerClient.log(" output resource image created.");
-                            return true;
-                        } catch (IOException e) {
-                            //ResourceExplorerClient.log(" output resource image not created for: "+reResourceFileEntry.identifier);
-                        }
+
+                    File outputFile = new File(directoryFolder, file);
+                    try {
+                        byte[] buffer = reResourceFile.resource.getInputStream().readAllBytes();
+                        OutputStream outStream = new FileOutputStream(outputFile);
+                        outStream.write(buffer);
+                        IOUtils.closeQuietly(outStream);
+                        return true;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        ResourceExplorerClient.log(" Exporting resource file failed for: " + reResourceFile.identifier);
                     }
                 }
             }
@@ -277,6 +258,8 @@ public class REExplorer {
 
         int totalAttempted = 0;
 
+        Set<REResourceFile.FileType> types = new HashSet<>();
+
 
         REExportContext(){
         }
@@ -298,7 +281,10 @@ public class REExplorer {
 
         public void tried(REResourceFile file, boolean exported){
             totalAttempted++;
-            if(exported && file.resource != null && file.fileType.isExportableType()){
+            if(exported && file.resource != null){
+
+                types.add(file.fileType);
+
                 if("minecraft".equals(file.identifier.getNamespace())){
                     if( "vanilla".equals(file.resource.getResourcePackName())) {
                         vanillaCount++;
@@ -316,7 +302,6 @@ public class REExplorer {
                     }
                 }
             }
-
         }
 
         public void showExportToast() {
@@ -324,10 +309,13 @@ public class REExplorer {
             toastManager.clear();
             boolean partially = getTotalAttempted() != getTotalExported() && totalAttempted != 1 && getTotalExported() != 0;
             Text title = partially ?
-                    Text.of(Text.translatable("resource_explorer.export_warn.partial").getString()+" "+ getTotalExported()+"/"+ getTotalAttempted()):
-                    Text.translatable(getTotalAttempted() == getTotalExported() ?
-                        ResourceExplorerClient.MOD_ID+".export_warn":
-                        ResourceExplorerClient.MOD_ID+".export_warn.fail");
+                    Text.of(Text.translatable( "resource_explorer.export_warn.partial").getString()
+                            .replace("#",String.valueOf(getTotalExported())).replace("$", String.valueOf(getTotalAttempted()))):
+                    Text.of(getTotalAttempted() == getTotalExported() ?
+                            Text.translatable(ResourceExplorerClient.MOD_ID+".export_warn").getString()
+                                    .replace("#",String.valueOf(getTotalExported())):
+                            Text.translatable(ResourceExplorerClient.MOD_ID+".export_warn.fail").getString()
+                                    .replace("#",String.valueOf(getTotalExported())));
 
             SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION, title, getMessage());
         }

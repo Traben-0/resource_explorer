@@ -127,7 +127,11 @@ public class REConfig {
         ONLY_TEXTURE_NO_GENERATED(MOD_ID+".filter.4",
                 (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFile.FileType.PNG),
         ONLY_TEXTURE_FROM_PACKS_NO_GENERATED(MOD_ID+".filter.5",
-                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFile.FileType.PNG && !"vanilla".equals(fileEntry.resource.getResourcePackName()));
+                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFile.FileType.PNG && !"vanilla".equals(fileEntry.resource.getResourcePackName())),
+        SOUNDS_ONLY(MOD_ID+".filter.6",
+                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFile.FileType.OGG),
+        TEXT_ONLY(MOD_ID+".filter.7",
+                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType.isRawTextType());
 
         public String getKey() {
             return key;
@@ -159,6 +163,10 @@ public class REConfig {
                 case ONLY_TEXTURE_NO_GENERATED
                         -> ONLY_TEXTURE_FROM_PACKS_NO_GENERATED;
                 case ONLY_TEXTURE_FROM_PACKS_NO_GENERATED
+                        -> SOUNDS_ONLY;
+                case SOUNDS_ONLY
+                        -> TEXT_ONLY;
+                case TEXT_ONLY
                         -> ALL_RESOURCES;
             };
         }

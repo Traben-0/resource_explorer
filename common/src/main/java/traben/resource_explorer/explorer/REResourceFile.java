@@ -65,7 +65,7 @@ public class REResourceFile extends REResourceEntry {
 
     @Override
     boolean canExport() {
-        return fileType.isExportableType() && resource != null;
+        return resource != null;
     }
 
     public REResourceFile(Identifier identifier, AbstractTexture texture){
@@ -168,9 +168,7 @@ public class REResourceFile extends REResourceEntry {
                 }
             }
 
-            default -> {
-                lines.add(trimmedTextToWidth(" //todo "));//todo
-            }
+            default -> {}//lines.add(trimmedTextToWidth(" //todo "));//todo
         }
         return lines;
     }
@@ -340,15 +338,6 @@ public class REResourceFile extends REResourceEntry {
             };
         }
 
-        public boolean isExportableType() {
-            return switch (this){
-                case TXT, JSON, JPM, JEM, PROPERTIES,PNG -> true;
-                default -> false;
-            };
-        }
-
-
-
         private final Identifier defaultIcon;
         FileType(Identifier defaultIcon){
             this.defaultIcon = defaultIcon;
@@ -382,9 +371,5 @@ public class REResourceFile extends REResourceEntry {
             }
             return OTHER;
         }
-
-
     }
-
-
 }

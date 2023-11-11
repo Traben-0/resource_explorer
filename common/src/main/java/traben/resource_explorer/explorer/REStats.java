@@ -114,9 +114,9 @@ public class REStats {
             super.init();
             this.addDrawableChild(ButtonWidget.builder(
                     Text.translatable("gui.done"),
-                    (button) -> {
-                        Objects.requireNonNull(client).setScreen(parent);
-                    }).dimensions((int) (this.width * 0.7), (int) (this.height * 0.9), (int) (this.width * 0.2), 20).build());
+                    (button) -> Objects.requireNonNull(client).setScreen(parent))
+                    .dimensions((int) (this.width * 0.7), (int) (this.height * 0.9), (int) (this.width * 0.2), 20)
+                    .build());
 
         }
 
@@ -137,23 +137,27 @@ public class REStats {
 
             StatDisplayUtil statText = new StatDisplayUtil(context,MinecraftClient.getInstance().textRenderer, this.width, this.height, offset);
 
-            statText.renderSubtitle("resource_explorer.explorer.stats.totals",Text.translatable("resource_explorer.explorer.stats.all").getString(), Text.translatable("resource_explorer.explorer.stats.files").getString() );
+            statText.renderSubtitle("resource_explorer.explorer.stats.totals",
+                    Text.translatable("resource_explorer.explorer.stats.all").getString(),
+                    Text.translatable("resource_explorer.explorer.stats.files").getString() );
 
             statText.renderValue("resource_explorer.explorer.stats.resources", stats.totalResources, stats.totalFileResources);
             statText.renderValue("resource_explorer.explorer.stats.all_textures", stats.totalTextureResources, stats.totalTextureFileResources);
             statText.renderValue("resource_explorer.explorer.stats.post_filter", stats.totalAllowedResources, stats.totalAllowedFileResources);
-            statText.renderSubtitle("resource_explorer.explorer.stats.filetype",Text.translatable("resource_explorer.explorer.stats.all").getString(),null);
-            stats.totalPerFileType.forEach((k,v)->{
-                statText.renderValue(k.name(), v, -1);
-            });
-            statText.renderSubtitle("resource_explorer.explorer.stats.namespace",Text.translatable("resource_explorer.explorer.stats.all").getString(),Text.translatable("resource_explorer.explorer.stats.textures").getString());
-            stats.totalPerNameSpace.forEach((k,v)->{
-                statText.renderValue(k, v, stats.totalTexturesPerNameSpace.getInt(k));
-            });
-            statText.renderSubtitle("resource_explorer.explorer.stats.packs",Text.translatable("resource_explorer.explorer.stats.all").getString(),Text.translatable("resource_explorer.explorer.stats.textures").getString());
-            stats.totalPerResourcepack.forEach((k,v)->{
-                statText.renderValue(k, v, stats.totalTexturesPerResourcepack.getInt(k));
-            });
+
+            statText.renderSubtitle("resource_explorer.explorer.stats.filetype",
+                    Text.translatable("resource_explorer.explorer.stats.all").getString(),null);
+            stats.totalPerFileType.forEach((k,v)-> statText.renderValue(k.name(), v, -1));
+
+            statText.renderSubtitle("resource_explorer.explorer.stats.packs",
+                    Text.translatable("resource_explorer.explorer.stats.all").getString(),
+                    Text.translatable("resource_explorer.explorer.stats.textures").getString());
+            stats.totalPerResourcepack.forEach((k,v)-> statText.renderValue(k, v, stats.totalTexturesPerResourcepack.getInt(k)));
+
+            statText.renderSubtitle("resource_explorer.explorer.stats.namespace",
+                    Text.translatable("resource_explorer.explorer.stats.all").getString(),
+                    Text.translatable("resource_explorer.explorer.stats.textures").getString());
+            stats.totalPerNameSpace.forEach((k,v)-> statText.renderValue(k, v, stats.totalTexturesPerNameSpace.getInt(k)));
         }
 
         private static class StatDisplayUtil {

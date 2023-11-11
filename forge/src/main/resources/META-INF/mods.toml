@@ -27,7 +27,7 @@ displayName="Resource Explorer" #mandatory
 # A URL for the "homepage" for this mod, displayed in the mod UI
 displayURL="test"
 # A file name (in the root of the mod JAR) containing a logo for display
-logoFile="resource_explorer/icon.png" #optional
+logoFile="icon.png" #optional
 # A text field displayed in the mod UI
 #credits="Thanks for this example mod goes to Java" #optional
 # A text field displayed in the mod UI
@@ -61,6 +61,6 @@ test
    modId="minecraft"
    mandatory=true
    # This version range declares a minimum of the current minecraft version up to but not including the next major version
-   versionRange="[1.20.2,1.21)"
+   versionRange="[1.20.2,)"
    ordering="NONE"
    side="CLIENT"
