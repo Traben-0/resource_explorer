@@ -34,6 +34,7 @@
 <img src="image/atlases.png" width="450" alt="5">
 
 ## Exporting assets and folders
+#### Do not re-distribute un-altered vanilla / mod / resource-pack, assets without permission!
 <img src="image/export_folder.png" width="450" alt="6">
 <img src="image/output_pack.png" width="450" alt="7">
 
@@ -47,5 +48,9 @@
 
 ## Mod asset support
 <img src="image/mods.png" width="450" alt="12">
+
+
+# Reminder: Do not re-distribute un-altered vanilla / mod / resource-pack, assets without permission!
+
 
 </div>
