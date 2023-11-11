@@ -11,10 +11,7 @@ import traben.resource_explorer.mixin.EntryListWidgetAccessor;
 public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget<REResourceFileDisplayWrapper> {
 
 
-
-
     private Text title = null;
-
 
 
     public REResourceSingleDisplayWidget(MinecraftClient minecraftClient, int width, int height) {
@@ -22,31 +19,30 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
         this.centerListVertically = false;
     }
 
-    void setSelectedFile(@Nullable REResourceFileDisplayWrapper newFile){
+    void setSelectedFile(@Nullable REResourceFileDisplayWrapper newFile) {
         setScrollAmount(0);
         clearEntries();
-        if(newFile != null) {
+        if (newFile != null) {
             ((EntryListWidgetAccessor) this).setItemHeight(newFile.getEntryHeight());
             title = Text.of(newFile.getFileEntry().getDisplayName());
-            setRenderHeader(true,10);
-        }else {
+            setRenderHeader(true, 10);
+        } else {
             ((EntryListWidgetAccessor) this).setItemHeight(32);
-            setRenderHeader(false,0);
+            setRenderHeader(false, 0);
             title = null;
         }
         addEntry(newFile);
 
     }
 
-    public void setDimensions(int x,int width, int height){
+    public void setDimensions(int x, int width, int height) {
         this.width = width;
         this.height = height;
         this.top = 32;
         this.bottom = height - 55 + 4;
         this.left = x;
-        this.right = x+width;
+        this.right = x + width;
     }
-
 
 
     @Override

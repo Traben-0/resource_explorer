@@ -12,9 +12,9 @@ public abstract class ZipResourcePackMixin {
 
 
     @ModifyArg(method = "findResources", at = @At(value = "INVOKE", target = "Ljava/lang/String;startsWith(Ljava/lang/String;)Z"), index = 0)
-    private String injected(String prefix) {
-        if(prefix.endsWith("resource_explorer$search/"))
-            return prefix.replace("resource_explorer$search/","");
+    private String re$injected(String prefix) {
+        if (prefix.endsWith("resource_explorer$search/"))
+            return prefix.replace("resource_explorer$search/", "");
         return prefix;
     }
 }

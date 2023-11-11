@@ -18,71 +18,22 @@ import java.util.List;
 public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entry<REResourceEntry> implements Comparable<REResourceEntry> {
 
     private final ButtonWidget exportButton;
-    REResourceEntry(){
-            exportButton = ButtonWidget.builder(Text.translatable("resource_explorer.export"), button->{
-                REExplorer.REExportContext context = new REExplorer.REExportContext();
-                if(isFolder()) context.sendLargeFolderWarning();
-
-                Util.getIoWorkerExecutor().execute(()->{
-                    this.exportToOutputPack(context);
-                    context.showExportToast();
-                });
-
-                button.active = false;
-            }).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip." + (isFolder() ? "folder" : "file"))))
-                    .dimensions(0,0,48,15).build();
-    }
-
-    @Override
-    public int compareTo(@NotNull REResourceEntry o) {
-        return getDisplayName().compareTo(o.getDisplayName());
-    }
-
-    boolean isFolder(){
-        return false;
-    }
-
-    abstract boolean canExport();
-
-    abstract String getDisplayName();
-    abstract OrderedText getDisplayText();
-    abstract List<Text> getExtraText(boolean smallMode);
-
-    abstract String toString(int indent);
-
-    abstract Identifier getIcon(boolean hovered);
-
-    Identifier getIcon2OrNull(boolean hovered){return null;}
-    Identifier getIcon3OrNull(boolean hovered){return null;}
-
-    @Override
-    public Text getNarration() {
-        return Text.of(getDisplayName());
-    }
-
     protected REResourceListWidget widget = null;
-    public void setWidget(REResourceListWidget widget){
-        this.widget = widget;
+
+    REResourceEntry() {
+        exportButton = ButtonWidget.builder(Text.translatable("resource_explorer.export"), button -> {
+                    REExplorer.REExportContext context = new REExplorer.REExportContext();
+                    if (isFolder()) context.sendLargeFolderWarning();
+
+                    Util.getIoWorkerExecutor().execute(() -> {
+                        this.exportToOutputPack(context);
+                        context.showExportToast();
+                    });
+
+                    button.active = false;
+                }).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip." + (isFolder() ? "folder" : "file"))))
+                .dimensions(0, 0, 42, 15).build();
     }
-
-    private boolean isSelectable(){return true;}
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button){
-        if (exportButton != null && exportButton.isMouseOver(mouseX,mouseY)){
-            exportButton.onPress();
-            return true;
-        }else{
-            return mouseClickExplorer();
-        }
-    }
-
-
-    abstract boolean mouseClickExplorer();
-
-
-    abstract void exportToOutputPack(REExplorer.REExportContext context);
-
 
     protected static Text trimmedTextToWidth(String string) {
         Text text = Text.of(string);
@@ -95,6 +46,7 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
             return text;
         }
     }
+
     @SuppressWarnings("SameParameterValue")
     protected static String trimmedStringToWidth(String string, int width) {
         Text text = Text.of(string);
@@ -108,32 +60,88 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
         }
     }
 
+    @Override
+    public int compareTo(@NotNull REResourceEntry o) {
+        return getDisplayName().compareTo(o.getDisplayName());
+    }
+
+    boolean isFolder() {
+        return false;
+    }
+
+    abstract boolean canExport();
+
+    abstract String getDisplayName();
+
+    abstract OrderedText getDisplayText();
+
+    abstract List<Text> getExtraText(boolean smallMode);
+
+    abstract String toString(int indent);
+
+    abstract Identifier getIcon(boolean hovered);
+
+    Identifier getIcon2OrNull(boolean hovered) {
+        return null;
+    }
+
+    Identifier getIcon3OrNull(boolean hovered) {
+        return null;
+    }
+
+    @Override
+    public Text getNarration() {
+        return Text.of(getDisplayName());
+    }
+
+    public void setWidget(REResourceListWidget widget) {
+        this.widget = widget;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (exportButton != null && exportButton.isMouseOver(mouseX, mouseY)) {
+            exportButton.onPress();
+            return true;
+        } else {
+            return mouseClickExplorer();
+        }
+    }
+
+    abstract boolean mouseClickExplorer();
+
+    abstract void exportToOutputPack(REExplorer.REExportContext context);
+
+
+    protected String translated(String key) {
+        return Text.translatable(key).getString();
+    }
+
     public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
 
-        int entryWidthSmaller = entryWidth - 10;
+        int entryWidthSmaller = entryWidth - 14;
 
-        if (this.isSelectable() && (MinecraftClient.getInstance().options.getTouchscreen().getValue() || hovered || this.widget.getSelectedOrNull() == this && this.widget.isFocused())) {
+        if ((MinecraftClient.getInstance().options.getTouchscreen().getValue() || hovered || this.widget.getSelectedOrNull() == this && this.widget.isFocused())) {
             context.fill(x, y, x + entryWidthSmaller, y + 32, -1601138544);
-
-            if (canExport() && hovered){
-                exportButton.setX(x + entryWidthSmaller-52);
-                exportButton.setY(y+13);
-                exportButton.render(context,mouseX,mouseY,tickDelta);
+            if (canExport() && hovered) {
+                exportButton.setX(x + entryWidthSmaller - 44);
+                exportButton.setY(y + 15);
+                exportButton.render(context, mouseX, mouseY, tickDelta);
             }
-
         }
+
         context.drawTexture(getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+
         Identifier secondaryIcon = getIcon2OrNull(hovered);
-        if(secondaryIcon != null) {
+        if (secondaryIcon != null) {
             context.drawTexture(secondaryIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
         }
         Identifier thirdIcon = getIcon3OrNull(hovered);
-        if(thirdIcon != null) {
+        if (thirdIcon != null) {
             context.drawTexture(thirdIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
         }
         OrderedText orderedText = getDisplayText();
         MultilineText multilineText = MultilineText.createFromTexts(MinecraftClient.getInstance().textRenderer, getExtraText(true));
-
 
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 32 + 2, y + 1, 16777215);
         multilineText.drawWithShadow(context, x + 32 + 2, y + 12, 10, -8355712);

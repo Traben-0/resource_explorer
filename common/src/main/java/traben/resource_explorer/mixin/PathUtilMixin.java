@@ -16,9 +16,9 @@ public abstract class PathUtilMixin {
 
 
     @Inject(method = "split", at = @At("HEAD"), cancellable = true)
-    private static void injected(String path, CallbackInfoReturnable<DataResult<List<String>>> cir) {
-        if("resource_explorer$search".equals(path)){
-            cir.setReturnValue( DataResult.success(List.of()));
+    private static void re$injected(String path, CallbackInfoReturnable<DataResult<List<String>>> cir) {
+        if ("resource_explorer$search".equals(path)) {
+            cir.setReturnValue(DataResult.success(List.of()));
         }
     }
 }

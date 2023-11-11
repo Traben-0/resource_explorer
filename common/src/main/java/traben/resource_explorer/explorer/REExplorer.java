@@ -129,9 +129,12 @@ public class REExplorer {
                 if (filter.allows(resourceFile)) {
                     String namespace = resourceFile.identifier.getNamespace();
                     REResourceFolder namespaceFolder = namespaceFolderMap.get(namespace);
-                    if (namespaceFolder != null) {
-                        namespaceFolder.addResourceFile(resourceFile, statistics);
+                    if (namespaceFolder == null) {
+                        namespaceFolder = new REResourceFolder(namespace);
+                        namespaceFolderMap.put(namespace, namespaceFolder);
+                        namesSpaceFoldersRoot.addLast(namespaceFolder);
                     }
+                    namespaceFolder.addResourceFile(resourceFile, statistics);
                     statistics.addEntryStatistic(resourceFile, true);
                 } else {
                     statistics.addEntryStatistic(resourceFile, false);
@@ -147,7 +150,7 @@ public class REExplorer {
             REExplorerScreen.currentStats = statistics;
 
             return namesSpaceFoldersRoot;
-        }catch (Exception e){
+        } catch (Exception e) {
             LinkedList<REResourceEntry> fail = new LinkedList<>();
             fail.add(REResourceFile.FAILED_FILE);
             return fail;
@@ -155,18 +158,16 @@ public class REExplorer {
     }
 
 
-
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    static boolean outputResourceToPackInternal(REResourceFile reResourceFile){
+    static boolean outputResourceToPackInternal(REResourceFile reResourceFile) {
         //only save existing file resources
-        if(reResourceFile.resource == null)
+        if (reResourceFile.resource == null)
             return false;
 
         Path resourcePackFolder = MinecraftClient.getInstance().getResourcePackDir();
-        File thisPackFolder = new File(resourcePackFolder.toFile(),"resource_explorer/");
+        File thisPackFolder = new File(resourcePackFolder.toFile(), "resource_explorer/");
 
-        if(validateOutputResourcePack(thisPackFolder)) {
+        if (validateOutputResourcePack(thisPackFolder)) {
             if (thisPackFolder.exists()) {
                 File assets = new File(thisPackFolder, "assets");
                 if (!assets.exists()) {
@@ -203,20 +204,19 @@ public class REExplorer {
     }
 
 
-
-    private static boolean validateOutputResourcePack(File packFolder){
-        if(!packFolder.exists()){
-            if(packFolder.mkdir()) {
+    private static boolean validateOutputResourcePack(File packFolder) {
+        if (!packFolder.exists()) {
+            if (packFolder.mkdir()) {
                 return validateOutputResourcePackMeta(packFolder);
             }
-        }else {
+        } else {
             return validateOutputResourcePackMeta(packFolder);
         }
         return false;
     }
 
-    private static boolean validateOutputResourcePackMeta(File packFolder){
-        File thisMetaFile = new File(packFolder,"pack.mcmeta");
+    private static boolean validateOutputResourcePackMeta(File packFolder) {
+        File thisMetaFile = new File(packFolder, "pack.mcmeta");
         if (thisMetaFile.exists()) {
             return true;
         }
@@ -250,48 +250,47 @@ public class REExplorer {
         return thisMetaFile.exists();
     }
 
-    static class REExportContext{
-        
+    static class REExportContext {
 
+
+        final Set<REResourceFile.FileType> types = new HashSet<>();
         int vanillaCount = 0;
         int packCount = 0;
         int moddedCount = 0;
-
         int totalAttempted = 0;
 
-        Set<REResourceFile.FileType> types = new HashSet<>();
 
-
-        REExportContext(){
+        REExportContext() {
         }
 
-        public void sendLargeFolderWarning(){
-                ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
-                SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION,
-                        Text.translatable("resource_explorer.export_start.1"),Text.translatable("resource_explorer.export_start.2"));
+        public void sendLargeFolderWarning() {
+            ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
+            toastManager.clear();
+            SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION,
+                    Text.translatable("resource_explorer.export_start.1"), Text.translatable("resource_explorer.export_start.2"));
 
         }
 
-        public int getTotalExported(){
-            return vanillaCount + packCount +moddedCount;
+        public int getTotalExported() {
+            return vanillaCount + packCount + moddedCount;
         }
 
-        public int getTotalAttempted(){
+        public int getTotalAttempted() {
             return totalAttempted;
         }
 
-        public void tried(REResourceFile file, boolean exported){
-            if(file.resource != null) {
+        public void tried(REResourceFile file, boolean exported) {
+            if (file.resource != null) {
                 totalAttempted++;
                 if (exported) {
                     types.add(file.fileType);
                     String packName = file.resource.getResourcePackName();
-                    if("fabric".equals(packName) || "mod_resources".equals(packName)){
+                    if ("fabric".equals(packName) || "mod_resources".equals(packName)) {
                         moddedCount++;
-                    }else if("vanilla".equals(packName) &&
-                            ("minecraft".equals(file.identifier.getNamespace()) || "realms".equals(file.identifier.getNamespace()))){
+                    } else if ("vanilla".equals(packName) &&
+                            ("minecraft".equals(file.identifier.getNamespace()) || "realms".equals(file.identifier.getNamespace()))) {
                         vanillaCount++;
-                    }else{
+                    } else {
                         //mod a mod default resource or vanilla
                         packCount++;
                     }
@@ -304,30 +303,30 @@ public class REExplorer {
             toastManager.clear();
             boolean partially = getTotalAttempted() != getTotalExported() && totalAttempted != 1 && getTotalExported() != 0;
             Text title = partially ?
-                    Text.of(Text.translatable( "resource_explorer.export_warn.partial").getString()
-                            .replace("#",String.valueOf(getTotalExported())).replace("$", String.valueOf(getTotalAttempted()))):
+                    Text.of(Text.translatable("resource_explorer.export_warn.partial").getString()
+                            .replace("#", String.valueOf(getTotalExported())).replace("$", String.valueOf(getTotalAttempted()))) :
                     Text.of(getTotalAttempted() == getTotalExported() ?
-                            Text.translatable(ResourceExplorerClient.MOD_ID+".export_warn").getString()
-                                    .replace("#",String.valueOf(getTotalExported())):
-                            Text.translatable(ResourceExplorerClient.MOD_ID+".export_warn.fail").getString()
-                                    .replace("#",String.valueOf(getTotalExported())));
+                            Text.translatable(ResourceExplorerClient.MOD_ID + ".export_warn").getString()
+                                    .replace("#", String.valueOf(getTotalExported())) :
+                            Text.translatable(ResourceExplorerClient.MOD_ID + ".export_warn.fail").getString()
+                                    .replace("#", String.valueOf(getTotalExported())));
 
             SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION, title, getMessage());
         }
 
-        private Text getMessage(){
-            if(getTotalExported() == 0){
+        private Text getMessage() {
+            if (getTotalExported() == 0) {
                 return Text.translatable("resource_explorer.export_warn.none");
             }
-            if(getTotalAttempted() == 1){
-               return Text.translatable(
-                       packCount >0 ?
-                               "resource_explorer.export_warn.pack" :
-                               moddedCount > 0 ?
-                                       "resource_explorer.export_warn.mod":
-                                       "resource_explorer.export_warn.vanilla"
-               );
-            }else{
+            if (getTotalAttempted() == 1) {
+                return Text.translatable(
+                        packCount > 0 ?
+                                "resource_explorer.export_warn.pack" :
+                                moddedCount > 0 ?
+                                        "resource_explorer.export_warn.mod" :
+                                        "resource_explorer.export_warn.vanilla"
+                );
+            } else {
                 return Text.translatable("resource_explorer.export_warn.all");
             }
         }

@@ -31,8 +31,8 @@ public abstract class OptionsScreenMixin extends Screen {
     }
 
     @Inject(method = "init", at = @At(value = "TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
-    private void afterAdder(CallbackInfo ci, GridWidget gridWidget, GridWidget.Adder adder) {
-        if(REConfig.getInstance().showResourcePackButton) {
+    private void re$afterAdder(CallbackInfo ci, GridWidget gridWidget, GridWidget.Adder adder) {
+        if (REConfig.getInstance().showResourcePackButton) {
             int x = gridWidget.getX() - 16;
             int y = gridWidget.getY() + 128;
             addDrawableChild(new TexturedButtonWidget(
@@ -45,10 +45,11 @@ public abstract class OptionsScreenMixin extends Screen {
                         assert this.client != null;
                         this.client.setScreen(new REExplorerScreen(this));
                     },
-                    Text.translatable(MOD_ID+".open_tooltip")) {
+                    Text.translatable(MOD_ID + ".open_tooltip")) {
                 {
-                    setTooltip(Tooltip.of(Text.translatable(MOD_ID+".open_tooltip")));
+                    setTooltip(Tooltip.of(Text.translatable(MOD_ID + ".open_tooltip")));
                 }
+
                 //override required because textured button widget just doesnt work
                 @Override
                 public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {

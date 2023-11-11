@@ -9,12 +9,4 @@ public class REVersionDifferenceManagerImpl {
         return FabricLoader.getInstance().getConfigDir();
     }
 
-    public static boolean isThisModLoaded(String modId) {
-        return FabricLoader.getInstance().isModLoaded(modId);
-    }
-
-    @SuppressWarnings("SameReturnValue")
-    public static boolean isForge() {
-        return false;
-    }
 }

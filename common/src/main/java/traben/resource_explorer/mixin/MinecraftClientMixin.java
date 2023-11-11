@@ -32,8 +32,8 @@ public abstract class MinecraftClientMixin {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/toast/SystemToast;show(Lnet/minecraft/client/toast/ToastManager;Lnet/minecraft/client/toast/SystemToast$Type;Lnet/minecraft/text/Text;Lnet/minecraft/text/Text;)V"),
             index = 3
     )
-    private Text mixin(Text title) {
-        if(re$exception != null && title == null && re$exception.getMessage() != null){
+    private Text re$mixin(Text title) {
+        if (re$exception != null && title == null && re$exception.getMessage() != null) {
             return Text.of(re$exception.getMessage());
         }
         return title;

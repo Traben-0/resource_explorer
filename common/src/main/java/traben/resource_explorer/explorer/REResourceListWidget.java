@@ -1,6 +1,7 @@
 package traben.resource_explorer.explorer;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 
 public class REResourceListWidget extends AlwaysSelectedEntryListWidget<REResourceEntry> {
@@ -30,9 +31,16 @@ public class REResourceListWidget extends AlwaysSelectedEntryListWidget<REResour
         return this.width;
     }
 
+
     protected int getScrollbarPositionX() {
         return this.right - 6;
     }
 
-
+    @Override
+    protected void drawSelectionHighlight(DrawContext context, int y, int entryWidth, int entryHeight, int borderColor, int fillColor) {
+        int i = this.left + (this.width - entryWidth) / 2;
+        int j = (this.left + (this.width + entryWidth) / 2) - 10;
+        context.fill(i, y - 2, j, y + entryHeight + 2, borderColor);
+        context.fill(i + 1, y - 1, j - 1, y + entryHeight + 1, fillColor);
+    }
 }

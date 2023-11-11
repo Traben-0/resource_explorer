@@ -5,12 +5,14 @@ import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.metadata.ResourceMetadata;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import traben.resource_explorer.mixin.SpriteAtlasTextureAccessor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,35 +26,22 @@ import static traben.resource_explorer.explorer.REExplorer.outputResourceToPackI
 
 public class REResourceFile extends REResourceEntry {
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        REResourceFile that = (REResourceFile) o;
-        return identifier.equals(that.identifier);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(identifier);
-    }
-
+    public static final REResourceFile FAILED_FILE = new REResourceFile();
     public final Identifier identifier;
-    private final String displayName;
-    private final OrderedText displayText;
-
     @Nullable
     public final Resource resource;
     public final FileType fileType;
-
-    final AbstractTexture abstractTexture;
-
     public final LinkedList<String> folderStructureList;
+    final AbstractTexture abstractTexture;
+    private final String displayName;
+    private final OrderedText displayText;
+    public MultilineText readTextByLineBreaks = null;
+    public int height = 1;
+    public int width = 1;
+    boolean imageDone = false;
+    Boolean hasMetaData = null;
 
-
-
-    public static REResourceFile FAILED_FILE = new REResourceFile();
-    private REResourceFile(){
+    private REResourceFile() {
         //failed file
         this.identifier = new Identifier("search_failed:fail");
         this.resource = null;
@@ -63,15 +52,25 @@ public class REResourceFile extends REResourceEntry {
         this.displayText = Text.of("search_failed").asOrderedText();
     }
 
-    @Override
-    boolean canExport() {
-        return resource != null;
-    }
 
-    public REResourceFile(Identifier identifier, AbstractTexture texture){
+    public REResourceFile(Identifier identifier, AbstractTexture texture) {
         this.identifier = identifier;
         this.resource = null;
         this.abstractTexture = texture;
+
+        //try to capture some sizes
+        if (abstractTexture instanceof SpriteAtlasTexture atlasTexture) {
+            width = ((SpriteAtlasTextureAccessor) atlasTexture).getWidth();
+            height = ((SpriteAtlasTextureAccessor) atlasTexture).getHeight();
+        } else if (abstractTexture instanceof NativeImageBackedTexture nativeImageBackedTexture) {
+            NativeImage image = nativeImageBackedTexture.getImage();
+            if (image != null) {
+                width = image.getWidth();
+                height = image.getHeight();
+            }
+        }
+
+
         this.fileType = FileType.getType(this.identifier);
 
         //split out folder hierarchy
@@ -87,7 +86,8 @@ public class REResourceFile extends REResourceEntry {
 
         this.displayText = trimmedTextToWidth(displayName).asOrderedText();
     }
-    public REResourceFile(Identifier identifier, @Nullable Resource resource){
+
+    public REResourceFile(Identifier identifier, @Nullable Resource resource) {
         this.identifier = identifier;
         this.resource = resource;
         this.abstractTexture = null;
@@ -107,6 +107,23 @@ public class REResourceFile extends REResourceEntry {
         this.displayText = trimmedTextToWidth(displayName).asOrderedText();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        REResourceFile that = (REResourceFile) o;
+        return identifier.equals(that.identifier);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(identifier);
+    }
+
+    @Override
+    boolean canExport() {
+        return resource != null;
+    }
 
     @Override
     public String toString() {
@@ -116,10 +133,9 @@ public class REResourceFile extends REResourceEntry {
     @Override
     public String toString(int indent) {
 
-        return " ".repeat(Math.max(0, indent)) + "\\ "+
+        return " ".repeat(Math.max(0, indent)) + "\\ " +
                 displayName + "\n";
     }
-
 
     @Override
     public String getDisplayName() {
@@ -131,55 +147,42 @@ public class REResourceFile extends REResourceEntry {
         return displayText;
     }
 
-
-
-
-
     @Override
     List<Text> getExtraText(boolean smallMode) {
         ArrayList<Text> lines = new ArrayList<>();
-        lines.add(trimmedTextToWidth(" type: " + fileType.toString() +(hasMetaData ? " + metadata" : "")) );
-        if(resource != null) {
-            lines.add(trimmedTextToWidth(" pack: " + resource.getResourcePackName().replace("file/","")));
-        }else{
-            lines.add(trimmedTextToWidth("§8§o generated by code" ));
+        lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.type") + ": " + fileType.toString() +
+                (hasMetaData ? " + " + translated("resource_explorer.detail.metadata") : "")));
+        if (resource != null) {
+            lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.pack") + ": " + resource.getResourcePackName().replace("file/", "")));
+        } else {
+            lines.add(trimmedTextToWidth("§8§o " + translated("resource_explorer.detail.built_msg")));
         }
-        if(smallMode) return lines;
-        switch(fileType){
-            case PNG ->{
-                lines.add(trimmedTextToWidth(" height: " + height));
-                lines.add(trimmedTextToWidth(" width: " + width));
-                if(hasMetaData && height > width && height % width == 0) {
-                    lines.add(trimmedTextToWidth(" frame count: " + (height / width)));
+        if (smallMode) return lines;
+        switch (fileType) {
+            case PNG -> {
+                lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.height") + ": " + height));
+                lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.width") + ": " + width));
+                if (hasMetaData && height > width && height % width == 0) {
+                    lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.frame_count") + ": " + (height / width)));
                 }
             }
             case TXT, PROPERTIES, JSON -> {
-                if(readTextByLineBreaks != null){
-                    lines.add(trimmedTextToWidth(" lines: " + height));
-                    lines.add(trimmedTextToWidth(" character count: " + width));
+                if (readTextByLineBreaks != null) {
+                    lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.lines") + ": " + height));
+                    lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.character_count") + ": " + width));
                 }
             }
-            case OTHER -> {
-                if(readTextByLineBreaks != null){
-                    lines.add(trimmedTextToWidth(""));
-                    lines.add(trimmedTextToWidth(" raw text data: "));
-                    lines.add(trimmedTextToWidth(" - lines: " + height));
-                    lines.add(trimmedTextToWidth(" - character count: " + width));
-                }
-            }
-
-            default -> {}//lines.add(trimmedTextToWidth(" //todo "));//todo
+            default -> {
+            }//lines.add(trimmedTextToWidth(" //todo "));//todo
         }
         return lines;
     }
 
-    public MultilineText readTextByLineBreaks = null;
-
-    MultilineText getTextLines(){
-        if(!fileType.isRawTextType())
+    MultilineText getTextLines() {
+        if (!fileType.isRawTextType())
             return MultilineText.EMPTY;
-        if(readTextByLineBreaks == null){
-            if(resource!= null){
+        if (readTextByLineBreaks == null) {
+            if (resource != null) {
                 try {
                     InputStream in = resource.getInputStream();
                     try {
@@ -188,7 +191,7 @@ public class REResourceFile extends REResourceEntry {
                         in.close();
 
                         //make tabs smaller
-                        String reducedTabs = readString.replaceAll("\t"," ");
+                        String reducedTabs = readString.replaceAll("(\t| {4})", " ");
 
 
                         String[] splitByLines = reducedTabs.split("\n");
@@ -201,12 +204,12 @@ public class REResourceFile extends REResourceEntry {
                             splitByLines[i] = trimmedStringToWidth(splitByLines[i], 178);
                         }
                         int lineCount = 0;
-                        for (String line:
+                        for (String line :
                                 splitByLines) {
                             lineCount++;
-                            if(lineCount > 512){//todo set limit in config
-                                text.add(Text.of("§l§4-- TEXT LONGER THAN "+512+" LINES --"));
-                                text.add(Text.of("§r§o "+ (height - lineCount) +" lines skipped."));
+                            if (lineCount > 512) {//todo set limit in config
+                                text.add(Text.of("§l§4-- TEXT LONGER THAN " + 512 + " LINES --"));
+                                text.add(Text.of("§r§o " + (height - lineCount) + " lines skipped."));
                                 text.add(Text.of("§l§4-- END --"));
                                 break;
                             }
@@ -222,25 +225,24 @@ public class REResourceFile extends REResourceEntry {
                 } catch (Exception ignored) {
                     readTextByLineBreaks = MultilineText.EMPTY;
                 }
-            }else{
+            } else {
                 readTextByLineBreaks = MultilineText.create(MinecraftClient.getInstance().textRenderer, Text.of(" ERROR: no file info could be read"));
             }
         }
         return readTextByLineBreaks;
     }
 
-
     public void exportToOutputPack(REExplorer.REExportContext context) {
         boolean exported = outputResourceToPackInternal(this);
         context.tried(this, exported);
     }
 
-    boolean imageDone = false;
     @Override
     public Identifier getIcon(boolean hovered) {
 
-        if(fileType == FileType.PNG && hovered) {
-            if(imageDone || resource == null)
+
+        if (fileType == FileType.PNG && hovered) {
+            if (imageDone || resource == null)
                 return identifier;
 
             imageDone = true;
@@ -260,22 +262,19 @@ public class REResourceFile extends REResourceEntry {
                     //resource.close();
                     in.close();
                 }
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
-        return resource == null? REExplorer.ICON_FILE_BUILT : fileType.getDefaultIcon();
+        return resource == null ? REExplorer.ICON_FILE_BUILT : fileType.getDefaultIcon();
     }
 
-    public int height = 1;
-    public int width = 1;
-
-
-    public REResourceFileDisplayWrapper wrapEntryAsDetailed(){
+    public REResourceFileDisplayWrapper wrapEntryAsDetailed() {
         return new REResourceFileDisplayWrapper(this);
     }
-    Boolean hasMetaData = null;
+
     @Override
     @Nullable Identifier getIcon2OrNull(boolean hovered) {
-        if(hasMetaData == null){
+        if (hasMetaData == null) {
             if (resource != null) {
                 try {
                     ResourceMetadata meta = resource.getMetadata();
@@ -283,7 +282,7 @@ public class REResourceFile extends REResourceEntry {
                 } catch (IOException e) {
                     hasMetaData = false;
                 }
-            }else{
+            } else {
                 hasMetaData = false;
             }
         }
@@ -293,7 +292,7 @@ public class REResourceFile extends REResourceEntry {
 
     @Override
     public boolean mouseClickExplorer() {
-        if(REExplorerScreen.currentDisplay != null) {
+        if (REExplorerScreen.currentDisplay != null) {
             REExplorerScreen.currentDisplay.setSelectedFile(this.wrapEntryAsDetailed());
         }
         return true;
@@ -311,13 +310,48 @@ public class REResourceFile extends REResourceEntry {
         OTHER(REExplorer.ICON_FILE_UNKNOWN),
         BLANK(REExplorer.ICON_FILE_BLANK);
 
+        private final Identifier defaultIcon;
+
+        FileType(Identifier defaultIcon) {
+            this.defaultIcon = defaultIcon;
+        }
+
+        public static FileType getType(Identifier identifier) {
+            String path = identifier.getPath();
+            if (path.endsWith(".png")) {
+                return PNG;
+            }
+            if (path.endsWith(".json") || path.endsWith(".json5")) {
+                return JSON;
+            }
+            if (path.endsWith(".properties") || path.endsWith(".toml")) {
+                return PROPERTIES;
+            }
+            if (path.endsWith(".jem")) {
+                return JEM;
+            }
+            if (path.endsWith(".jpm")) {
+                return JPM;
+            }
+            if (path.endsWith(".txt")) {
+                return TXT;
+            }
+            if (path.endsWith(".ogg") || path.endsWith(".mp3")) {
+                return OGG;
+            }
+            if (path.endsWith(".zip")) {
+                return ZIP;
+            }
+            return OTHER;
+        }
+
         public Identifier getDefaultIcon() {
             return defaultIcon;
         }
 
         @Override
         public String toString() {
-            return switch (this){
+            return switch (this) {
                 case PNG -> "texture";
                 case TXT -> "text";
                 case PROPERTIES -> "properties";
@@ -332,44 +366,10 @@ public class REResourceFile extends REResourceEntry {
         }
 
         public boolean isRawTextType() {
-            return switch (this){
+            return switch (this) {
                 case TXT, JSON, JPM, JEM, PROPERTIES -> true;
                 default -> false;
             };
-        }
-
-        private final Identifier defaultIcon;
-        FileType(Identifier defaultIcon){
-            this.defaultIcon = defaultIcon;
-        }
-
-        public static FileType getType(Identifier identifier){
-            String path = identifier.getPath();
-            if(path.endsWith(".png")){
-                return PNG;
-            }
-            if(path.endsWith(".json")|| path.endsWith(".json5")){
-                return JSON;
-            }
-            if( path.endsWith(".properties") || path.endsWith(".toml")){
-                return PROPERTIES;
-            }
-            if(path.endsWith(".jem")){
-                return JEM;
-            }
-            if(path.endsWith(".jpm")){
-                return JPM;
-            }
-            if(path.endsWith(".txt")){
-                return TXT;
-            }
-            if(path.endsWith(".ogg") || path.endsWith(".mp3")){
-                return OGG;
-            }
-            if(path.endsWith(".zip")){
-                return ZIP;
-            }
-            return OTHER;
         }
     }
 }

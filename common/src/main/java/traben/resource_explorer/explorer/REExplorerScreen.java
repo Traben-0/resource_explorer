@@ -23,27 +23,24 @@ public class REExplorerScreen extends Screen {
 
     @Nullable
     static public REStats currentStats = null;
-
-    private REResourceListWidget fileList;
-
-    public Screen vanillaParent;
-
+    public final Screen vanillaParent;
     @Nullable
-    public REExplorerScreen reParent;
-
-    final String cumulativePath;
-
+    public final REExplorerScreen reParent;
     public final LinkedList<REResourceEntry> entriesInThisDirectory;
+    final String cumulativePath;
+    private REResourceListWidget fileList;
+    private REConfig.REFileFilter filterChoice = REConfig.getInstance().filterMode;
 
     public REExplorerScreen(Screen vanillaParent) {
-        super(Text.translatable(MOD_ID+".title"));
+        super(Text.translatable(MOD_ID + ".title"));
         this.cumulativePath = "assets/";
         this.entriesInThisDirectory = REExplorer.getResourceFolderRoot();
         this.vanillaParent = vanillaParent;
         this.reParent = null;
     }
+
     public REExplorerScreen(Screen vanillaParent, @NotNull REExplorerScreen reParent, LinkedList<REResourceEntry> entries, String cumulativePath) {
-        super(Text.translatable(MOD_ID+".title"));
+        super(Text.translatable(MOD_ID + ".title"));
         this.cumulativePath = cumulativePath;
         this.entriesInThisDirectory = entries;
         this.vanillaParent = vanillaParent;
@@ -51,7 +48,7 @@ public class REExplorerScreen extends Screen {
     }
 
     protected void init() {
-        if(currentDisplay == null) currentDisplay = new REResourceSingleDisplayWidget(client,200, this.height);
+        if (currentDisplay == null) currentDisplay = new REResourceSingleDisplayWidget(client, 200, this.height);
 
         this.fileList = new REResourceListWidget(this.client, this, 200, this.height);
         this.fileList.setLeftPos(this.width / 2 - 4 - 200);
@@ -63,38 +60,36 @@ public class REExplorerScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE,
                 (button) -> this.close()).dimensions(this.width / 2 + 4, this.height - 48, 150, 20).build());
 
-        Tooltip warn = Tooltip.of(Text.translatable(MOD_ID+".explorer.apply_warn"));
+        Tooltip warn = Tooltip.of(Text.translatable(MOD_ID + ".explorer.apply_warn"));
 
-        ButtonWidget apply = this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID+".explorer.apply"), (button) -> {
+        ButtonWidget apply = this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID + ".explorer.apply"), (button) -> {
             this.close();
             REConfig.getInstance().filterMode = filterChoice;
             REConfig.saveConfig();
         }).dimensions(this.width / 2 - 4 - 46, this.height - 48, 46, 20).tooltip(warn).build());
         apply.active = false;
 
-        this.addDrawableChild(ButtonWidget.builder(Text.translatable( REConfig.getInstance().filterMode.getKey()), (button) -> {
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable(REConfig.getInstance().filterMode.getKey()), (button) -> {
             filterChoice = filterChoice.next();
             button.setMessage(Text.translatable(filterChoice.getKey()));
             apply.active = filterChoice != REConfig.getInstance().filterMode;
         }).dimensions(this.width / 2 - 4 - 200, this.height - 48, 150, 20).tooltip(warn).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.translatable( MOD_ID+".explorer.settings"), (button) -> {
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID + ".explorer.settings"), (button) -> {
             this.close();
             MinecraftClient.getInstance().setScreen(new REConfig.REConfigScreen(null));
         }).dimensions(this.width / 2 - 4 - 200, this.height - 24, 150, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID+".explorer.stats"), (button) -> {
-            if(currentStats != null) MinecraftClient.getInstance().setScreen(currentStats.getAsScreen(this));
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID + ".explorer.stats"), (button) -> {
+            if (currentStats != null) MinecraftClient.getInstance().setScreen(currentStats.getAsScreen(this));
         }).dimensions(this.width / 2 - 4 - 46, this.height - 24, 46, 20).build());
     }
-
-    private REConfig.REFileFilter filterChoice = REConfig.getInstance().filterMode;
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
 
         this.fileList.render(context, mouseX, mouseY, delta);
-        if(currentDisplay != null)
+        if (currentDisplay != null)
             currentDisplay.render(context, mouseX, mouseY, delta);
 
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 8, 16777215);
@@ -110,7 +105,7 @@ public class REExplorerScreen extends Screen {
         this.fileList.close();
         super.close();
 
-        if(currentDisplay != null)
+        if (currentDisplay != null)
             currentDisplay.close();
         currentDisplay = null;
         currentStats = null;
@@ -118,13 +113,12 @@ public class REExplorerScreen extends Screen {
         //reading resources this way has some... affects to the resource system
         //thus a resource reload is required
         MinecraftClient.getInstance().reloadResources();
-        if(vanillaParent instanceof REConfig.REConfigScreen configScreen){
+        if (vanillaParent instanceof REConfig.REConfigScreen configScreen) {
             configScreen.tempConfig.filterMode = REConfig.getInstance().filterMode;
             configScreen.reset();
         }
         MinecraftClient.getInstance().setScreen(vanillaParent);
     }
-
 
 
 }

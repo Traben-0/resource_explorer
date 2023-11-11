@@ -48,5 +48,20 @@
   "resource_explorer.explorer.stats.namespace": "By namespace:",
   "resource_explorer.explorer.stats.packs": "By resource-pack:",
   "resource_explorer.settings.fail_toast": "Exception message in toast: ",
-  "resource_explorer.settings.fail_toast.tooltip": "When enabled this will add the Exception message to the Toast pop-up on the top right of the screen after a resource reload failure"
+  "resource_explorer.settings.fail_toast.tooltip": "When enabled this will add the Exception message to the Toast pop-up on the top right of the screen after a resource reload failure",
+  "resource_explorer.detail.folder": "folder",
+  "resource_explorer.detail.folders": "folders",
+  "resource_explorer.detail.file": "file",
+  "resource_explorer.detail.files": "files",
+  "resource_explorer.detail.built_file": "built file",
+  "resource_explorer.detail.built_files": "built files",
+  "resource_explorer.detail.built_msg": "built by code",
+  "resource_explorer.detail.type": "type",
+  "resource_explorer.detail.metadata": "metadata",
+  "resource_explorer.detail.pack": "pack",
+  "resource_explorer.detail.height": "height",
+  "resource_explorer.detail.width": "width",
+  "resource_explorer.detail.frame_count": "frame count",
+  "resource_explorer.detail.lines": "lines",
+  "resource_explorer.detail.character_count": "character count"
 }

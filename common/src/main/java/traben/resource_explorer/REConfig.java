@@ -27,34 +27,17 @@ import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 
 public class REConfig {
 
-    public REConfig copy(){
-        REConfig newConfig = new REConfig();
-        newConfig.showResourcePackButton = showResourcePackButton;
-        newConfig.filterMode = filterMode;
-        newConfig.logFullFileTree = logFullFileTree;
-        newConfig.addCauseToReloadFailureToast = addCauseToReloadFailureToast;
-        return newConfig;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        REConfig reConfig = (REConfig) o;
-        return showResourcePackButton == reConfig.showResourcePackButton &&
-                logFullFileTree == reConfig.logFullFileTree &&
-                filterMode == reConfig.filterMode &&
-                addCauseToReloadFailureToast == reConfig.addCauseToReloadFailureToast;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(showResourcePackButton, logFullFileTree, filterMode, addCauseToReloadFailureToast);
-    }
     private static REConfig instance;
+    public boolean showResourcePackButton = true;
+    public boolean logFullFileTree = false;
+    public boolean addCauseToReloadFailureToast = true;
+    public REFileFilter filterMode = REFileFilter.ALL_RESOURCES;
+
+    private REConfig() {
+    }
 
     public static REConfig getInstance() {
-        if(instance == null){
+        if (instance == null) {
             loadConfig();
         }
         return instance;
@@ -64,14 +47,6 @@ public class REConfig {
         instance = newInstance;
         saveConfig();
     }
-    private REConfig(){}
-
-    public boolean showResourcePackButton = true;
-    public boolean logFullFileTree = false;
-
-    public boolean addCauseToReloadFailureToast = true;
-
-    public REFileFilter filterMode = REFileFilter.ALL_RESOURCES;
 
     public static void loadConfig() {
         try {
@@ -115,74 +90,88 @@ public class REConfig {
         }
     }
 
-    public enum REFileFilter{
-        ALL_RESOURCES(MOD_ID+".filter.0",
-                (fileEntry)->true),
-        ALL_RESOURCES_NO_GENERATED(MOD_ID+".filter.1",
-                (fileEntry)->fileEntry.resource!= null),
-        ONLY_FROM_PACKS_NO_GENERATED(MOD_ID+".filter.2",
-                (fileEntry)->fileEntry.resource!= null && !"vanilla".equals(fileEntry.resource.getResourcePackName())),
-        ONLY_TEXTURES(MOD_ID+".filter.3",
-                (fileEntry)->fileEntry.fileType == REResourceFile.FileType.PNG),
-        ONLY_TEXTURE_NO_GENERATED(MOD_ID+".filter.4",
-                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFile.FileType.PNG),
-        ONLY_TEXTURE_FROM_PACKS_NO_GENERATED(MOD_ID+".filter.5",
-                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFile.FileType.PNG && !"vanilla".equals(fileEntry.resource.getResourcePackName())),
-        SOUNDS_ONLY(MOD_ID+".filter.6",
-                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType == REResourceFile.FileType.OGG),
-        TEXT_ONLY(MOD_ID+".filter.7",
-                (fileEntry)->fileEntry.resource!= null && fileEntry.fileType.isRawTextType());
+    public REConfig copy() {
+        REConfig newConfig = new REConfig();
+        newConfig.showResourcePackButton = showResourcePackButton;
+        newConfig.filterMode = filterMode;
+        newConfig.logFullFileTree = logFullFileTree;
+        newConfig.addCauseToReloadFailureToast = addCauseToReloadFailureToast;
+        return newConfig;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        REConfig reConfig = (REConfig) o;
+        return showResourcePackButton == reConfig.showResourcePackButton &&
+                logFullFileTree == reConfig.logFullFileTree &&
+                filterMode == reConfig.filterMode &&
+                addCauseToReloadFailureToast == reConfig.addCauseToReloadFailureToast;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(showResourcePackButton, logFullFileTree, filterMode, addCauseToReloadFailureToast);
+    }
+
+    public enum REFileFilter {
+        ALL_RESOURCES(MOD_ID + ".filter.0",
+                (fileEntry) -> true),
+        ALL_RESOURCES_NO_GENERATED(MOD_ID + ".filter.1",
+                (fileEntry) -> fileEntry.resource != null),
+        ONLY_FROM_PACKS_NO_GENERATED(MOD_ID + ".filter.2",
+                (fileEntry) -> fileEntry.resource != null && !"vanilla".equals(fileEntry.resource.getResourcePackName())),
+        ONLY_TEXTURES(MOD_ID + ".filter.3",
+                (fileEntry) -> fileEntry.fileType == REResourceFile.FileType.PNG),
+        ONLY_TEXTURE_NO_GENERATED(MOD_ID + ".filter.4",
+                (fileEntry) -> fileEntry.resource != null && fileEntry.fileType == REResourceFile.FileType.PNG),
+        ONLY_TEXTURE_FROM_PACKS_NO_GENERATED(MOD_ID + ".filter.5",
+                (fileEntry) -> fileEntry.resource != null && fileEntry.fileType == REResourceFile.FileType.PNG && !"vanilla".equals(fileEntry.resource.getResourcePackName())),
+        SOUNDS_ONLY(MOD_ID + ".filter.6",
+                (fileEntry) -> fileEntry.resource != null && fileEntry.fileType == REResourceFile.FileType.OGG),
+        TEXT_ONLY(MOD_ID + ".filter.7",
+                (fileEntry) -> fileEntry.resource != null && fileEntry.fileType.isRawTextType());
+
+        private final String key;
+        private final Predicate<REResourceFile> test;
+
+        REFileFilter(String key, Predicate<REResourceFile> test) {
+            this.key = key;
+            this.test = test;
+        }
 
         public String getKey() {
             return key;
         }
 
-        private final String key;
-
-        private final Predicate<REResourceFile> test;
-
-        REFileFilter(String key, Predicate<REResourceFile> test){
-            this.key = key;
-            this.test = test;
-        }
-
-        public boolean allows(REResourceFile fileEntry){
+        public boolean allows(REResourceFile fileEntry) {
             return test.test(fileEntry);
         }
 
-        public REFileFilter next(){
-            return switch (this){
-                case ALL_RESOURCES
-                        -> ALL_RESOURCES_NO_GENERATED;
-                case ALL_RESOURCES_NO_GENERATED
-                        -> ONLY_FROM_PACKS_NO_GENERATED;
-                case ONLY_FROM_PACKS_NO_GENERATED
-                        -> ONLY_TEXTURES;
-                case ONLY_TEXTURES
-                        -> ONLY_TEXTURE_NO_GENERATED;
-                case ONLY_TEXTURE_NO_GENERATED
-                        -> ONLY_TEXTURE_FROM_PACKS_NO_GENERATED;
-                case ONLY_TEXTURE_FROM_PACKS_NO_GENERATED
-                        -> SOUNDS_ONLY;
-                case SOUNDS_ONLY
-                        -> TEXT_ONLY;
-                case TEXT_ONLY
-                        -> ALL_RESOURCES;
+        public REFileFilter next() {
+            return switch (this) {
+                case ALL_RESOURCES -> ALL_RESOURCES_NO_GENERATED;
+                case ALL_RESOURCES_NO_GENERATED -> ONLY_FROM_PACKS_NO_GENERATED;
+                case ONLY_FROM_PACKS_NO_GENERATED -> ONLY_TEXTURES;
+                case ONLY_TEXTURES -> ONLY_TEXTURE_NO_GENERATED;
+                case ONLY_TEXTURE_NO_GENERATED -> ONLY_TEXTURE_FROM_PACKS_NO_GENERATED;
+                case ONLY_TEXTURE_FROM_PACKS_NO_GENERATED -> SOUNDS_ONLY;
+                case SOUNDS_ONLY -> TEXT_ONLY;
+                case TEXT_ONLY -> ALL_RESOURCES;
             };
         }
     }
 
 
-
-
-    public static class REConfigScreen extends Screen{
+    public static class REConfigScreen extends Screen {
 
         private final Screen parent;
 
         public REConfig tempConfig;
 
         public REConfigScreen(Screen parent) {
-            super(Text.translatable(MOD_ID+".settings.title"));
+            super(Text.translatable(MOD_ID + ".settings.title"));
             if (parent instanceof REExplorerScreen) {
                 this.parent = null;
             } else {
@@ -191,16 +180,17 @@ public class REConfig {
             tempConfig = getInstance().copy();
         }
 
-        public void reset(){
-        this.clearAndInit();
+        public void reset() {
+            this.clearAndInit();
         }
+
         @Override
         protected void init() {
             super.init();
             this.addDrawableChild(ButtonWidget.builder(
                     Text.translatable("gui.done"),
                     (button) -> {
-                        if(!tempConfig.equals(instance)) {
+                        if (!tempConfig.equals(instance)) {
                             setInstance(tempConfig);
                             MinecraftClient.getInstance().reloadResources();
                         }
@@ -222,37 +212,37 @@ public class REConfig {
 
 
             this.addDrawableChild(ButtonWidget.builder(
-                            Text.of(Text.translatable(MOD_ID+".settings.options_button").getString() + (ScreenTexts.onOrOff(tempConfig.showResourcePackButton).getString())),
-                    (button) -> {
-                        tempConfig.showResourcePackButton = ! tempConfig.showResourcePackButton;
-                        button.setMessage(Text.of(Text.translatable(MOD_ID+".settings.options_button").getString() + (ScreenTexts.onOrOff(tempConfig.showResourcePackButton).getString())));
-                    }).tooltip(Tooltip.of(Text.translatable(MOD_ID+".settings.options_button.tooltip")))
+                            Text.of(Text.translatable(MOD_ID + ".settings.options_button").getString() + (ScreenTexts.onOrOff(tempConfig.showResourcePackButton).getString())),
+                            (button) -> {
+                                tempConfig.showResourcePackButton = !tempConfig.showResourcePackButton;
+                                button.setMessage(Text.of(Text.translatable(MOD_ID + ".settings.options_button").getString() + (ScreenTexts.onOrOff(tempConfig.showResourcePackButton).getString())));
+                            }).tooltip(Tooltip.of(Text.translatable(MOD_ID + ".settings.options_button.tooltip")))
                     .dimensions((int) (this.width * 0.5), (int) (this.height * 0.2), (int) (this.width * 0.4), 20).build());
             this.addDrawableChild(ButtonWidget.builder(
-                             Text.of(Text.translatable(MOD_ID+".settings.log_files").getString() + (ScreenTexts.onOrOff(tempConfig.logFullFileTree).getString())),
+                            Text.of(Text.translatable(MOD_ID + ".settings.log_files").getString() + (ScreenTexts.onOrOff(tempConfig.logFullFileTree).getString())),
                             (button) -> {
-                                tempConfig.logFullFileTree = ! tempConfig.logFullFileTree;
-                                button.setMessage(Text.of(Text.translatable(MOD_ID+".settings.log_files").getString() + (ScreenTexts.onOrOff(tempConfig.logFullFileTree)).getString()));
-                            }).tooltip(Tooltip.of(Text.translatable(MOD_ID+".settings.log_files.tooltip")))
+                                tempConfig.logFullFileTree = !tempConfig.logFullFileTree;
+                                button.setMessage(Text.of(Text.translatable(MOD_ID + ".settings.log_files").getString() + (ScreenTexts.onOrOff(tempConfig.logFullFileTree)).getString()));
+                            }).tooltip(Tooltip.of(Text.translatable(MOD_ID + ".settings.log_files.tooltip")))
                     .dimensions((int) (this.width * 0.5), (int) (this.height * 0.3), (int) (this.width * 0.4), 20).build());
             this.addDrawableChild(ButtonWidget.builder(
                             Text.translatable(tempConfig.filterMode.key),
                             (button) -> {
                                 tempConfig.filterMode = tempConfig.filterMode.next();
                                 button.setMessage(Text.translatable(tempConfig.filterMode.key));
-                            }).tooltip(Tooltip.of(Text.translatable(MOD_ID+".filter.tooltip")))
+                            }).tooltip(Tooltip.of(Text.translatable(MOD_ID + ".filter.tooltip")))
                     .dimensions((int) (this.width * 0.5), (int) (this.height * 0.4), (int) (this.width * 0.4), 20).build());
             this.addDrawableChild(ButtonWidget.builder(
-                            Text.of(Text.translatable(MOD_ID+".settings.fail_toast").getString() + (ScreenTexts.onOrOff(tempConfig.addCauseToReloadFailureToast).getString())),
+                            Text.of(Text.translatable(MOD_ID + ".settings.fail_toast").getString() + (ScreenTexts.onOrOff(tempConfig.addCauseToReloadFailureToast).getString())),
                             (button) -> {
-                                tempConfig.addCauseToReloadFailureToast = ! tempConfig.addCauseToReloadFailureToast;
-                                button.setMessage(Text.of(Text.translatable(MOD_ID+".settings.fail_toast").getString() + (ScreenTexts.onOrOff(tempConfig.addCauseToReloadFailureToast)).getString()));
-                            }).tooltip(Tooltip.of(Text.translatable(MOD_ID+".settings.fail_toast.tooltip")))
+                                tempConfig.addCauseToReloadFailureToast = !tempConfig.addCauseToReloadFailureToast;
+                                button.setMessage(Text.of(Text.translatable(MOD_ID + ".settings.fail_toast").getString() + (ScreenTexts.onOrOff(tempConfig.addCauseToReloadFailureToast)).getString()));
+                            }).tooltip(Tooltip.of(Text.translatable(MOD_ID + ".settings.fail_toast.tooltip")))
                     .dimensions((int) (this.width * 0.5), (int) (this.height * 0.5), (int) (this.width * 0.4), 20).build());
 
 
-            int x =(int) (this.width * 0.1);
-            int y =(int) (this.height * 0.15);
+            int x = (int) (this.width * 0.1);
+            int y = (int) (this.height * 0.15);
 
             int square = (int) Math.min(this.height * 0.6, this.width * 0.45);
             this.addDrawableChild(new TexturedButtonWidget(
@@ -262,10 +252,11 @@ public class REConfig {
                         assert this.client != null;
                         this.client.setScreen(new REExplorerScreen(this));
                     },
-                    Text.translatable(MOD_ID+".open_tooltip")) {
+                    Text.translatable(MOD_ID + ".open_tooltip")) {
                 {
-                        setTooltip(Tooltip.of(Text.translatable(MOD_ID+".open_tooltip")));
+                    setTooltip(Tooltip.of(Text.translatable(MOD_ID + ".open_tooltip")));
                 }
+
                 //override required because textured button widget just doesnt work
                 @Override
                 public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
