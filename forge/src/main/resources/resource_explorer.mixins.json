@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "traben.resource_explorer.mixin.forge",
+  "package": "traben.resource_explorer.forge.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
   ],

@@ -4,9 +4,22 @@
   "version": "${version}",
 
   "name": "Resource Explorer",
-  "description": "test",
-  "authors": [],
-  "contact": {},
+  "description": "A mod allowing the exploration & exporting of all the resources & packs available to Minecraft, as it sees them.",
+  "authors": [
+    {
+      "name": "Traben",
+      "contact": {
+        "homepage": "https://www.curseforge.com/members/traben_0/projects",
+        "discord": "https://discord.gg/rURmwrzUcz"
+      }
+    }
+  ],
+  "contact": {
+    "homepage": "https://discord.gg/rURmwrzUcz",
+    "sources": "https://github.com/Traben-0/resource_explorer",
+    "issues": "https://github.com/Traben-0/resource_explorer/issues",
+    "discord": "https://discord.gg/rURmwrzUcz"
+  },
 
   "license": "GNU LGPL 3.0",
   "icon": "icon.png",
@@ -28,5 +41,13 @@
   "depends": {
     "fabricloader": ">=0.14.24",
     "minecraft": ">=1.20.2"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.website": "https://www.curseforge.com/members/traben_0/projects",
+        "modmenu.discord": "https://discord.gg/rURmwrzUcz"
+      }
+    }
   }
 }

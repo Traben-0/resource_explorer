@@ -52,6 +52,7 @@ public class REExplorer {
 
             ObjectLinkedOpenHashSet<REResourceFile> allFilesList = new ObjectLinkedOpenHashSet<>();
 
+
             boolean print = REConfig.getInstance().logFullFileTree;
 
             if (print) {
@@ -68,7 +69,7 @@ public class REExplorer {
                 //the method I use to explore all resources will cause an exception once at the end of the resource list as I need to search for blank file names
             }
 
-            //fabric resources allow direct blank searches so catch those too
+            //fabric mod resources allow direct blank searches so catch those too
             Map<Identifier, Resource> resourceMap2 = MinecraftClient.getInstance().getResourceManager().findResources("", (id) -> true);
             resourceMap2.forEach((k, v) -> allFilesList.add(new REResourceFile(k, v)));
 
@@ -294,7 +295,7 @@ public class REExplorer {
                 }else{
                     if("vanilla".equals(file.resource.getResourcePackName()) ||
                        "fabric".equals(file.resource.getResourcePackName()) ||
-                       "Mod Resources".equals(file.resource.getResourcePackName())//todo double check this is what forge does
+                       "mod_resources".equals(file.resource.getResourcePackName())
                     ) {
                         moddedCount++;
                     }else {

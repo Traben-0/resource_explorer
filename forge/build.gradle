@@ -29,6 +29,18 @@ processResources {
     }
 }
 
+loom {
+    //accessWidenerPath = project(":common").loom.accessWidenerPath
+
+    forge {
+        //convertAccessWideners = true
+        //extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
+        mixinConfig "resource_explorer.mixins.json"
+        mixinConfig "resource_explorer-common.mixins.json"
+
+    }
+}
+
 shadowJar {
     exclude "fabric.mod.json"
 
