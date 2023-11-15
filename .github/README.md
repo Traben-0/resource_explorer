@@ -4,7 +4,9 @@
 
 # The Resource Explorer Mod
 
-`//todo links once pages are approved`
+
+[![Modrinth downloads](https://img.shields.io/modrinth/dt/resource_explorer?color=00AF5C&label=downloads&style=round&logo=modrinth)](https://modrinth.com/mod/resource_explorer)
+[![CurseForge downloads](https://cf.way2muchnoise.eu/full_936066_downloads.svg)](https://curseforge.com/minecraft/mc-mods/resource-explorer)
 
 
 [![Enviroment](https://img.shields.io/badge/Enviroment-Client-purple)](https://modrinth.com/mods?e=client)
