@@ -9,4 +9,8 @@ public class REVersionDifferenceManagerImpl {
         return FabricLoader.getInstance().getConfigDir();
     }
 
+    public static boolean isForge() {
+        return false;
+    }
+
 }

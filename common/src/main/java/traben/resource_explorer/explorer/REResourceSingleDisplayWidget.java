@@ -63,10 +63,12 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        this.setScrollAmount(this.getScrollAmount() - verticalAmount * 18);
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        this.setScrollAmount(this.getScrollAmount() - amount * 18);
         return true;
     }
+
+
 
     @Override
     protected void renderHeader(DrawContext context, int x, int y) {

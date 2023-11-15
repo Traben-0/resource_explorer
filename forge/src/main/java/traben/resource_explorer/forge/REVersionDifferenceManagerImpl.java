@@ -10,4 +10,8 @@ public class REVersionDifferenceManagerImpl {
         return FMLPaths.CONFIGDIR.get();
     }
 
+    public static boolean isForge() {
+        return true;
+    }
+
 }

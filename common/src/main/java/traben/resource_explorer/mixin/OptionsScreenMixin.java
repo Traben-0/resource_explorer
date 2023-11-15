@@ -2,7 +2,6 @@ package traben.resource_explorer.mixin;
 
 
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -39,13 +38,12 @@ public abstract class OptionsScreenMixin extends Screen {
                     x,
                     y,
                     16,
-                    16,
-                    new ButtonTextures(REExplorer.ICON_FOLDER, REExplorer.ICON_FOLDER_OPEN),
+                    16,0,0,16,
+                    REExplorer.ICON_FOLDER_OPEN,
                     (button) -> {
                         assert this.client != null;
                         this.client.setScreen(new REExplorerScreen(this));
-                    },
-                    Text.translatable(MOD_ID + ".open_tooltip")) {
+                    }) {
                 {
                     setTooltip(Tooltip.of(Text.translatable(MOD_ID + ".open_tooltip")));
                 }

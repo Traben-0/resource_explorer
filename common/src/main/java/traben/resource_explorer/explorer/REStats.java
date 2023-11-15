@@ -120,6 +120,7 @@ public class REStats {
 
         @Override
         public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+            renderBackgroundTexture(context);
             super.render(context, mouseX, mouseY, delta);
 
             int offset;

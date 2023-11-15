@@ -11,6 +11,7 @@ import net.minecraft.util.Colors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.REConfig;
+import traben.resource_explorer.REVersionDifferenceManager;
 
 import java.util.LinkedList;
 
@@ -86,7 +87,7 @@ public class REExplorerScreen extends Screen {
     }
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
+        renderBackgroundTexture(context);
 
         this.fileList.render(context, mouseX, mouseY, delta);
         if (currentDisplay != null)
@@ -94,11 +95,18 @@ public class REExplorerScreen extends Screen {
 
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 8, 16777215);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.of(cumulativePath), this.width / 2, 20, Colors.GRAY);
+        if(REVersionDifferenceManager.isForge()) {
+            context.drawTextWithShadow(this.textRenderer, Text.of("Forge 1.20.1 and earlier"),
+                    this.width / 2 + 4, this.height - 26, Colors.RED);
+            context.drawTextWithShadow(this.textRenderer, Text.of("doesn't read modded files consistently"),
+                    this.width / 2 + 4, this.height - 18, Colors.RED);
+            context.drawTextWithShadow(this.textRenderer, Text.of("use versions 1.20.2 +"),
+                    this.width / 2 + 4, this.height - 10, Colors.RED);
+        }
+        super.render(context, mouseX, mouseY, delta);
     }
 
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackgroundTexture(context);
-    }
+
 
     @Override
     public void close() {

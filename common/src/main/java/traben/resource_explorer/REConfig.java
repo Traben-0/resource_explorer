@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -246,13 +245,12 @@ public class REConfig {
 
             int square = (int) Math.min(this.height * 0.6, this.width * 0.45);
             this.addDrawableChild(new TexturedButtonWidget(
-                    x, y, square, square,
-                    new ButtonTextures(REExplorer.ICON_FOLDER, REExplorer.ICON_FOLDER_OPEN),
+                    x, y, square, square,0,0,square,
+                    REExplorer.ICON_FOLDER_OPEN,
                     (button) -> {
                         assert this.client != null;
                         this.client.setScreen(new REExplorerScreen(this));
-                    },
-                    Text.translatable(MOD_ID + ".open_tooltip")) {
+                    }) {
                 {
                     setTooltip(Tooltip.of(Text.translatable(MOD_ID + ".open_tooltip")));
                 }
@@ -265,6 +263,12 @@ public class REConfig {
                 }
 
             });
+        }
+
+        @Override
+        public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+            renderBackgroundTexture(context);
+            super.render(context, mouseX, mouseY, delta);
         }
     }
 }
