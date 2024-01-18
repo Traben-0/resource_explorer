@@ -9,12 +9,14 @@ import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.resource.Resource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.explorer.REExplorer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
+import java.util.Random;
 
 import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 
@@ -64,13 +66,38 @@ public class PNGEditorScreen extends Screen {
 
     }
 
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        //test editor basic functionality
+        if(mouseX < 128 && mouseY < 128){
+            Random rand = new Random();
+            image.setColor((int) mouseX/8, (int) mouseY/8,
+                    ColorHelper.Argb.getArgb(255,
+                            rand.nextInt(255),
+                            rand.nextInt(255),
+                            rand.nextInt(255)));
+            updateRenderedImage();
+            return true;
+        }
+        return super.mouseClicked(mouseX,mouseY,button);
+    }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
 
 
-        context.drawTexture(renderImage.getCurrent(), 0, 0, 0.0F, 0.0F, 32, 32, 32, 32);
+        context.drawTexture(renderImage.getCurrent(), 0, 0, 0.0F, 0.0F, 128, 128, 128, 128);
 
 //        context.drawTexture(getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
 //        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 32 + 2, y + 1, 16777215);
