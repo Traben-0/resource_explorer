@@ -17,11 +17,13 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import traben.resource_explorer.editor.png.PNGEditorScreen;
 
 public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.Entry<REResourceFileDisplayWrapper> implements Comparable<REResourceFileDisplayWrapper> {
 
     private final REResourceFile fileEntry;
     private ButtonWidget multiUseButton = null;
+    private ButtonWidget editorButton = null;
 
     REResourceFileDisplayWrapper(REResourceFile fileEntry) {
         this.fileEntry = fileEntry;
@@ -53,6 +55,20 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
                     }
             ).dimensions(0, 0, 150, 20).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip.file"))).build();
         }
+
+        if(fileEntry.fileType == REResourceFile.FileType.PNG){
+            editorButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.edit_png"),
+                    (button) -> {
+                        try {
+                            MinecraftClient.getInstance().setScreen(new PNGEditorScreen(MinecraftClient.getInstance().currentScreen,fileEntry.identifier,fileEntry.resource));
+                        } catch (Exception e) {
+                            System.out.println("edit button fails lol: ");
+                            e.printStackTrace();
+                        }
+                    }
+            ).dimensions(0, 0, 150, 20).build();
+            multiUseButton.active = fileEntry.resource != null;
+        }
     }
 
     public REResourceFile getFileEntry() {
@@ -63,7 +79,7 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
         int entryWidth = 178;
         int heightMargin = 100 + (fileEntry.getExtraText(false).size() * 11);
         return (int) (heightMargin + switch (fileEntry.fileType) {
-            case PNG -> 40 + fileEntry.height * ((entryWidth + 0f) / fileEntry.width);
+            case PNG -> 82 + fileEntry.height * ((entryWidth + 0f) / fileEntry.width);
             case TXT, PROPERTIES, JEM, JPM, JSON -> 64 + fileEntry.getTextLines().count() * 10;
             case OTHER ->
                     50 + fileEntry.height * ((entryWidth + 0f) / fileEntry.width) + fileEntry.getTextLines().count() * 10;
@@ -75,6 +91,9 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (multiUseButton != null && multiUseButton.active && multiUseButton.isMouseOver(mouseX, mouseY)) {
             multiUseButton.onPress();
+        }
+        if (editorButton != null && editorButton.active && editorButton.isMouseOver(mouseX, mouseY)) {
+            editorButton.onPress();
         }
         return false;
     }
@@ -107,17 +126,18 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
         switch (fileEntry.fileType) {
             case PNG -> {
                 offset = drawAsImage(context, offset, displaySquareMaximum, displayX, displayY);
-                drawButton(Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+                offset = drawPrimaryButton(Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+                drawEditorButton(Text.of("Edit:"), context, offset, displayX, displayY, mouseX, mouseY);
             }
             case TXT, PROPERTIES, JEM, JPM, JSON -> {
                 offset = drawAsText(context, offset, displayX, displayY);
-                drawButton(Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+                drawPrimaryButton(Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
             }
             case OTHER -> {
                 offset = drawAsText(context, offset, displayX, displayY);
                 drawAsImage(context, offset, displaySquareMaximum, displayX, displayY);
             }
-            case OGG -> drawButton(Text.of("Sound:"), context, offset, displayX, displayY, mouseX, mouseY);
+            case OGG -> drawPrimaryButton(Text.of("Sound:"), context, offset, displayX, displayY, mouseX, mouseY);
         }
     }
 
@@ -154,7 +174,7 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    private int drawButton(Text text, DrawContext context, int offset, int displayX, int displayY, int mouseX, int mouseY) {
+    private int drawPrimaryButton(Text text, DrawContext context, int offset, int displayX, int displayY, int mouseX, int mouseY) {
         if (multiUseButton != null) {
             offset += 11;
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, text, displayX, displayY + offset, 16777215);
@@ -162,6 +182,20 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
             multiUseButton.setX(displayX);
             multiUseButton.setY(displayY + offset);
             multiUseButton.render(context, mouseX, mouseY, 0);
+            offset += 20;
+        }
+        return offset;
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    private int drawEditorButton(Text text, DrawContext context, int offset, int displayX, int displayY, int mouseX, int mouseY) {
+        if (editorButton != null) {
+            offset += 11;
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, text, displayX, displayY + offset, 16777215);
+            offset += 11;
+            editorButton.setX(displayX);
+            editorButton.setY(displayY + offset);
+            editorButton.render(context, mouseX, mouseY, 0);
             offset += 20;
         }
         return offset;

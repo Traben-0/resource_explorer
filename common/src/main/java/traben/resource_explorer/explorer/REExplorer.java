@@ -9,14 +9,17 @@ import net.minecraft.client.toast.ToastManager;
 import net.minecraft.resource.Resource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.apache.commons.io.IOUtils;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.mixin.TextureManagerAccessor;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 
 public class REExplorer {
     public static final Identifier ICON_FILE_BUILT = new Identifier("resource_explorer:textures/file_built.png");
@@ -159,9 +162,9 @@ public class REExplorer {
 
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    static boolean outputResourceToPackInternal(REResourceFile reResourceFile) {
+    public static boolean outputResourceToPackInternal(Identifier identifier, Function<File,Boolean> saveResources/*REResourceFile reResourceFile*/) {
         //only save existing file resources
-        if (reResourceFile.resource == null)
+        if (saveResources == null)
             return false;
 
         Path resourcePackFolder = MinecraftClient.getInstance().getResourcePackDir();
@@ -173,13 +176,13 @@ public class REExplorer {
                 if (!assets.exists()) {
                     assets.mkdir();
                 }
-                File namespace = new File(assets, reResourceFile.identifier.getNamespace());
+                File namespace = new File(assets, identifier.getNamespace());
                 if (!namespace.exists()) {
                     namespace.mkdir();
                 }
-                String[] pathList = reResourceFile.identifier.getPath().split("/");
+                String[] pathList = identifier.getPath().split("/");
                 String file = pathList[pathList.length - 1];
-                String directories = reResourceFile.identifier.getPath().replace(file, "");
+                String directories = identifier.getPath().replace(file, "");
                 File directoryFolder = new File(namespace, directories);
                 if (!directoryFolder.exists()) {
                     directoryFolder.mkdirs();
@@ -187,16 +190,15 @@ public class REExplorer {
                 if (directoryFolder.exists()) {
 
                     File outputFile = new File(directoryFolder, file);
-                    try {
-                        byte[] buffer = reResourceFile.resource.getInputStream().readAllBytes();
-                        OutputStream outStream = new FileOutputStream(outputFile);
-                        outStream.write(buffer);
-                        IOUtils.closeQuietly(outStream);
-                        return true;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        ResourceExplorerClient.log(" Exporting resource file failed for: " + reResourceFile.identifier);
+                    if(outputFile.exists()){
+                        ResourceExplorerClient.log("Overwriting existing resource: " + identifier);
                     }
+
+                    boolean saved = saveResources.apply(outputFile);
+                    if(!saved){
+                        ResourceExplorerClient.log("Exporting resource file failed for: " + identifier);
+                    }
+                    return saved;
                 }
             }
         }
@@ -250,7 +252,7 @@ public class REExplorer {
         return thisMetaFile.exists();
     }
 
-    static class REExportContext {
+    public static class REExportContext {
 
 
         final Set<REResourceFile.FileType> types = new HashSet<>();

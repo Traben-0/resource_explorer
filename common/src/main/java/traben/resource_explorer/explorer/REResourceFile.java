@@ -11,11 +11,14 @@ import net.minecraft.resource.metadata.ResourceMetadata;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.mixin.SpriteAtlasTextureAccessor;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -233,7 +236,19 @@ public class REResourceFile extends REResourceEntry {
     }
 
     public void exportToOutputPack(REExplorer.REExportContext context) {
-        boolean exported = outputResourceToPackInternal(this);
+        boolean exported = outputResourceToPackInternal(this.identifier,
+                resource == null? null : (file)->{
+                    try {
+                        byte[] buffer = resource.getInputStream().readAllBytes();
+                        OutputStream outStream = new FileOutputStream(file);
+                        outStream.write(buffer);
+                        IOUtils.closeQuietly(outStream);
+                        return true;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+        });
         context.tried(this, exported);
     }
 
