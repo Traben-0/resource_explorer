@@ -52,7 +52,7 @@ public abstract class OptionsScreenMixin extends Screen {
 
                 //override required because textured button widget just doesnt work
                 @Override
-                public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+                public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
                     Identifier identifier = this.isSelected() ? REExplorer.ICON_FOLDER_OPEN : REExplorer.ICON_FOLDER;
                     context.drawTexture(identifier, this.getX(), this.getY(), 0, 0, this.width, this.height, 16, 16);
                 }

@@ -1,5 +1,5 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "7.1.2"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
 }
 architectury {
     platformSetupLoomIde()
@@ -57,6 +57,8 @@ remapJar {
 jar {
     archiveClassifier.set("dev")
 }
+
+archivesBaseName = rootProject.archives_base_name + "_forge_1.20.4"
 
 sourcesJar {
     def commonSources = project(":common").sourcesJar
