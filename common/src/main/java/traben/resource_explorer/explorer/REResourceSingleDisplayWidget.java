@@ -8,6 +8,8 @@ import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.mixin.EntryListWidgetAccessor;
 
+import java.util.Objects;
+
 public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget<REResourceFileDisplayWrapper> {
 
 
@@ -15,8 +17,11 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
 
 
     public REResourceSingleDisplayWidget(MinecraftClient minecraftClient, int width, int height) {
-        super(minecraftClient, width, height, 32, height - 55 + 4, 32);
+        super(minecraftClient, width, height-83, 32/*, height - 55 + 4*/, 32);
         this.centerListVertically = false;
+        //1.20.4
+        Objects.requireNonNull(client.textRenderer);
+        this.setRenderHeader(true, (int)(9.0F * 1.5F));
     }
 
     void setSelectedFile(@Nullable REResourceFileDisplayWrapper newFile) {
@@ -37,11 +42,11 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
 
     public void setDimensions(int x, int width, int height) {
         this.width = width;
-        this.height = height;
-        this.top = 32;
-        this.bottom = height - 55 + 4;
-        this.left = x;
-        this.right = x + width;
+        this.height = height-83;
+        this.setY(32);
+        //this.bottom = height - 55 + 4;
+        this.setX(x);
+//        this.right = x + width;
     }
 
 
@@ -59,7 +64,7 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
     }
 
     protected int getScrollbarPositionX() {
-        return this.right - 6;
+        return this.getRight() - 6;
     }
 
     @Override
@@ -72,7 +77,7 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
     protected void renderHeader(DrawContext context, int x, int y) {
         if (title != null) {
             Text text = Text.empty().append(this.title).formatted(Formatting.UNDERLINE, Formatting.BOLD);
-            context.drawText(this.client.textRenderer, text, x + this.width / 2 - this.client.textRenderer.getWidth(text) / 2, Math.min(this.top + 3, y), 16777215, false);
+            context.drawText(this.client.textRenderer, text, x + this.width / 2 - this.client.textRenderer.getWidth(text) / 2, Math.min(this.getY() + 3, y), 16777215, false);
         }
     }
 

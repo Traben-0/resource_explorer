@@ -51,7 +51,7 @@ public class REExplorerScreen extends Screen {
         if (currentDisplay == null) currentDisplay = new REResourceSingleDisplayWidget(client, 200, this.height);
 
         this.fileList = new REResourceListWidget(this.client, this, 200, this.height);
-        this.fileList.setLeftPos(this.width / 2 - 4 - 200);
+        this.fileList.setX(this.width / 2 - 4 - 200);
         this.addSelectableChild(this.fileList);
 
         currentDisplay.setDimensions(width / 2 + 4, 200, this.height);
