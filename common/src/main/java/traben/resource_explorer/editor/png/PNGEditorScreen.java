@@ -41,9 +41,16 @@ public class PNGEditorScreen extends Screen {
 
         if (image == null) throw new IOException("[PNG Editor] Image could not be loaded: " + imageIdentifier);
 
+
         renderImage = new RollingIdentifier();
         updateRenderedImage();
 
+    }
+
+    @Override
+    public void close() {
+        if(image!= null) image.close();
+        super.close();
     }
 
     @Override
@@ -56,7 +63,7 @@ public class PNGEditorScreen extends Screen {
                 .build());
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("gui.done"),
-                        (button) ->{
+                        (button) -> {
                             System.out.println("saved image = " + saveImage());
                             Objects.requireNonNull(client).setScreen(parent);
                         })
@@ -68,13 +75,16 @@ public class PNGEditorScreen extends Screen {
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         //increments one direction at a time by 0.5
-
-        if(isMouseOverEditor(mouseX, mouseY)) {
-            System.out.println("drag=" + deltaX + ", " + deltaY);
-            renderXOffset -= deltaX / renderScale;
-            renderYOffset -= deltaY / renderScale;
+        if (isMouseOverEditor(mouseX, mouseY)) {
+            if (Screen.hasShiftDown()) {
+                //System.out.println("drag=" + deltaX + ", " + deltaY);
+                renderXOffset -= deltaX / renderScale;
+                renderYOffset -= deltaY / renderScale;
+                return true;
+            } else {
+                return paintPixel(mouseX, mouseY);
+            }
         }
-
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
@@ -84,9 +94,10 @@ public class PNGEditorScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         //scrolls by 1.0      positive direction is in
-        if(verticalAmount != 0 && isMouseOverEditor(mouseX, mouseY)){
-            System.out.println("scroll=" + verticalAmount);
-            renderScale *= verticalAmount > 0 ? 1.1 : 0.9;
+        if (verticalAmount != 0 && isMouseOverEditor(mouseX, mouseY)) {
+            //System.out.println("scroll=" + verticalAmount);
+            double scaleChange = verticalAmount > 0 ? 1.1 : 0.9;
+            renderScale *= scaleChange;
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
@@ -96,30 +107,43 @@ public class PNGEditorScreen extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         //test editor basic functionality
-        lastClickX = mouseX;
-        lastClickY = mouseY;
-        return super.mouseClicked(mouseX,mouseY,button);
+
+        if (!Screen.hasShiftDown() && isMouseOverEditor(mouseX, mouseY)) {
+            return paintPixel(mouseX, mouseY);
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    private double lastClickX = -1;
-    private double lastClickY = -1;
+    private int lastClickX = Integer.MAX_VALUE;
+    private int lastClickY = Integer.MAX_VALUE;
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if(mouseX == lastClickX && mouseY == lastClickY && isMouseOverEditor(mouseX, mouseY)) {
-            //then we have clicked and released meaning we want to draw
-            var imageX = getInImageXOfMouseX(mouseX);
-            var imageY = getInImageYOfMouseY(mouseY);
-            System.out.println("try click x,y=" + imageX+", "+imageY);
-            if(imageX != Integer.MAX_VALUE && imageY != Integer.MAX_VALUE) {
+        lastClickX = Integer.MAX_VALUE;
+        lastClickY = Integer.MAX_VALUE;
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
 
+    private boolean paintPixel(double mouseX, double mouseY) {
+        int imageX = getInImageXOfMouseX(mouseX);
+        int imageY = getInImageYOfMouseY(mouseY);
+
+        //cancel repeated drag clicks
+        if(imageX == lastClickX && imageY == lastClickY) return false;
+
+        lastClickX = imageX;
+        lastClickY = imageY;
+
+        System.out.println("try click x,y=" + imageX + ", " + imageY);
+        if (imageX != Integer.MAX_VALUE && imageY != Integer.MAX_VALUE) {
+            try {
                 int imageXWrap = imageX % image.getWidth();
                 int imageYWrap = imageY % image.getHeight();
-                System.out.println("try wrap x,y=" + imageXWrap+", "+imageYWrap);
+                System.out.println("try wrap x,y=" + imageXWrap + ", " + imageYWrap);
 
-                int setX = imageXWrap >= 0 ? imageXWrap : image.getWidth()+ imageXWrap;
-                int setY = imageYWrap >= 0 ? imageYWrap : image.getHeight()+ imageYWrap;
-                System.out.println("try set x,y=" + setX+", "+setY);
+                int setX = imageXWrap >= 0 ? imageXWrap : image.getWidth() + imageXWrap;
+                int setY = imageYWrap >= 0 ? imageYWrap : image.getHeight() + imageYWrap;
+                System.out.println("try set x,y=" + setX + ", " + setY);
 
                 if (setX < image.getWidth() && setY < image.getHeight() && setX >= 0 && setY >= 0) {
                     Random rand = new Random();
@@ -131,67 +155,52 @@ public class PNGEditorScreen extends Screen {
                     updateRenderedImage();
                     return true;
                 }
-                System.out.println("image click failed with x,y=" + setX+", "+setY);
+            }catch (Exception e){
+                System.out.println(e.getMessage());
             }
+            System.out.println("image click failed.");
         }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return false;
     }
 
-    private boolean isMouseOverEditor(double mouseX, double mouseY){
+    private boolean isMouseOverEditor(double mouseX, double mouseY) {
         return isMouseXOverEditor(mouseX) && isMouseYOverEditor(mouseY);
     }
 
-    private boolean isMouseXOverEditor(double mouseX){
+    private boolean isMouseXOverEditor(double mouseX) {
         return mouseX > editorLeft && mouseX < editorRight;
     }
 
-    private boolean isMouseYOverEditor( double mouseY){
+    private boolean isMouseYOverEditor(double mouseY) {
         return mouseY > editorTop && mouseY < editorBottom;
     }
 
 
-    private boolean isShiftHeld = false;
-    private boolean isCtrlHeld = false;
 
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        //lshift = 42?
-        //rshift = 54?
-        //lctrl  = 29?
-        //rctrl  = 157?
-        //KeyBinding?
-        if(keyCode == 42 || keyCode == 54) isShiftHeld = true;
-        if(keyCode == 29 || keyCode == 157) isCtrlHeld = true;
-        return super.keyPressed(keyCode, scanCode, modifiers);
-    }
 
-    @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if(keyCode == 42 || keyCode == 54) isShiftHeld = false;
-        if(keyCode == 29 || keyCode == 157) isCtrlHeld = false;
-        return super.keyReleased(keyCode, scanCode, modifiers);
-    }
+
 
     @Override
     public void resize(MinecraftClient client, int width, int height) {
         super.resize(client, width, height);
         setEditorValues();
     }
-    private void setEditorValues(){
-        int editorSquareMeasure = Math.min((int) (width *0.7),(int) (height *0.7));
+
+    private void setEditorValues() {
+        int editorSquareMeasure = Math.min((int) (width * 0.7), (int) (height * 0.7));
 
         fitImage(editorSquareMeasure);
 
-        editorLeft = (int) (width *0.1);
-        editorTop = (int) (height *0.1);
+        editorLeft = (int) (width * 0.1);
+        editorTop = (int) (height * 0.1);
         editorRight = editorLeft + editorSquareMeasure;
         editorBottom = editorTop + editorSquareMeasure;
     }
 
-    private void fitImage(int editorSquare){
-        double max = Math.max(image.getWidth(),image.getHeight());
-        uOffset=0;
-        vOffset=0;
+    private void fitImage(int editorSquare) {
+        double max = Math.max(image.getWidth(), image.getHeight());
+        uOffset = 0;
+        vOffset = 0;
         renderScale = editorSquare / max;
     }
 
@@ -200,32 +209,31 @@ public class PNGEditorScreen extends Screen {
     private int editorRight = 0;
     private int editorBottom = 0;
 
-    private int getInImageXOfMouseX(double mouseX){
-        if(isMouseXOverEditor(mouseX)){
+    private int getInImageXOfMouseX(double mouseX) {
+        if (isMouseXOverEditor(mouseX)) {
             var fromEditorLeft = mouseX - editorLeft;
             var fromImageLeft = fromEditorLeft + uOffset;
             var asWidthPercentage = fromImageLeft / imageRenderWidth;
             //if(asWidthPercentage < 1 && asWidthPercentage >= 0){
             var result = asWidthPercentage * image.getWidth();
-            return (int) (result < 0 ? result -1 : result);
+            return (int) (result < 0 ? result - 1 : result);
             //}
         }
         return Integer.MAX_VALUE;
     }
 
-    private int getInImageYOfMouseY(double mouseY){
-        if(isMouseYOverEditor(mouseY)){
+    private int getInImageYOfMouseY(double mouseY) {
+        if (isMouseYOverEditor(mouseY)) {
             var fromEditorTop = mouseY - editorTop;
             var fromImageTop = fromEditorTop + vOffset;
             var asHeightPercentage = fromImageTop / imageRenderHeight;
 //            if(asHeightPercentage < 1 && asHeightPercentage >= 0){
             var result = asHeightPercentage * image.getHeight();
-            return (int) (result < 0 ? result -1 : result);
+            return (int) (result < 0 ? result - 1 : result);
 //            }
         }
         return Integer.MAX_VALUE;
     }
-
 
 
     private int imageRenderWidth = 0;
@@ -253,15 +261,21 @@ public class PNGEditorScreen extends Screen {
 
 
         // image editor render
-        context.fill(editorLeft-2,editorTop-2,editorRight+2,editorBottom+2,
+        context.fill(editorLeft - 2, editorTop - 2, editorRight + 2, editorBottom + 2,
                 ColorHelper.Argb.getArgb(255, 255, 255, 255));
-        context.fill(editorLeft,editorTop,editorRight,editorBottom,
+        context.fill(editorLeft, editorTop, editorRight, editorBottom,
                 ColorHelper.Argb.getArgb(255, 0, 0, 0)/*-16777216*/);
 
         //image itself render
-        context.drawTexture(renderImage.getCurrent(),
-                editorLeft,editorTop, uOffset, vOffset,
-                editorRight - editorLeft,editorBottom - editorTop, imageRenderWidth, imageRenderHeight);
+        try {
+            context.drawTexture(renderImage.getCurrent(),
+                    editorLeft, editorTop, uOffset, vOffset,
+                    editorRight - editorLeft, editorBottom - editorTop, imageRenderWidth, imageRenderHeight);
+        }catch(Exception e){
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("image broken..."),
+                    editorLeft+6, editorTop+6, 16777215);
+        }
+
 
 
 
@@ -292,13 +306,18 @@ public class PNGEditorScreen extends Screen {
     }
 
     private void updateRenderedImage() {
+        NativeImage closableImage = new NativeImage(image.getWidth(),image.getHeight(),true);
+        closableImage.copyFrom(image);
+
         MinecraftClient.getInstance().getTextureManager().registerTexture(
-                renderImage.newCurrent(),
-                new NativeImageBackedTexture(image));
+                renderImage.getNext(), new NativeImageBackedTexture(closableImage));
+        renderImage.confirmNext();
+
+        closableImage.close();
     }
 
-    private boolean saveImage(){
-        return REExplorer.outputResourceToPackInternal(imageIdentifier,(file)->{
+    private boolean saveImage() {
+        return REExplorer.outputResourceToPackInternal(imageIdentifier, (file) -> {
             try {
                 image.writeTo(file);
                 return true;
@@ -311,15 +330,23 @@ public class PNGEditorScreen extends Screen {
 
     private static class RollingIdentifier {
 
-        private Identifier current = null;
+        private Identifier current = new Identifier("resource_explorer", "png_editor/" + System.currentTimeMillis());
+        private Identifier next = null;
 
         Identifier getCurrent() {
-            return current == null ? newCurrent() : current;
+            return current;
         }
 
-        Identifier newCurrent() {
-            current = new Identifier("resource_explorer", "png_editor/" + System.currentTimeMillis());
-            return current;
+        Identifier getNext() {
+            next = new Identifier("resource_explorer", "png_editor/" + System.currentTimeMillis());
+            while(next.equals(current)){
+                next = new Identifier("resource_explorer", "png_editor/" + System.currentTimeMillis()+"/"+new Random().nextInt());
+            }
+            return next;
+        }
+
+        void confirmNext(){
+            current = next == null? getNext() : next;
         }
 
     }
