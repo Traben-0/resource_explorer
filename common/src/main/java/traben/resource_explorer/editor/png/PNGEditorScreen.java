@@ -44,7 +44,6 @@ public class PNGEditorScreen extends Screen {
         renderImage = new RollingIdentifier();
         updateRenderedImage();
 
-
     }
 
     @Override
@@ -63,41 +62,208 @@ public class PNGEditorScreen extends Screen {
                         })
                 .dimensions((int) (this.width * 0.7), (int) (this.height * 0.9), (int) (this.width * 0.2), 20)
                 .build());
-
+        setEditorValues();
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        //increments one direction at a time by 0.5
+
+        if(isMouseOverEditor(mouseX, mouseY)) {
+            System.out.println("drag=" + deltaX + ", " + deltaY);
+            renderXOffset -= deltaX / renderScale;
+            renderYOffset -= deltaY / renderScale;
+        }
+
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
+    double renderXOffset = 0;
+    double renderYOffset = 0;
+
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        //scrolls by 1.0      positive direction is in
+        if(verticalAmount != 0 && isMouseOverEditor(mouseX, mouseY)){
+            System.out.println("scroll=" + verticalAmount);
+            renderScale *= verticalAmount > 0 ? 1.1 : 0.9;
+        }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
+
+    private double renderScale = 1.0;
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         //test editor basic functionality
-        if(mouseX < 128 && mouseY < 128){
-            Random rand = new Random();
-            image.setColor((int) mouseX/8, (int) mouseY/8,
-                    ColorHelper.Argb.getArgb(255,
-                            rand.nextInt(255),
-                            rand.nextInt(255),
-                            rand.nextInt(255)));
-            updateRenderedImage();
-            return true;
-        }
+        lastClickX = mouseX;
+        lastClickY = mouseY;
         return super.mouseClicked(mouseX,mouseY,button);
+    }
+
+    private double lastClickX = -1;
+    private double lastClickY = -1;
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if(mouseX == lastClickX && mouseY == lastClickY && isMouseOverEditor(mouseX, mouseY)) {
+            //then we have clicked and released meaning we want to draw
+            var imageX = getInImageXOfMouseX(mouseX);
+            var imageY = getInImageYOfMouseY(mouseY);
+            System.out.println("try click x,y=" + imageX+", "+imageY);
+            if(imageX != Integer.MAX_VALUE && imageY != Integer.MAX_VALUE) {
+
+                int imageXWrap = imageX % image.getWidth();
+                int imageYWrap = imageY % image.getHeight();
+                System.out.println("try wrap x,y=" + imageXWrap+", "+imageYWrap);
+
+                int setX = imageXWrap >= 0 ? imageXWrap : image.getWidth()+ imageXWrap;
+                int setY = imageYWrap >= 0 ? imageYWrap : image.getHeight()+ imageYWrap;
+                System.out.println("try set x,y=" + setX+", "+setY);
+
+                if (setX < image.getWidth() && setY < image.getHeight() && setX >= 0 && setY >= 0) {
+                    Random rand = new Random();
+                    image.setColor(setX, setY,
+                            ColorHelper.Argb.getArgb(255,
+                                    rand.nextInt(255),
+                                    rand.nextInt(255),
+                                    rand.nextInt(255)));
+                    updateRenderedImage();
+                    return true;
+                }
+                System.out.println("image click failed with x,y=" + setX+", "+setY);
+            }
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    private boolean isMouseOverEditor(double mouseX, double mouseY){
+        return isMouseXOverEditor(mouseX) && isMouseYOverEditor(mouseY);
+    }
+
+    private boolean isMouseXOverEditor(double mouseX){
+        return mouseX > editorLeft && mouseX < editorRight;
+    }
+
+    private boolean isMouseYOverEditor( double mouseY){
+        return mouseY > editorTop && mouseY < editorBottom;
+    }
+
+
+    private boolean isShiftHeld = false;
+    private boolean isCtrlHeld = false;
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        //lshift = 42?
+        //rshift = 54?
+        //lctrl  = 29?
+        //rctrl  = 157?
+        //KeyBinding?
+        if(keyCode == 42 || keyCode == 54) isShiftHeld = true;
+        if(keyCode == 29 || keyCode == 157) isCtrlHeld = true;
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        if(keyCode == 42 || keyCode == 54) isShiftHeld = false;
+        if(keyCode == 29 || keyCode == 157) isCtrlHeld = false;
+        return super.keyReleased(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public void resize(MinecraftClient client, int width, int height) {
+        super.resize(client, width, height);
+        setEditorValues();
+    }
+    private void setEditorValues(){
+        int editorSquareMeasure = Math.min((int) (width *0.7),(int) (height *0.7));
+
+        fitImage(editorSquareMeasure);
+
+        editorLeft = (int) (width *0.1);
+        editorTop = (int) (height *0.1);
+        editorRight = editorLeft + editorSquareMeasure;
+        editorBottom = editorTop + editorSquareMeasure;
+    }
+
+    private void fitImage(int editorSquare){
+        double max = Math.max(image.getWidth(),image.getHeight());
+        uOffset=0;
+        vOffset=0;
+        renderScale = editorSquare / max;
+    }
+
+    private int editorLeft = 0;
+    private int editorTop = 0;
+    private int editorRight = 0;
+    private int editorBottom = 0;
+
+    private int getInImageXOfMouseX(double mouseX){
+        if(isMouseXOverEditor(mouseX)){
+            var fromEditorLeft = mouseX - editorLeft;
+            var fromImageLeft = fromEditorLeft + uOffset;
+            var asWidthPercentage = fromImageLeft / imageRenderWidth;
+            //if(asWidthPercentage < 1 && asWidthPercentage >= 0){
+            var result = asWidthPercentage * image.getWidth();
+            return (int) (result < 0 ? result -1 : result);
+            //}
+        }
+        return Integer.MAX_VALUE;
+    }
+
+    private int getInImageYOfMouseY(double mouseY){
+        if(isMouseYOverEditor(mouseY)){
+            var fromEditorTop = mouseY - editorTop;
+            var fromImageTop = fromEditorTop + vOffset;
+            var asHeightPercentage = fromImageTop / imageRenderHeight;
+//            if(asHeightPercentage < 1 && asHeightPercentage >= 0){
+            var result = asHeightPercentage * image.getHeight();
+            return (int) (result < 0 ? result -1 : result);
+//            }
+        }
+        return Integer.MAX_VALUE;
+    }
+
+
+
+    private int imageRenderWidth = 0;
+    private int imageRenderHeight = 0;
+
+    private int uOffset = 0;
+    private int vOffset = 0;
+
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackgroundTexture(context);
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
 
+        //image scaling
+        imageRenderWidth = (int) (image.getWidth() * renderScale);
+        imageRenderHeight = (int) (image.getHeight() * renderScale);
 
-        context.drawTexture(renderImage.getCurrent(), 0, 0, 0.0F, 0.0F, 128, 128, 128, 128);
+        //image offsets
+        uOffset = (int) (renderXOffset * renderScale);
+        vOffset = (int) (renderYOffset * renderScale);
+
+
+        // image editor render
+        context.fill(editorLeft-2,editorTop-2,editorRight+2,editorBottom+2,
+                ColorHelper.Argb.getArgb(255, 255, 255, 255));
+        context.fill(editorLeft,editorTop,editorRight,editorBottom,
+                ColorHelper.Argb.getArgb(255, 0, 0, 0)/*-16777216*/);
+
+        //image itself render
+        context.drawTexture(renderImage.getCurrent(),
+                editorLeft,editorTop, uOffset, vOffset,
+                editorRight - editorLeft,editorBottom - editorTop, imageRenderWidth, imageRenderHeight);
+
+
 
 //        context.drawTexture(getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
 //        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 32 + 2, y + 1, 16777215);
