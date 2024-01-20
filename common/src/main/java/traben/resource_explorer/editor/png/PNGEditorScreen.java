@@ -5,25 +5,21 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.client.render.*;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.resource.Resource;
 import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import traben.resource_explorer.explorer.REExplorer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 
@@ -40,39 +36,19 @@ public class PNGEditorScreen extends Screen {
     private double renderScale = 1.0;
     private int lastClickX = Integer.MAX_VALUE;
     private int lastClickY = Integer.MAX_VALUE;
-    private int currentColor = ColorHelper.Abgr.getAbgr(255, 0, 0, 255);
-    private final ColorSliderWidget greenSlider = new ColorSliderWidget(Text.of("green: "), (value) -> {
-        currentColor = ColorHelper.Abgr.getAbgr(
-                ColorHelper.Abgr.getAlpha(currentColor),
-                ColorHelper.Abgr.getBlue(currentColor),
-                (int) (value * 255),
-                ColorHelper.Abgr.getRed(currentColor)
-        );
-    });
-    private final ColorSliderWidget redSlider = new ColorSliderWidget(Text.of("red: "), (value) -> {
-        currentColor = ColorHelper.Abgr.getAbgr(
-                ColorHelper.Abgr.getAlpha(currentColor),
-                ColorHelper.Abgr.getBlue(currentColor),
-                ColorHelper.Abgr.getGreen(currentColor),
-                (int) (value * 255)
-        );
-    });
-    private final ColorSliderWidget blueSlider = new ColorSliderWidget(Text.of("blue: "), (value) -> {
-        currentColor = ColorHelper.Abgr.getAbgr(
-                ColorHelper.Abgr.getAlpha(currentColor),
-                (int) (value * 255),
-                ColorHelper.Abgr.getGreen(currentColor),
-                ColorHelper.Abgr.getRed(currentColor)
-        );
-    });
-    private final ColorSliderWidget alphaSlider = new ColorSliderWidget(Text.of("alpha: "), (value) -> {
-        currentColor = ColorHelper.Abgr.getAbgr(
-                (int) (value * 255),
-                ColorHelper.Abgr.getBlue(currentColor),
-                ColorHelper.Abgr.getGreen(currentColor),
-                ColorHelper.Abgr.getRed(currentColor)
-        );
-    });
+    //private int currentColor = ColorHelper.Abgr.getAbgr(255, 0, 0, 255);
+
+    private ColorTool colorTool = new ColorTool();
+
+
+    private final ColorSliderWidget greenSlider = new ColorSliderWidget(Text.of("green: "),
+            (value) -> colorTool.setColorGreen((int) (value * 255)));
+    private final ColorSliderWidget redSlider = new ColorSliderWidget(Text.of("red: "),
+            (value) -> colorTool.setColorRed((int) (value * 255)));
+    private final ColorSliderWidget blueSlider = new ColorSliderWidget(Text.of("blue: "),
+            (value) -> colorTool.setColorBlue((int) (value * 255)));
+    private final ColorSliderWidget alphaSlider = new ColorSliderWidget(Text.of("alpha: "),
+            (value) -> colorTool.setColorAlpha((int) (value * 255)));
     private int editorLeft = 0;
     private int editorTop = 0;
     private int editorRight = 0;
@@ -130,34 +106,34 @@ public class PNGEditorScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("center image"),
                         (button) -> fitImage())
-                .dimensions(editorRight + (int) (this.width * 0.1), (int) (this.height * 0.1), (int) (this.width * 0.25) + 10, 20)
+                .dimensions(getButtonAreaLeft(), (int) (this.height * 0.1), (int) (this.width * 0.25) + 10, 20)
                 .build());
 
         //eraser button
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("eraser"),
                         (button) -> {
-                            currentColor = 0;
+                            colorTool.setColor(0);
                             updateSliders();
                         })
-                .dimensions(editorRight + (int) (this.width * 0.1), (int) (this.height * 0.2), (int) (this.width * 0.25) + 10, 20)
+                .dimensions(getButtonAreaLeft(), (int) (this.height * 0.2), (int) (this.width * 0.25) + 10, 20)
                 .build());
 
         //pick color button
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("pick color"),
                         (button) -> overrideCtrl = true)
-                .dimensions(editorRight + (int) (this.width * 0.1), (int) (this.height * 0.3), (int) (this.width * 0.25) + 10, 20)
+                .dimensions(getButtonAreaLeft(), (int) (this.height * 0.3), (int) (this.width * 0.25) + 10, 20)
                 .build());
 
         redSlider.setDimensionsAndPosition((int) (this.width * 0.2), 20,
-                editorRight + (int) (this.width * 0.1), (int) (this.height * 0.4));
+                getButtonAreaLeft(), (int) (this.height * 0.4));
         greenSlider.setDimensionsAndPosition((int) (this.width * 0.2), 20,
-                editorRight + (int) (this.width * 0.1), (int) (this.height * 0.5));
+                getButtonAreaLeft(), (int) (this.height * 0.5));
         blueSlider.setDimensionsAndPosition((int) (this.width * 0.2), 20,
-                editorRight + (int) (this.width * 0.1), (int) (this.height * 0.6));
+                getButtonAreaLeft(), (int) (this.height * 0.6));
         alphaSlider.setDimensionsAndPosition((int) (this.width * 0.2), 20,
-                editorRight + (int) (this.width * 0.1), (int) (this.height * 0.7));
+                getButtonAreaLeft(), (int) (this.height * 0.7));
 
         this.addDrawableChild(redSlider);
         this.addDrawableChild(greenSlider);
@@ -168,10 +144,14 @@ public class PNGEditorScreen extends Screen {
     }
 
     private void updateSliders() {
-        redSlider.setValue255(ColorHelper.Abgr.getRed(currentColor));
-        greenSlider.setValue255(ColorHelper.Abgr.getGreen(currentColor));
-        blueSlider.setValue255(ColorHelper.Abgr.getBlue(currentColor));
-        alphaSlider.setValue255(ColorHelper.Abgr.getAlpha(currentColor));
+        redSlider.setValue255(colorTool.getColorRed());
+        greenSlider.setValue255(colorTool.getColorGreen());
+        blueSlider.setValue255(colorTool.getColorBlue());
+        alphaSlider.setValue255(colorTool.getColorAlpha());
+    }
+
+    private int getButtonAreaLeft(){
+        return editorRight + (int) (this.width * 0.05);
     }
 
     @Override
@@ -234,7 +214,8 @@ public class PNGEditorScreen extends Screen {
 
     private boolean paintPixel(double mouseX, double mouseY) {
         return pixelAction(mouseX, mouseY, (x, y) -> {
-            image.setColor(x, y, currentColor);
+            colorTool.saveColorInHistory();
+            image.setColor(x, y, colorTool.getColor());
             updateRenderedImage();
             return true;
         });
@@ -242,9 +223,10 @@ public class PNGEditorScreen extends Screen {
 
     private boolean pickPixel(double mouseX, double mouseY) {
         return pixelAction(mouseX, mouseY, (x, y) -> {
-            currentColor = image.getColor(x, y);
+            colorTool.saveColorInHistory();
+            colorTool.setColor( image.getColor(x, y));
             //flatten transparency to black transparency
-            if (ColorHelper.Argb.getAlpha(currentColor) == 0) currentColor = 0;
+            if (colorTool.getColorAlpha() == 0) colorTool.setColor(0);
             updateSliders();
             return true;
         });
@@ -346,59 +328,79 @@ public class PNGEditorScreen extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
 
-        //image scaling
-        imageRenderWidth = (int) (image.getWidth() * renderScale);
-        imageRenderHeight = (int) (image.getHeight() * renderScale);
-
-        //image offsets
-        uOffset = (int) (renderXOffset * renderScale);
-        vOffset = (int) (renderYOffset * renderScale);
+        context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 8, 16777215);
+        context.drawCenteredTextWithShadow(this.textRenderer, Text.of(imageIdentifier.toString()), this.width / 2, editorBottom+6, Colors.GRAY);
 
 
-        // image editor render
+        // image editor bounds
         context.fill(editorLeft - 2, editorTop - 2, editorRight + 2, editorBottom + 2,
                 ColorHelper.Argb.getArgb(255, 255, 255, 255));
         context.fill(editorLeft, editorTop, editorRight, editorBottom,
                 ColorHelper.Argb.getArgb(255, 0, 0, 0)/*-16777216*/);
 
+        //image itself render
+        renderImageInEditor(context);
 
         //color display
-        var colorDisplayX = editorRight + (int) (this.width * 0.325);
-        var colorDisplayY = (int) (this.height * 0.4);
-        var colorDisplayX2 = colorDisplayX + 10;
-        var colorDisplayY2 = colorDisplayY + (int) (this.height * 0.3) + 20;
+        renderCurrentColorDisplay(context);
+        renderColorHistoryDisplay(context);
 
-        context.fill(colorDisplayX - 2, colorDisplayY - 2, colorDisplayX2 + 2, colorDisplayY2 + 2,
-                ColorHelper.Argb.getArgb(255, 255, 255, 255));
-        context.fill(colorDisplayX, colorDisplayY, colorDisplayX2, colorDisplayY2,
-                ColorHelper.Argb.getArgb(
-                        ColorHelper.Abgr.getAlpha(currentColor),
-                        ColorHelper.Abgr.getRed(currentColor),
-                        ColorHelper.Abgr.getGreen(currentColor),
-                        ColorHelper.Abgr.getBlue(currentColor)));
+        if (isMouseOverEditor(mouseX, mouseY)) {
+            PointerIcon pointer;
+            if (Screen.hasShiftDown()) {
+                pointer = PointerIcon.HAND_MOVE;
+            } else if (Screen.hasControlDown() || overrideCtrl) {
+                pointer = PointerIcon.PICK;
+            } else if (colorTool.getColorAlpha() == 0) {
+                pointer = PointerIcon.ERASER;
+            } else {
+                pointer = PointerIcon.BRUSH;
+            }
+            pointer.render(context, mouseX, mouseY, colorTool.getColor());
+        }
 
-        //image itself render
+
+//        context.drawTexture(getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+//        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 32 + 2, y + 1, 16777215);
+//        multilineText.drawWithShadow(context, x + 32 + 2, y + 12, 10, -8355712);
+
+    }
+
+
+
+    private void renderImageInEditor(DrawContext context){
         try {
             //infinite tiling render
 //            context.drawTexture(renderImage.getCurrent(),
 //                    editorLeft, editorTop, uOffset, vOffset,
 //                    editorRight - editorLeft, editorBottom - editorTop, imageRenderWidth, imageRenderHeight);
+            //image scaling
+            imageRenderWidth = (int) (image.getWidth() * renderScale);
+            imageRenderHeight = (int) (image.getHeight() * renderScale);
 
+            //image offsets
+            uOffset = (int) (renderXOffset * renderScale);
+            vOffset = (int) (renderYOffset * renderScale);
+
+            //bounds of display area
             int imageBoxWidth = editorRight - editorLeft;
             int imageBoxHeight = editorBottom - editorTop;
 
+            //handle top left bound behaviour
+            //image bounds start
             int imageBoxX = MathHelper.clamp((editorLeft - uOffset), editorLeft, editorRight);
             int imageBoxY = MathHelper.clamp((editorTop - vOffset), editorTop, editorBottom);
-
-            int renderWidthMax = MathHelper.clamp(imageBoxWidth + uOffset, 0, imageBoxWidth);
-            int renderHeightMax = MathHelper.clamp(imageBoxHeight + vOffset, 0, imageBoxHeight);
-
+            //uv start
             int imageU2 = Math.max(uOffset, 0);
             int imageV2 = Math.max(vOffset, 0);
 
+            //handle bottom right bound behaviour
+            int renderWidthMax = MathHelper.clamp(imageBoxWidth + uOffset, 0, imageBoxWidth);
+            int renderHeightMax = MathHelper.clamp(imageBoxHeight + vOffset, 0, imageBoxHeight);
             int imageWidth2 = MathHelper.clamp(imageRenderWidth - imageU2, 0, renderWidthMax);
             int imageHeight2 = MathHelper.clamp(imageRenderHeight - imageV2, 0, renderHeightMax);
 
+            //allow transparency then render
             RenderSystem.enableBlend();
             context.drawTexture(renderImage.getCurrent(),
                     imageBoxX, imageBoxY, imageU2, imageV2,
@@ -409,27 +411,36 @@ public class PNGEditorScreen extends Screen {
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("image broken..."),
                     editorLeft + 6, editorTop + 6, 16777215);
         }
+    }
 
+    private void renderCurrentColorDisplay(DrawContext context){
+        var colorDisplayX = getButtonAreaLeft() + (int) (this.width * 0.225);
+        var colorDisplayY = (int) (this.height * 0.4);
+        var colorDisplayX2 = colorDisplayX + 10;
+        var colorDisplayY2 = colorDisplayY + (int) (this.height * 0.3) + 20;
 
-        if (isMouseOverEditor(mouseX, mouseY)) {
-            PointerIcon pointer;
-            if (Screen.hasShiftDown()) {
-                pointer = PointerIcon.HAND_MOVE;
-            } else if (Screen.hasControlDown() || overrideCtrl) {
-                pointer = PointerIcon.PICK;
-            } else if (currentColor == 0) {
-                pointer = PointerIcon.ERASER;
-            } else {
-                pointer = PointerIcon.BRUSH;
-            }
-            pointer.render(context, mouseX, mouseY, currentColor);
+        context.fill(colorDisplayX - 1, colorDisplayY - 1, colorDisplayX2 + 1, colorDisplayY2 + 1,
+                ColorHelper.Argb.getArgb(255, 255, 255, 255));
+        context.fill(colorDisplayX, colorDisplayY, colorDisplayX2, colorDisplayY2,
+                colorTool.getColorARGB());
+    }
+
+    private void renderColorHistoryDisplay(DrawContext context){
+        var colorDisplayX = getButtonAreaLeft() + (int) (this.width * 0.3);
+        var colorDisplayX2 = colorDisplayX + 10;
+
+        var colors = colorTool.getDisplayList();
+
+        int offsetY = (int) (this.height * 0.12);
+        for (int color : colors) {
+            if(offsetY > this.height * 0.85) break;
+
+            context.fill(colorDisplayX - 1, offsetY - 1, colorDisplayX2 + 1, offsetY + 11,
+                    ColorHelper.Argb.getArgb(255, 255, 255, 255));
+            context.fill(colorDisplayX, offsetY, colorDisplayX2, offsetY+10,
+                    colorTool.getABGRasARGB(color));
+            offsetY += 16;
         }
-
-
-//        context.drawTexture(getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
-//        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 32 + 2, y + 1, 16777215);
-//        multilineText.drawWithShadow(context, x + 32 + 2, y + 12, 10, -8355712);
-
     }
 
     @Nullable
@@ -475,124 +486,4 @@ public class PNGEditorScreen extends Screen {
     }
 
 
-    private enum PointerIcon {
-        //        NONE(){
-//            @Override
-//            void render(DrawContext context, int mouseX, int mouseY) {
-//
-//            }
-//        },
-        BRUSH() {
-            @Override
-            void render(DrawContext context, int mouseX, int mouseY, int color) {
-                var y = mouseY - 16;
-                var u = 0f;
-                var v = 0f;
-                var width = 16;
-                var height = 16;
-                var textureWidth = 16;
-                var textureHeight = 16;
-
-                context.drawTexture(new Identifier(MOD_ID, "textures/pointer_brush_handle.png"),
-                        mouseX, y, u, v, width, height, textureWidth, textureHeight);
-                drawTexturedQuad(color, context, new Identifier(MOD_ID, "textures/pointer_brush.png"),
-                        mouseX, mouseX + width, y, y + height, (u + 0.0F) / (float) textureWidth, (u + (float) width) / (float) textureWidth, (v + 0.0F) / (float) textureHeight, (v + (float) height) / (float) textureHeight);
-
-            }
-
-
-            void drawTexturedQuad(int color, DrawContext context, Identifier texture, int x1, int x2, int y1, int y2, float u1, float u2, float v1, float v2) {
-                var r = ColorHelper.Argb.getRed(color);
-                var g = ColorHelper.Argb.getGreen(color);
-                var b = ColorHelper.Argb.getBlue(color);
-                var a = ColorHelper.Argb.getAlpha(color);
-                RenderSystem.setShaderTexture(0, texture);
-                RenderSystem.setShader(GameRenderer::getPositionColorTexProgram);
-                RenderSystem.enableBlend();
-                Matrix4f matrix4f = context.getMatrices().peek().getPositionMatrix();
-                BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-                bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE);
-                bufferBuilder.vertex(matrix4f, (float) x1, (float) y1, 0).color(b, g, r, a).texture(u1, v1).next();
-                bufferBuilder.vertex(matrix4f, (float) x1, (float) y2, 0).color(b, g, r, a).texture(u1, v2).next();
-                bufferBuilder.vertex(matrix4f, (float) x2, (float) y2, 0).color(b, g, r, a).texture(u2, v2).next();
-                bufferBuilder.vertex(matrix4f, (float) x2, (float) y1, 0).color(b, g, r, a).texture(u2, v1).next();
-                BufferRenderer.drawWithGlobalProgram(bufferBuilder.end());
-                RenderSystem.disableBlend();
-            }
-        },
-        HAND_MOVE() {
-            @Override
-            void render(DrawContext context, int mouseX, int mouseY, int color) {
-                context.drawTexture(new Identifier(MOD_ID, "textures/pointer_move.png"),
-                        mouseX - 8, mouseY - 8, 0.0F, 0.0F, 16, 16, 16, 16);
-            }
-        },
-        ERASER() {
-            @Override
-            void render(DrawContext context, int mouseX, int mouseY, int color) {
-                context.drawTexture(new Identifier(MOD_ID, "textures/pointer_rubber.png"),
-                        mouseX, mouseY - 16, 0.0F, 0.0F, 16, 16, 16, 16);
-            }
-        },
-        PICK() {
-            @Override
-            void render(DrawContext context, int mouseX, int mouseY, int color) {
-                context.drawTexture(new Identifier(MOD_ID, "textures/pointer_pick.png"),
-                        mouseX, mouseY - 16, 0.0F, 0.0F, 16, 16, 16, 16);
-            }
-        };
-
-        abstract void render(DrawContext context, int mouseX, int mouseY, int color);
-
-    }
-
-    private static class RollingIdentifier {
-
-        private Identifier current = new Identifier("resource_explorer", "png_editor/" + System.currentTimeMillis());
-        private Identifier next = null;
-
-        Identifier getCurrent() {
-            return current;
-        }
-
-        Identifier getNext() {
-            next = new Identifier("resource_explorer", "png_editor/" + System.currentTimeMillis());
-            while (next.equals(current)) {
-                next = new Identifier("resource_explorer", "png_editor/" + System.currentTimeMillis() + "/" + new Random().nextInt());
-            }
-            return next;
-        }
-
-        void confirmNext() {
-            current = next == null ? getNext() : next;
-        }
-
-    }
-
-    private static class ColorSliderWidget extends SliderWidget {
-
-        private final Text message;
-        private final Consumer<Double> setter;
-
-        public ColorSliderWidget(Text text, Consumer<Double> setter) {
-            super(0, 0, 1, 1, text, 1);
-            message = text;
-            this.setter = setter;
-        }
-
-        @Override
-        protected void updateMessage() {
-            this.setMessage(Text.of(message.getString() + (int) (value * 255)));
-        }
-
-        @Override
-        protected void applyValue() {
-            setter.accept(value);
-        }
-
-        public void setValue255(int value255) {
-            value = value255 / 255D;
-            updateMessage();
-        }
-    }
 }
