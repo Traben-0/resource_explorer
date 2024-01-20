@@ -10,6 +10,7 @@ import net.minecraft.resource.Resource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.explorer.REExplorer;
 
@@ -80,6 +81,11 @@ public class PNGEditorScreen extends Screen {
                 //System.out.println("drag=" + deltaX + ", " + deltaY);
                 renderXOffset -= deltaX / renderScale;
                 renderYOffset -= deltaY / renderScale;
+
+//                renderXOffset = renderXOffset % image.getWidth();
+//                renderYOffset = renderYOffset % image.getHeight();
+
+                System.out.println("drag="+renderXOffset+", "+renderYOffset);
                 return true;
             } else {
                 return paintPixel(mouseX, mouseY);
@@ -96,8 +102,11 @@ public class PNGEditorScreen extends Screen {
         //scrolls by 1.0      positive direction is in
         if (verticalAmount != 0 && isMouseOverEditor(mouseX, mouseY)) {
             //System.out.println("scroll=" + verticalAmount);
-            double scaleChange = verticalAmount > 0 ? 1.1 : 0.9;
+
+            //scale
+            double scaleChange = verticalAmount > 0 ? 1.111111111 : 0.9;
             renderScale *= scaleChange;
+
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
@@ -135,19 +144,20 @@ public class PNGEditorScreen extends Screen {
         lastClickY = imageY;
 
         System.out.println("try click x,y=" + imageX + ", " + imageY);
-        if (imageX != Integer.MAX_VALUE && imageY != Integer.MAX_VALUE) {
+        if (imageX != Integer.MAX_VALUE
+                && imageY != Integer.MAX_VALUE) {
             try {
-                int imageXWrap = imageX % image.getWidth();
-                int imageYWrap = imageY % image.getHeight();
-                System.out.println("try wrap x,y=" + imageXWrap + ", " + imageYWrap);
+                //int imageXWrap = imageX % image.getWidth();
+                //int imageYWrap = imageY % image.getHeight();
+               // System.out.println("try wrap x,y=" + imageXWrap + ", " + imageYWrap);
 
-                int setX = imageXWrap >= 0 ? imageXWrap : image.getWidth() + imageXWrap;
-                int setY = imageYWrap >= 0 ? imageYWrap : image.getHeight() + imageYWrap;
-                System.out.println("try set x,y=" + setX + ", " + setY);
+                //int setX = imageXWrap >= 0 ? imageXWrap : image.getWidth() + imageXWrap;
+                //int setY = imageYWrap >= 0 ? imageYWrap : image.getHeight() + imageYWrap;
+                //System.out.println("try set x,y=" + setX + ", " + setY);
 
-                if (setX < image.getWidth() && setY < image.getHeight() && setX >= 0 && setY >= 0) {
+                if (imageX < image.getWidth() && imageY < image.getHeight() && imageX >= 0 && imageY >= 0) {
                     Random rand = new Random();
-                    image.setColor(setX, setY,
+                    image.setColor(imageX, imageY,
                             ColorHelper.Argb.getArgb(255,
                                     rand.nextInt(255),
                                     rand.nextInt(255),
@@ -268,9 +278,30 @@ public class PNGEditorScreen extends Screen {
 
         //image itself render
         try {
+//            context.drawTexture(renderImage.getCurrent(),
+//                    editorLeft, editorTop, uOffset, vOffset,
+//                    editorRight - editorLeft, editorBottom - editorTop, imageRenderWidth, imageRenderHeight);
+
+
+            int imageBoxX = editorLeft;
+            int imageBoxY =editorTop;
+
+            int imageBoxWidth =editorRight - editorLeft;
+            int imageBoxHeight =editorBottom - editorTop;
+            int imageBoxWidth2 = MathHelper.clamp((int) ((image.getWidth() - renderXOffset) * renderScale),0,imageBoxWidth);
+            int imageBoxHeight2 = MathHelper.clamp((int) ((image.getHeight() - renderYOffset) * renderScale),0,imageBoxHeight);
+
+            int imageU2 = uOffset;//Math.min(uOffset, 0);
+            int imageV2 = vOffset;//Math.min(vOffset, 0);
+
+            int imageRenderWidth2 = imageRenderWidth;
+            int imageRenderHeight2 = imageRenderHeight;
+
+
             context.drawTexture(renderImage.getCurrent(),
-                    editorLeft, editorTop, uOffset, vOffset,
-                    editorRight - editorLeft, editorBottom - editorTop, imageRenderWidth, imageRenderHeight);
+                    imageBoxX, imageBoxY, imageU2, imageV2,
+                    imageBoxWidth2, imageBoxHeight2, imageRenderWidth2, imageRenderHeight2);
+
         }catch(Exception e){
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("image broken..."),
                     editorLeft+6, editorTop+6, 16777215);
@@ -349,5 +380,28 @@ public class PNGEditorScreen extends Screen {
             current = next == null? getNext() : next;
         }
 
+    }
+
+    private enum PointerIcon{
+        NONE(new Identifier("a")),
+        BRUSH(new Identifier("b")),
+        HAND_MOVE(new Identifier("c")),
+        ERASER(new Identifier("d"));
+
+        final Identifier identifier;
+
+        PointerIcon(Identifier identifier){
+            this.identifier = identifier;
+        }
+
+        private static PointerIcon current= NONE;
+
+        static PointerIcon getCurrent() {
+            return current;
+        }
+
+        static void setCurrent(PointerIcon newCurrent) {
+            current = Objects.requireNonNullElse(newCurrent, NONE);
+        }
     }
 }

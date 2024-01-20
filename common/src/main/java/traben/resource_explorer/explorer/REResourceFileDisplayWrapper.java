@@ -67,7 +67,7 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
                         }
                     }
             ).dimensions(0, 0, 150, 20).build();
-            multiUseButton.active = fileEntry.resource != null;
+            editorButton.active = fileEntry.resource != null;
         }
     }
 
