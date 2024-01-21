@@ -151,10 +151,11 @@ public class PNGEditorScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        boolean b = super.mouseClicked(mouseX, mouseY, button);
         if (isMouseOverEditor()) {
             updateSliders();
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return b;
     }
 
     @Override
