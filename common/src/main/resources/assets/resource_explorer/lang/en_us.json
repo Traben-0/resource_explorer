@@ -63,5 +63,15 @@
   "resource_explorer.detail.width": "width",
   "resource_explorer.detail.frame_count": "frame count",
   "resource_explorer.detail.lines": "lines",
-  "resource_explorer.detail.character_count": "character count"
+  "resource_explorer.detail.character_count": "character count",
+  "resource_explorer.png_editor.title": "Texture Editor",
+  "resource_explorer.png_editor.close": "Close",
+  "resource_explorer.png_editor.reset": "Reset",
+  "resource_explorer.png_editor.center_button": "Center image",
+  "resource_explorer.png_editor.export_button": "Export image",
+  "resource_explorer.png_editor.export_button.tooltip": "Saves this changes image to the Resource Explorer export resource pack",
+  "resource_explorer.png_editor.eraser_button": "Eraser",
+  "resource_explorer.png_editor.eraser_button.tooltip": "Changes the cursor to an eraser\nAlso appears whenever the color alpha is 0",
+  "resource_explorer.png_editor.pick_button": "Pick color",
+  "resource_explorer.png_editor.pick_button.tooltip": "Changes the cursor to copy the color of the next image pixel clicked on\nYou can also just hold down Ctrl"
 }

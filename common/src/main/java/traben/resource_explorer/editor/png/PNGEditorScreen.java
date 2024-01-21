@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
@@ -14,6 +15,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
+import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.explorer.REExplorer;
 
 import java.io.IOException;
@@ -25,10 +27,8 @@ import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 
 public class PNGEditorScreen extends Screen {
     private final Screen parent;
-
     private final Identifier imageIdentifier;
-    private final NativeImage image;
-
+    private NativeImage image;
     private final RollingIdentifier renderImage;
     double renderXOffset = 0;
     double renderYOffset = 0;
@@ -36,11 +36,7 @@ public class PNGEditorScreen extends Screen {
     private double renderScale = 1.0;
     private int lastClickX = Integer.MAX_VALUE;
     private int lastClickY = Integer.MAX_VALUE;
-    //private int currentColor = ColorHelper.Abgr.getAbgr(255, 0, 0, 255);
-
-    private ColorTool colorTool = new ColorTool();
-
-
+    private final ColorTool colorTool = new ColorTool();
     private final ColorSliderWidget greenSlider = new ColorSliderWidget(Text.of("green: "),
             (value) -> colorTool.setColorGreen((int) (value * 255)));
     private final ColorSliderWidget redSlider = new ColorSliderWidget(Text.of("red: "),
@@ -58,22 +54,23 @@ public class PNGEditorScreen extends Screen {
     private int uOffset = 0;
     private int vOffset = 0;
 
+    private final Resource imageSource;
+
     public PNGEditorScreen(final Screen parent, final Identifier pngToEdit, final Resource pngResource) throws IOException, NullPointerException {
         super(Text.translatable(MOD_ID + ".png_editor.title"));
         this.parent = parent;
+        imageSource = pngResource;
 
         if (pngToEdit == null) throw new NullPointerException("[PNG Editor] Identifier was null");
         this.imageIdentifier = pngToEdit;
 
-        if (pngResource == null) throw new NullPointerException("[PNG Editor] Resource was null");
-        image = initImage(pngResource);
+        if (imageSource == null) throw new NullPointerException("[PNG Editor] Resource was null");
+        image = initImage(imageSource);
 
         if (image == null) throw new IOException("[PNG Editor] Image could not be loaded: " + imageIdentifier);
 
-
         renderImage = new RollingIdentifier();
         updateRenderedImage();
-
     }
 
     @Override
@@ -86,17 +83,34 @@ public class PNGEditorScreen extends Screen {
     protected void init() {
         super.init();
         this.addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("gui.back"),
+                        Text.translatable("resource_explorer.png_editor.close"),
                         (button) -> Objects.requireNonNull(client).setScreen(parent))
                 .dimensions((int) (this.width * 0.1), (int) (this.height * 0.9), (int) (this.width * 0.2), 20)
                 .build());
+
         this.addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("export image"),
+                        Text.translatable("resource_explorer.png_editor.reset"),
                         (button) -> {
-                            System.out.println("saved image = " + saveImage());
+                            NativeImage newImage = initImage(imageSource);
+                            if (newImage == null){
+                                ResourceExplorerClient.log("[PNG Editor] Image could not be reset: " + imageIdentifier);
+                            }else{
+                                var oldImg = image;
+                                image = newImage;
+                                oldImg.close();
+                                updateRenderedImage();
+                            }
+                        })
+                .dimensions((int) (this.width * 0.1), (int) (this.height * 0.9), (int) (this.width * 0.2), 20)
+                .build());
+        this.addDrawableChild(ButtonWidget.builder(
+                        Text.translatable("resource_explorer.png_editor.export_button"),
+                        (button) -> {
+                            ResourceExplorerClient.log("saved image = " + saveImage());
                             Objects.requireNonNull(client).setScreen(parent);
                         })
                 .dimensions((int) (this.width * 0.6), (int) (this.height * 0.9), (int) (this.width * 0.3), 20)
+                .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.export_button.tooltip")))
                 .build());
 
         //init editor positions
@@ -104,26 +118,28 @@ public class PNGEditorScreen extends Screen {
 
         //fit image button
         this.addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("center image"),
+                        Text.translatable("resource_explorer.png_editor.center_button"),
                         (button) -> fitImage())
                 .dimensions(getButtonAreaLeft(), (int) (this.height * 0.1), (int) (this.width * 0.25) + 10, 20)
                 .build());
 
         //eraser button
         this.addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("eraser"),
+                        Text.translatable("resource_explorer.png_editor.eraser_button"),
                         (button) -> {
                             colorTool.setColor(0);
                             updateSliders();
                         })
                 .dimensions(getButtonAreaLeft(), (int) (this.height * 0.2), (int) (this.width * 0.25) + 10, 20)
+                .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.eraser_button.tooltip")))
                 .build());
 
         //pick color button
         this.addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("pick color"),
+                        Text.translatable("resource_explorer.png_editor.pick_button"),
                         (button) -> overrideCtrl = true)
                 .dimensions(getButtonAreaLeft(), (int) (this.height * 0.3), (int) (this.width * 0.25) + 10, 20)
+                .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.pick_button.tooltip")))
                 .build());
 
         redSlider.setDimensionsAndPosition((int) (this.width * 0.2), 20,
@@ -141,6 +157,14 @@ public class PNGEditorScreen extends Screen {
         this.addDrawableChild(alphaSlider);
 
         updateSliders();
+
+        var colorDisplayX = getButtonAreaLeft() + (int) (this.width * 0.3);
+        int colorDisplayY = (int) (this.height * 0.12);
+        for (int i = 0; i < 10; i++) {
+            this.addDrawableChild(new ColorHistoryWidget(colorDisplayX, colorDisplayY, colorTool, i));
+            colorDisplayY += 16;
+        }
+
     }
 
     private void updateSliders() {
@@ -177,12 +201,9 @@ public class PNGEditorScreen extends Screen {
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         //scrolls by 1.0      positive direction is in
         if (verticalAmount != 0 && isMouseOverEditor(mouseX, mouseY)) {
-            //System.out.println("scroll=" + verticalAmount);
-
             //scale
             double scaleChange = verticalAmount > 0 ? 1.111111111 : 0.9;
             renderScale *= scaleChange;
-
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
@@ -249,7 +270,7 @@ public class PNGEditorScreen extends Screen {
                     return false;
                 }
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                ResourceExplorerClient.log(e.getMessage());
             }
         }
         return false;
@@ -343,7 +364,6 @@ public class PNGEditorScreen extends Screen {
 
         //color display
         renderCurrentColorDisplay(context);
-        renderColorHistoryDisplay(context);
 
         if (isMouseOverEditor(mouseX, mouseY)) {
             PointerIcon pointer;
@@ -425,23 +445,7 @@ public class PNGEditorScreen extends Screen {
                 colorTool.getColorARGB());
     }
 
-    private void renderColorHistoryDisplay(DrawContext context){
-        var colorDisplayX = getButtonAreaLeft() + (int) (this.width * 0.3);
-        var colorDisplayX2 = colorDisplayX + 10;
 
-        var colors = colorTool.getDisplayList();
-
-        int offsetY = (int) (this.height * 0.12);
-        for (int color : colors) {
-            if(offsetY > this.height * 0.85) break;
-
-            context.fill(colorDisplayX - 1, offsetY - 1, colorDisplayX2 + 1, offsetY + 11,
-                    ColorHelper.Argb.getArgb(255, 255, 255, 255));
-            context.fill(colorDisplayX, offsetY, colorDisplayX2, offsetY+10,
-                    colorTool.getABGRasARGB(color));
-            offsetY += 16;
-        }
-    }
 
     @Nullable
     public NativeImage initImage(final Resource pngResource) {

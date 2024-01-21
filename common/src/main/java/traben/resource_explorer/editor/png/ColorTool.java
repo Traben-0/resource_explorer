@@ -1,6 +1,7 @@
 package traben.resource_explorer.editor.png;
 
 import net.minecraft.util.math.ColorHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -78,9 +79,10 @@ class ColorTool {
     }
 
     void saveColorInHistory(){
+        if(getColorAlpha() == 0) return;
         if(!colorHistory.contains(current)) {
             colorHistory.addFirst(current);
-            if (colorHistory.size() > 32) colorHistory.removeLast();
+            if (colorHistory.size() > 10) colorHistory.removeLast();
         }
     }
 
@@ -88,6 +90,14 @@ class ColorTool {
         if (i < colorHistory.size()) {
             setColor(colorHistory.get(i));
         }
+    }
+
+    @Nullable
+    Integer getFromIndex(int i){
+        if (i < colorHistory.size()) {
+            return colorHistory.get(i);
+        }
+        return null;
     }
 
     List<Integer> getDisplayList() {
