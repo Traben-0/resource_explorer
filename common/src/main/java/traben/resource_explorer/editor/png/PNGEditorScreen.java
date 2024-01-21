@@ -59,7 +59,7 @@ public class PNGEditorScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.reset"),
                         (button) -> editorWidget.resetImage())
-                .dimensions((int) (this.width * 0.4), (int) (this.height * 0.9), (int) (this.width * 0.2), 20)
+                .dimensions((int) (this.width * 0.35), (int) (this.height * 0.9), (int) (this.width * 0.2), 20)
                 .build());
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.export_button"),
