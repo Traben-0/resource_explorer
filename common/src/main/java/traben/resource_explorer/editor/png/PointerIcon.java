@@ -10,12 +10,6 @@ import org.joml.Matrix4f;
 import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 
 enum PointerIcon {
-    //        NONE(){
-//            @Override
-//            void render(DrawContext context, int mouseX, int mouseY) {
-//
-//            }
-//        },
     BRUSH() {
         @Override
         void render(DrawContext context, int mouseX, int mouseY, int color) {
@@ -29,6 +23,7 @@ enum PointerIcon {
 
             context.drawTexture(new Identifier(MOD_ID, "textures/pointer_brush_handle.png"),
                     mouseX, y, u, v, width, height, textureWidth, textureHeight);
+            //draw colored brush tip
             drawTexturedQuad(color, context, new Identifier(MOD_ID, "textures/pointer_brush.png"),
                     mouseX, mouseX + width, y, y + height, (u + 0.0F) / (float) textureWidth, (u + (float) width) / (float) textureWidth, (v + 0.0F) / (float) textureHeight, (v + (float) height) / (float) textureHeight);
 

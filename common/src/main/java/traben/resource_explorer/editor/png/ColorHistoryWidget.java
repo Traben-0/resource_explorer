@@ -5,7 +5,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.Colors;
 
 class ColorHistoryWidget extends ClickableWidget {
 
@@ -24,12 +24,9 @@ class ColorHistoryWidget extends ClickableWidget {
         if (color != null) {
             //render outline
             context.fill(getX() - 1, getY() - 1, getX() + width + 1, getY() + height + 1,
-                    isHovered() ?
-                            ColorHelper.Argb.getArgb(255, 255, 255, 255) :
-                            ColorHelper.Argb.getArgb(255, 0, 0, 0));
+                    isHovered() ? Colors.WHITE : Colors.BLACK);
             //render backfill
-            context.fill(getX(), getY(), getX() + width, getY() + height,
-                    ColorHelper.Argb.getArgb(255, 0, 0, 0));
+            context.fill(getX(), getY(), getX() + width, getY() + height, Colors.BLACK);
 
             //render color
             RenderSystem.enableBlend();

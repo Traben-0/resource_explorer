@@ -17,6 +17,7 @@ import net.minecraft.util.Util;
 import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.editor.png.PNGEditorScreen;
 
 public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.Entry<REResourceFileDisplayWrapper> implements Comparable<REResourceFileDisplayWrapper> {
@@ -60,14 +61,18 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
             editorButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.edit_png"),
                     (button) -> {
                         try {
-                            MinecraftClient.getInstance().setScreen(new PNGEditorScreen(MinecraftClient.getInstance().currentScreen,fileEntry.identifier,fileEntry.resource));
+                            MinecraftClient.getInstance().setScreen(
+                                    new PNGEditorScreen(MinecraftClient.getInstance().currentScreen,
+                                            fileEntry.identifier, fileEntry.resource));
                         } catch (Exception e) {
-                            System.out.println("edit button fails lol: ");
-                            e.printStackTrace();
+                            ResourceExplorerClient.log("edit button failed: "+ e.getMessage());
+                            button.active = false;
+                            button.setMessage(Text.translatable("resource_explorer.edit_png.fail"));
                         }
                     }
             ).dimensions(0, 0, 150, 20).build();
             editorButton.active = fileEntry.resource != null;
+            editorButton.setMessage(Text.translatable("resource_explorer.edit_png.fail"));
         }
     }
 
