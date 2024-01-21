@@ -1,5 +1,6 @@
 package traben.resource_explorer.editor.png;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -201,7 +202,12 @@ public class PNGEditorScreen extends Screen {
         context.fill(colorDisplayX - 1, colorDisplayY - 1, colorDisplayX2 + 1, colorDisplayY2 + 1,
                 Colors.WHITE);
         context.fill(colorDisplayX, colorDisplayY, colorDisplayX2, colorDisplayY2,
+                Colors.BLACK);
+
+        RenderSystem.enableBlend();
+        context.fill(colorDisplayX, colorDisplayY, colorDisplayX2, colorDisplayY2,
                 colorTool.getColorARGB());
+        RenderSystem.disableBlend();
     }
 
 

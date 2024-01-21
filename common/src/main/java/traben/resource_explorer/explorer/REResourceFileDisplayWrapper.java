@@ -72,7 +72,9 @@ public class REResourceFileDisplayWrapper extends AlwaysSelectedEntryListWidget.
                     }
             ).dimensions(0, 0, 150, 20).build();
             editorButton.active = fileEntry.resource != null;
-            editorButton.setMessage(Text.translatable("resource_explorer.edit_png.fail"));
+            if(!editorButton.active) {
+                editorButton.setMessage(Text.translatable("resource_explorer.edit_png.fail"));
+            }
         }
     }
 
