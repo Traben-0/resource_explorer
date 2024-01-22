@@ -5,7 +5,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.resource.Resource;
+import net.minecraft.client.texture.NativeImage;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
@@ -13,6 +13,7 @@ import traben.resource_explorer.ResourceExplorerClient;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 
@@ -30,14 +31,14 @@ public class PNGEditorScreen extends Screen {
     private final EditorWidget editorWidget;
     int lastSliderUpdate = 0;
 
-    public PNGEditorScreen(final Screen parent, final Identifier pngToEdit, final Resource pngResource) throws IOException, NullPointerException {
+    public PNGEditorScreen(final Screen parent, final Identifier pngToEdit, final Supplier<NativeImage> supplier) throws IOException, NullPointerException {
         super(Text.translatable(MOD_ID + ".png_editor.title"));
         this.parent = parent;
 
         if (pngToEdit == null) throw new NullPointerException("[PNG Editor] Identifier was null");
-        if (pngResource == null) throw new NullPointerException("[PNG Editor] Resource was null");
+        if (supplier == null) throw new NullPointerException("[PNG Editor] Resource was null");
 
-        editorWidget = new EditorWidget(colorTool, pngToEdit, pngResource);
+        editorWidget = new EditorWidget(colorTool, pngToEdit, supplier);
     }
 
     @Override
@@ -57,11 +58,6 @@ public class PNGEditorScreen extends Screen {
                 .build());
 
         this.addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("resource_explorer.png_editor.reset"),
-                        (button) -> editorWidget.resetImage())
-                .dimensions((int) (this.width * 0.35), (int) (this.height * 0.9), (int) (this.width * 0.2), 20)
-                .build());
-        this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.export_button"),
                         (button) -> {
                             ResourceExplorerClient.log("saved image = " + editorWidget.saveImage());
@@ -76,11 +72,13 @@ public class PNGEditorScreen extends Screen {
         editorWidget.setBounds(editorSize(), (int) (width * 0.1), (int) (height * 0.1));
         this.addDrawableChild(editorWidget);
 
+
+        var buttonWidth = 12 + (int) (this.width * 0.225);
         //fit image button
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.center_button"),
                         (button) -> editorWidget.fitImage())
-                .dimensions(getButtonAreaLeft(), (int) (this.height * 0.1), (int) (this.width * 0.25) + 10, 20)
+                .dimensions(getButtonAreaLeft(), (int) (this.height * 0.1), buttonWidth, 20)
                 .build());
 
         //eraser button
@@ -90,7 +88,7 @@ public class PNGEditorScreen extends Screen {
                             colorTool.setColor(0);
                             updateSliders();
                         })
-                .dimensions(getButtonAreaLeft(), (int) (this.height * 0.2), (int) (this.width * 0.25) + 10, 20)
+                .dimensions(getButtonAreaLeft(), (int) (this.height * 0.2), buttonWidth, 20)
                 .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.eraser_button.tooltip")))
                 .build());
 
@@ -98,9 +96,39 @@ public class PNGEditorScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.pick_button"),
                         (button) -> editorWidget.setCtrl())
-                .dimensions(getButtonAreaLeft(), (int) (this.height * 0.3), (int) (this.width * 0.25) + 10, 20)
+                .dimensions(getButtonAreaLeft(), (int) (this.height * 0.3), buttonWidth, 20)
                 .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.pick_button.tooltip")))
                 .build());
+
+
+        int secondButtonRowX = getButtonAreaLeft() + buttonWidth + 4;
+        int secondButtonRowWidth = (int) (buttonWidth / 1.5);
+        //reset button
+        this.addDrawableChild(ButtonWidget.builder(
+                        Text.translatable("resource_explorer.png_editor.reset"),
+                        (button) -> editorWidget.resetImage())
+                .dimensions(secondButtonRowX, (int) (this.height * 0.1), secondButtonRowWidth, 20)
+                .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.reset.tooltip")))
+                .build());
+
+        this.addDrawableChild(ButtonWidget.builder(
+                        Text.translatable("resource_explorer.png_editor.clear"),
+                        (button) -> editorWidget.clearImage())
+                .dimensions(secondButtonRowX, (int) (this.height * 0.1), secondButtonRowWidth, 20)
+                .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.clear.tooltip")))
+                .build());
+
+        undoButton = ButtonWidget.builder(
+                        Text.translatable("resource_explorer.png_editor.undo"),
+                        (button) -> {
+                            editorWidget.undoLastPixel();
+                            button.active = editorWidget.canUndo();
+                        })
+                .dimensions(secondButtonRowX, (int) (this.height * 0.1), secondButtonRowWidth, 20)
+                .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.undo.tooltip")))
+                .build();
+        this.addDrawableChild(undoButton);
+        undoButton.active = editorWidget.canUndo();
 
         //init color sliders
         redSlider.setDimensionsAndPosition((int) (this.width * 0.2), 20,
@@ -121,12 +149,20 @@ public class PNGEditorScreen extends Screen {
 
         //init the color history buttons
         var colorDisplayX = getButtonAreaLeft() + (int) (this.width * 0.3);
-        int colorDisplayY = (int) (this.height * 0.12);
-        for (int i = 0; i < 10; i++) {
+        int colorDisplayY = (int) (this.height * 0.4);
+        for (int i = 0; i < 5; i++) {
             this.addDrawableChild(new ColorHistoryWidget(colorDisplayX, colorDisplayY, colorTool, i));
             colorDisplayY += 16;
         }
+        //second row
+        colorDisplayY = (int) (this.height * 0.4);
+        for (int i = 5; i < 10; i++) {
+            this.addDrawableChild(new ColorHistoryWidget(colorDisplayX+16, colorDisplayY, colorTool, i));
+            colorDisplayY += 16;
+        }
     }
+
+    private ButtonWidget undoButton = null;
 
     private void updateSliders() {
         if (colorTool.getColor() != lastSliderUpdate) {
@@ -155,6 +191,9 @@ public class PNGEditorScreen extends Screen {
         boolean b = super.mouseClicked(mouseX, mouseY, button);
         if (isMouseOverEditor()) {
             updateSliders();
+            if(undoButton != null){
+                undoButton.active = editorWidget.canUndo();
+            }
         }
         return b;
     }

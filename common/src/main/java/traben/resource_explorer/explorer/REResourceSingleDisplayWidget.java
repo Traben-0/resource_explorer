@@ -10,7 +10,7 @@ import traben.resource_explorer.mixin.EntryListWidgetAccessor;
 
 import java.util.Objects;
 
-public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget<REResourceFileDisplayWrapper> {
+public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget<REResourceDisplayWrapper> {
 
 
     private Text title = null;
@@ -24,12 +24,12 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
         this.setRenderHeader(true, (int)(9.0F * 1.5F));
     }
 
-    void setSelectedFile(@Nullable REResourceFileDisplayWrapper newFile) {
+    void setSelectedEntry(@Nullable REResourceDisplayWrapper newFile) {
         setScrollAmount(0);
         clearEntries();
         if (newFile != null) {
             ((EntryListWidgetAccessor) this).setItemHeight(newFile.getEntryHeight());
-            title = Text.of(newFile.getFileEntry().getDisplayName());
+            title = Text.of(newFile.getDisplayName());
             setRenderHeader(true, 10);
         } else {
             ((EntryListWidgetAccessor) this).setItemHeight(32);
@@ -37,7 +37,6 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
             title = null;
         }
         addEntry(newFile);
-
     }
 
     public void setDimensions(int x, int width, int height) {

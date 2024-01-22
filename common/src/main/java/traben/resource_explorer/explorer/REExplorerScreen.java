@@ -27,7 +27,7 @@ public class REExplorerScreen extends Screen {
     @Nullable
     public final REExplorerScreen reParent;
     public final LinkedList<REResourceEntry> entriesInThisDirectory;
-    final String cumulativePath;
+    public final String cumulativePath;
     private REResourceListWidget fileList;
     private REConfig.REFileFilter filterChoice = REConfig.getInstance().filterMode;
 

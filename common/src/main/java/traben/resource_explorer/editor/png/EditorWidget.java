@@ -8,25 +8,25 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.resource.Resource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.explorer.REExplorer;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Stack;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 class EditorWidget extends ClickableWidget {
 
     private final ColorTool colorSource;
     private final RollingIdentifier renderImage = new RollingIdentifier();
-    private final Resource imageSource;
+    private final Supplier<NativeImage> imageSource;
     private final Identifier imageIdentifier;
     double renderXOffset = 0;
     double renderYOffset = 0;
@@ -41,13 +41,13 @@ class EditorWidget extends ClickableWidget {
     @NotNull
     private NativeImage image;
 
-    public EditorWidget(ColorTool colorSource, Identifier identifier, final Resource pngResource) throws IOException {
+    public EditorWidget(ColorTool colorSource, Identifier identifier, final Supplier<NativeImage> supplier) throws IOException {
         super(0, 0, 0, 0, Text.of(""));
         this.colorSource = colorSource;
         this.imageIdentifier = identifier;
-        this.imageSource = pngResource;
+        this.imageSource = supplier;
 
-        var image = initImage(pngResource);
+        var image = supplier.get();
         if (image == null) throw new IOException("[PNG Editor] Image could not be loaded: " + identifier);
 
         this.image = image;
@@ -55,25 +55,7 @@ class EditorWidget extends ClickableWidget {
         updateRenderedImage();
     }
 
-    @Nullable
-    public static NativeImage initImage(final Resource pngResource) {
-        NativeImage img;
-        try {
-            InputStream in = pngResource.getInputStream();
-            try {
-                img = NativeImage.read(in);
-                in.close();
-                return img;
-            } catch (Exception e) {
-                in.close();
-                ResourceExplorerClient.log(e.getMessage());
-                return null;
-            }
-        } catch (Exception e) {
-            ResourceExplorerClient.log(e.getMessage());
-        }
-        return null;
-    }
+
 
     public Identifier getImageIdentifier() {
         return imageIdentifier;
@@ -95,9 +77,18 @@ class EditorWidget extends ClickableWidget {
     }
 
     void resetImage() {
-        NativeImage newImage = initImage(imageSource);
+        setImageFromSupplier(imageSource);
+        clearUndoHistory();
+    }
+    void clearImage(){
+        setImageFromSupplier(()->ResourceExplorerClient.getEmptyNativeImage(image.getWidth(),image.getHeight()));
+        clearUndoHistory();
+    }
+
+    void setImageFromSupplier(Supplier<NativeImage> supplier) {
+        NativeImage newImage = supplier.get();
         if (newImage == null) {
-            ResourceExplorerClient.log("[PNG Editor] Image could not be reset: " + imageIdentifier);
+            ResourceExplorerClient.log("[PNG Editor] Image could not be set: " + imageIdentifier);
         } else {
             var oldImg = image;
             image = newImage;
@@ -105,6 +96,7 @@ class EditorWidget extends ClickableWidget {
             updateRenderedImage();
         }
     }
+
 
     boolean saveImage() {
         return REExplorer.outputResourceToPackInternal(imageIdentifier, (file) -> {
@@ -201,16 +193,38 @@ class EditorWidget extends ClickableWidget {
     private boolean paintPixel(double mouseX, double mouseY) {
         return pixelAction(mouseX, mouseY, (x, y) -> {
             colorSource.saveColorInHistory();
+            int oldColor = image.getColor(x, y);
             if (colorSource.getColorAlpha() == 255 || colorSource.getColorAlpha() == 0) {
                 //solid pixel or eraser
                 image.setColor(x, y, colorSource.getColor());
             } else {
                 //blend
-                image.setColor(x, y, colorSource.blendOver(image.getColor(x, y)));
+                image.setColor(x, y, colorSource.blendOver(oldColor));
             }
             updateRenderedImage();
+            undoHistory.push(ImmutableTriple.of(x,y,oldColor));
             return true;
         });
+    }
+
+    private final Stack<ImmutableTriple<Integer,Integer,Integer>> undoHistory = new Stack<>();
+
+    void clearUndoHistory(){
+        undoHistory.clear();
+    }
+
+    boolean canUndo(){
+        return !undoHistory.isEmpty();
+    }
+    void undoLastPixel(){
+        var lastAction = undoHistory.pop();
+        try {
+            image.setColor(lastAction.left,lastAction.middle,lastAction.right);
+        }catch (Exception e){
+            //return to stack
+            undoHistory.push(lastAction);
+            ResourceExplorerClient.log("Undo action failed: "+ e.getMessage());
+        }
     }
 
     private boolean pickPixel(double mouseX, double mouseY) {

@@ -283,8 +283,8 @@ public class REResourceFile extends REResourceEntry {
         return resource == null ? REExplorer.ICON_FILE_BUILT : fileType.getDefaultIcon();
     }
 
-    public REResourceFileDisplayWrapper wrapEntryAsDetailed() {
-        return new REResourceFileDisplayWrapper(this);
+    public REResourceDisplayWrapper.File wrapEntryAsDetailed() {
+        return new REResourceDisplayWrapper.File(this);
     }
 
     @Override
@@ -308,7 +308,7 @@ public class REResourceFile extends REResourceEntry {
     @Override
     public boolean mouseClickExplorer() {
         if (REExplorerScreen.currentDisplay != null) {
-            REExplorerScreen.currentDisplay.setSelectedFile(this.wrapEntryAsDetailed());
+            REExplorerScreen.currentDisplay.setSelectedEntry(this.wrapEntryAsDetailed());
         }
         return true;
     }
