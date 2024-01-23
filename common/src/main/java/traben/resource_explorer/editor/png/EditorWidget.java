@@ -11,6 +11,7 @@ import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.jetbrains.annotations.NotNull;
@@ -28,6 +29,7 @@ class EditorWidget extends ClickableWidget {
     private final RollingIdentifier renderImage = new RollingIdentifier();
     private final Supplier<NativeImage> imageSource;
     private final Identifier imageIdentifier;
+    private final Stack<ImmutableTriple<Integer, Integer, Integer>> undoHistory = new Stack<>();
     double renderXOffset = 0;
     double renderYOffset = 0;
     private int imageRenderWidth = 0;
@@ -40,6 +42,8 @@ class EditorWidget extends ClickableWidget {
     private int lastClickY = Integer.MAX_VALUE;
     @NotNull
     private NativeImage image;
+    private int backgroundColor = Colors.BLACK;
+
 
     public EditorWidget(ColorTool colorSource, Identifier identifier, final Supplier<NativeImage> supplier) throws IOException {
         super(0, 0, 0, 0, Text.of(""));
@@ -54,8 +58,6 @@ class EditorWidget extends ClickableWidget {
         fitImage();
         updateRenderedImage();
     }
-
-
 
     public Identifier getImageIdentifier() {
         return imageIdentifier;
@@ -80,8 +82,9 @@ class EditorWidget extends ClickableWidget {
         setImageFromSupplier(imageSource);
         clearUndoHistory();
     }
-    void clearImage(){
-        setImageFromSupplier(()->ResourceExplorerClient.getEmptyNativeImage(image.getWidth(),image.getHeight()));
+
+    void clearImage() {
+        setImageFromSupplier(() -> ResourceExplorerClient.getEmptyNativeImage(image.getWidth(), image.getHeight()));
         clearUndoHistory();
     }
 
@@ -97,16 +100,17 @@ class EditorWidget extends ClickableWidget {
         }
     }
 
+    void saveImage() {
+        Util.getIoWorkerExecutor().execute(() ->
+            REExplorer.outputResourceToPackInternal(imageIdentifier, (file) -> {
+                try {
+                    image.writeTo(file);
+                    return true;
+                } catch (IOException e) {
+                    return false;
+                }
+            }));
 
-    boolean saveImage() {
-        return REExplorer.outputResourceToPackInternal(imageIdentifier, (file) -> {
-            try {
-                image.writeTo(file);
-                return true;
-            } catch (IOException e) {
-                return false;
-            }
-        });
     }
 
     void fitImage() {
@@ -124,7 +128,6 @@ class EditorWidget extends ClickableWidget {
         return overrideCtrl;
     }
 
-
     public void setBounds(int size, int x, int y) {
         super.setDimensionsAndPosition(size, size, x, y);
         fitImage();
@@ -134,7 +137,7 @@ class EditorWidget extends ClickableWidget {
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         // image editor bounds
         context.fill(getX() - 2, getY() - 2, getRight() + 2, getBottom() + 2, Colors.WHITE);
-        context.fill(getX(), getY(), getRight(), getBottom(), Colors.BLACK);
+        context.fill(getX(), getY(), getRight(), getBottom(), backgroundColor);
 
         //image itself render
         renderNonTilingImageInEditor(context);
@@ -202,28 +205,31 @@ class EditorWidget extends ClickableWidget {
                 image.setColor(x, y, colorSource.blendOver(oldColor));
             }
             updateRenderedImage();
-            undoHistory.push(ImmutableTriple.of(x,y,oldColor));
+            undoHistory.push(ImmutableTriple.of(x, y, oldColor));
+            return true;
+        }, () -> {
+            backgroundColor = colorSource.getColorARGB();
             return true;
         });
     }
 
-    private final Stack<ImmutableTriple<Integer,Integer,Integer>> undoHistory = new Stack<>();
-
-    void clearUndoHistory(){
+    void clearUndoHistory() {
         undoHistory.clear();
     }
 
-    boolean canUndo(){
+    boolean canUndo() {
         return !undoHistory.isEmpty();
     }
-    void undoLastPixel(){
+
+    void undoLastPixel() {
         var lastAction = undoHistory.pop();
         try {
-            image.setColor(lastAction.left,lastAction.middle,lastAction.right);
-        }catch (Exception e){
+            image.setColor(lastAction.left, lastAction.middle, lastAction.right);
+            updateRenderedImage();
+        } catch (Exception e) {
             //return to stack
             undoHistory.push(lastAction);
-            ResourceExplorerClient.log("Undo action failed: "+ e.getMessage());
+            ResourceExplorerClient.log("Undo action failed: " + e.getMessage());
         }
     }
 
@@ -234,10 +240,16 @@ class EditorWidget extends ClickableWidget {
             //flatten transparency to black transparency, good habit for png compression
             if (colorSource.getColorAlpha() == 0) colorSource.setColor(0);
             return true;
+        }, () -> {
+            colorSource.setColor(backgroundColor);
+            //flip rb
+            colorSource.setColor(colorSource.getColorARGB());
+            return true;
         });
     }
 
-    private boolean pixelAction(double mouseX, double mouseY, BiFunction<Integer, Integer, Boolean> insideImageAction) {
+    private boolean pixelAction(double mouseX, double mouseY, BiFunction<Integer, Integer,
+            Boolean> insideImageAction, Supplier<Boolean> backgroundAction) {
         int imageX = getInImageXOfMouseX(mouseX);
         int imageY = getInImageYOfMouseY(mouseY);
 
@@ -249,13 +261,14 @@ class EditorWidget extends ClickableWidget {
         try {
             if (imageX < image.getWidth() && imageY < image.getHeight() && imageX >= 0 && imageY >= 0) {
                 return insideImageAction.apply(imageX, imageY);
-            } else {
-                return false;
+            } else if(isHovered()){
+                return backgroundAction.get();
             }
         } catch (Exception e) {
             ResourceExplorerClient.log(e.getMessage());
             return false;
         }
+        return false;
     }
 
     private int getInImageXOfMouseX(double mouseX) {

@@ -162,7 +162,7 @@ public class REExplorer {
 
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static boolean outputResourceToPackInternal(Identifier identifier, Function<File,Boolean> saveResources/*REResourceFile reResourceFile*/) {
+    public static boolean outputResourceToPackInternal(Identifier identifier, Function<File, Boolean> saveResources/*REResourceFile reResourceFile*/) {
         //only save existing file resources
         if (saveResources == null)
             return false;
@@ -190,12 +190,12 @@ public class REExplorer {
                 if (directoryFolder.exists()) {
 
                     File outputFile = new File(directoryFolder, file);
-                    if(outputFile.exists()){
+                    if (outputFile.exists()) {
                         ResourceExplorerClient.log("Overwriting existing resource: " + identifier);
                     }
 
                     boolean saved = saveResources.apply(outputFile);
-                    if(!saved){
+                    if (!saved) {
                         ResourceExplorerClient.log("Exporting resource file failed for: " + identifier);
                     }
                     return saved;

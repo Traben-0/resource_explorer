@@ -99,7 +99,6 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
     }
 
 
-
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (exportButton != null && exportButton.isMouseOver(mouseX, mouseY)) {

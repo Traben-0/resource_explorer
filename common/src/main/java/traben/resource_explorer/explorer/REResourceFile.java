@@ -237,7 +237,7 @@ public class REResourceFile extends REResourceEntry {
 
     public void exportToOutputPack(REExplorer.REExportContext context) {
         boolean exported = outputResourceToPackInternal(this.identifier,
-                resource == null? null : (file)->{
+                resource == null ? null : (file) -> {
                     try {
                         byte[] buffer = resource.getInputStream().readAllBytes();
                         OutputStream outStream = new FileOutputStream(file);
@@ -248,7 +248,7 @@ public class REResourceFile extends REResourceEntry {
                         e.printStackTrace();
                         return false;
                     }
-        });
+                });
         context.tried(this, exported);
     }
 

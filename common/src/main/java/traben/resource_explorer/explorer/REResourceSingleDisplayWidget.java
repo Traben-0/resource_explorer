@@ -2,6 +2,7 @@ package traben.resource_explorer.explorer;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -17,11 +18,11 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
 
 
     public REResourceSingleDisplayWidget(MinecraftClient minecraftClient, int width, int height) {
-        super(minecraftClient, width, height-83, 32/*, height - 55 + 4*/, 32);
+        super(minecraftClient, width, height - 83, 32/*, height - 55 + 4*/, 32);
         this.centerListVertically = false;
         //1.20.4
         Objects.requireNonNull(client.textRenderer);
-        this.setRenderHeader(true, (int)(9.0F * 1.5F));
+        this.setRenderHeader(true, (int) (9.0F * 1.5F));
     }
 
     void setSelectedEntry(@Nullable REResourceDisplayWrapper newFile) {
@@ -41,7 +42,7 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
 
     public void setDimensions(int x, int width, int height) {
         this.width = width;
-        this.height = height-83;
+        this.height = height - 83;
         this.setY(32);
         //this.bottom = height - 55 + 4;
         this.setX(x);
@@ -70,6 +71,40 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         this.setScrollAmount(this.getScrollAmount() - verticalAmount * 18);
         return true;
+    }
+
+    @Override
+    public void setFocused(@Nullable Element focused) {
+        super.setFocused(focused);
+    }
+
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
+        if(getEntryCount() > 0){
+            return getEntry(0).charTyped(chr, modifiers);
+        }
+        return super.charTyped(chr, modifiers);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if(getEntryCount() > 0){
+            return getEntry(0).keyPressed(keyCode, scanCode, modifiers);
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        if(getEntryCount() > 0){
+            return getEntry(0).keyReleased(keyCode, scanCode, modifiers);
+        }
+        return super.keyReleased(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    protected void drawSelectionHighlight(DrawContext context, int y, int entryWidth, int entryHeight, int borderColor, int fillColor) {
+//        super.drawSelectionHighlight(context, y, entryWidth, entryHeight, borderColor, fillColor);
     }
 
     @Override

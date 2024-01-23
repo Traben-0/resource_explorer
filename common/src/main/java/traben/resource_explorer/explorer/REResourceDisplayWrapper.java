@@ -6,12 +6,15 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.sound.Sound;
 import net.minecraft.client.sound.SoundInstance;
 import net.minecraft.client.sound.SoundManager;
 import net.minecraft.client.sound.WeightedSoundSet;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.ColorHelper;
@@ -20,16 +23,125 @@ import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.editor.png.PNGEditorScreen;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWidget.Entry<REResourceDisplayWrapper> implements Comparable<REResourceDisplayWrapper> {
 
+    protected int drawText(MultilineText rawTextData, DrawContext context, int offset, int displayX, int displayY) {
+        offset += 11;
+        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Text:"), displayX, displayY + offset, 16777215);
+        offset += 11;
+        rawTextData.drawWithShadow(context, displayX, displayY + offset, 10, -8355712);
+        offset += rawTextData.count() * 10;
+        return offset;
+    }
+    protected int drawWidget(ClickableWidget widget, Text text, DrawContext context, int offset, int displayX, int displayY, int mouseX, int mouseY) {
+        return drawWidgetColoredText(widget,text,context,offset,displayX,displayY,mouseX,mouseY,16777215);
+    }
+
+    protected int drawWidgetSubtleText(ClickableWidget widget, Text text, DrawContext context, int offset, int displayX, int displayY, int mouseX, int mouseY) {
+        return drawWidgetColoredText(widget,text,context,offset,displayX,displayY,mouseX,mouseY,Colors.GRAY);
+    }
+
+    protected int drawWidgetColoredText(ClickableWidget widget, Text text, DrawContext context, int offset, int displayX, int displayY, int mouseX, int mouseY, int color) {
+        if (widget != null) {
+            offset += 11;
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, text, displayX, displayY + offset, color);
+            return drawWidgetOnly(widget, context, offset, displayX, displayY, mouseX, mouseY);
+        }
+        return offset;
+    }
+
+    protected int drawWidgetOnly(ClickableWidget widget, DrawContext context, int offset, int displayX, int displayY, int mouseX, int mouseY) {
+        if (widget != null) {
+            offset += 11;
+            widget.setX(displayX);
+            widget.setY(displayY + offset);
+            widget.render(context, mouseX, mouseY, 0);
+            offset += 20;
+        }
+        return offset;
+    }
+
+
+
     public abstract String getDisplayName();
+
     public abstract int getEntryHeight();
 
-    public static class CreateFile extends REResourceDisplayWrapper{
+    public static class CreateFile extends REResourceDisplayWrapper {
 
         final String identifierPrefix;
-        CreateFile(final REExplorerScreen screen){
-            identifierPrefix = screen.cumulativePath;
+        final REExplorerScreen screen;
+
+        CreateFile(REExplorerScreen screen) {
+            identifierPrefix = screen.cumulativePath
+                    .replaceFirst("assets/","")
+                    .replaceFirst("/",":");
+            this.screen = screen;
+            pngButton = ButtonWidget.builder(Text.translatable("png"),(button)->{
+                getPngButton().active = false;
+                getTxtButton().active = true;
+                setWidthHeight(true);
+            }).dimensions(0,0,50, 20).build();
+            txtButton = ButtonWidget.builder(Text.translatable("txt"),(button)->{
+                getPngButton().active = true;
+                getTxtButton().active = false;
+                setWidthHeight(false);
+            }).dimensions(0,0,50, 20).build();
+            createButton = ButtonWidget.builder(Text.translatable("create"),(button)->{
+                boolean png = !getPngButton().active;
+                if (png && !textInput.getText().isEmpty()) {
+                    Optional<Identifier> validated = Identifier.validate(identifierPrefix + textInput.getText()+".png").result();
+                    var width = getInputWidth();
+                    var height = getInputHeight();
+                    if (validated.isPresent() && width != null && height != null){
+                        try {
+                            MinecraftClient.getInstance().setScreen(new PNGEditorScreen(screen,validated.get(),
+                                    ()-> ResourceExplorerClient.getEmptyNativeImage(width,height)));
+                        } catch (IOException e) {
+                            ResourceExplorerClient.log("image resource creation failed");
+                        }
+                    }else{
+                        ResourceExplorerClient.log("image resource creation invalid");
+                    }
+                }
+            }).dimensions(0,0,150, 20).build();
+
+            widgets.add(textInput);
+            widgets.add(widthInput);
+            widgets.add(heightInput);
+            widgets.add(pngButton);
+            widgets.add(txtButton);
+            widgets.add(createButton);
+        }
+
+        List<ClickableWidget> widgets = new ArrayList<>();
+
+        ButtonWidget getPngButton() {return pngButton;}
+        ButtonWidget getTxtButton() {return txtButton;}
+
+        void setWidthHeight(boolean set){
+            widthInput.active = set;
+            heightInput.active = set;
+        }
+
+        Integer getInputWidth(){
+            try {
+                return Integer.parseInt(widthInput.getText());
+            }catch (Exception e){
+                return null;
+            }
+        }
+        Integer getInputHeight(){
+            try {
+                return Integer.parseInt(heightInput.getText());
+            }catch (Exception e){
+                return null;
+            }
         }
 
         @Override
@@ -39,25 +151,109 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
 
         @Override
         public Text getNarration() {
-            return null;
+            return Text.of("");
+        }
+
+        private final TextFieldWidget textInput = new TextFieldWidget(MinecraftClient.getInstance().textRenderer,150, 20,Text.of("..."));
+        private final TextFieldWidget widthInput = new TextFieldWidget(MinecraftClient.getInstance().textRenderer,150, 20,Text.of("width..."));
+        private final TextFieldWidget heightInput = new TextFieldWidget(MinecraftClient.getInstance().textRenderer,150, 20,Text.of("height..."));
+        private final ButtonWidget pngButton;
+        private final ButtonWidget txtButton;
+        private final ButtonWidget createButton;
+
+
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            focusHovered();
+            for (ClickableWidget widget : widgets) {
+                if(widget.isHovered()){
+                    return widget.mouseClicked(mouseX,mouseY,button);
+                }
+            }
+            return false;
+        }
+
+        void focusHovered(){
+            for (ClickableWidget widget : widgets) {
+                widget.setFocused(widget.isHovered());
+            }
+        }
+
+        @Override
+        public boolean mouseReleased(double mouseX, double mouseY, int button) {
+            for (ClickableWidget widget : widgets) {
+                if(widget.isHovered()){
+                    return widget.mouseReleased(mouseX,mouseY,button);
+                }
+            }
+            return false;
+        }
+
+
+
+        @Override
+        public boolean charTyped(char chr, int modifiers) {
+            for (ClickableWidget widget : widgets) {
+                if(widget.isFocused()){
+                    return widget.charTyped(chr, modifiers);
+                }
+            }
+            return super.charTyped(chr, modifiers);
+        }
+
+        @Override
+        public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+            for (ClickableWidget widget : widgets) {
+                if(widget.isFocused()){
+                    return widget.keyPressed(keyCode, scanCode, modifiers);
+                }
+            }
+            return super.keyPressed(keyCode, scanCode, modifiers);
+        }
+
+        @Override
+        public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+            for (ClickableWidget widget : widgets) {
+                if(widget.isFocused()){
+                    return widget.keyReleased(keyCode, scanCode, modifiers);
+                }
+            }
+            return super.keyReleased(keyCode, scanCode, modifiers);
         }
 
         @Override
         public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+            int displayX = x + 8;
+            int displayY = y + 8;
 
+            int offset = 0;
+
+            offset = drawWidget(textInput, Text.translatable("File name:"), context, offset, displayX, displayY, mouseX, mouseY);
+
+            offset = drawWidget(pngButton, Text.translatable("File type:"), context, offset, displayX, displayY, mouseX, mouseY);
+            drawWidgetOnly(txtButton, context, offset-33, displayX + 68, displayY, mouseX, mouseY);
+
+            if(widthInput.active){
+                offset = drawWidget(widthInput, Text.translatable("Width:"), context, offset, displayX, displayY, mouseX, mouseY);
+                offset = drawWidget(heightInput, Text.translatable("height:"), context, offset, displayX, displayY, mouseX, mouseY);
+            }else{
+                offset = drawWidgetSubtleText(widthInput, Text.translatable("Width:"), context, offset, displayX, displayY, mouseX, mouseY);
+                offset = drawWidgetSubtleText(heightInput, Text.translatable("height:"), context, offset, displayX, displayY, mouseX, mouseY);
+            }
+
+            drawWidget(createButton, Text.translatable("Create file:"), context, offset, displayX, displayY, mouseX, mouseY);
         }
 
         @Override
         public String getDisplayName() {
-            return "empty lol";
+            return "Create new resource";
         }
 
         @Override
         public int getEntryHeight() {
-            return 32;
+            return 600;
         }
     }
-
 
 
     public static class File extends REResourceDisplayWrapper {
@@ -172,18 +368,18 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
             switch (fileEntry.fileType) {
                 case PNG -> {
                     offset = drawAsImage(context, offset, displaySquareMaximum, displayX, displayY);
-                    offset = drawPrimaryButton(Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
-                    drawEditorButton(Text.of("Edit:"), context, offset, displayX, displayY, mouseX, mouseY);
+                    offset = drawWidget(multiUseButton, Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+                    drawWidget(editorButton, Text.of("Edit:"), context, offset, displayX, displayY, mouseX, mouseY);
                 }
                 case TXT, PROPERTIES, JEM, JPM, JSON -> {
-                    offset = drawAsText(context, offset, displayX, displayY);
-                    drawPrimaryButton(Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+                    offset = drawText(fileEntry.getTextLines(), context, offset, displayX, displayY);
+                    drawWidget(multiUseButton, Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
                 }
                 case OTHER -> {
-                    offset = drawAsText(context, offset, displayX, displayY);
+                    offset = drawText(fileEntry.getTextLines(), context, offset, displayX, displayY);
                     drawAsImage(context, offset, displaySquareMaximum, displayX, displayY);
                 }
-                case OGG -> drawPrimaryButton(Text.of("Sound:"), context, offset, displayX, displayY, mouseX, mouseY);
+                case OGG -> drawWidget(multiUseButton, Text.of("Sound:"), context, offset, displayX, displayY, mouseX, mouseY);
             }
         }
 
@@ -208,45 +404,6 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
             return offset;
         }
 
-        private int drawAsText(DrawContext context, int offset, int displayX, int displayY) {
-            offset += 11;
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Text:"), displayX, displayY + offset, 16777215);
-            offset += 11;
-
-            MultilineText rawTextData = fileEntry.getTextLines();
-            rawTextData.drawWithShadow(context, displayX, displayY + offset, 10, -8355712);
-            offset += rawTextData.count() * 10;
-            return offset;
-        }
-
-        @SuppressWarnings("UnusedReturnValue")
-        private int drawPrimaryButton(Text text, DrawContext context, int offset, int displayX, int displayY, int mouseX, int mouseY) {
-            if (multiUseButton != null) {
-                offset += 11;
-                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, text, displayX, displayY + offset, 16777215);
-                offset += 11;
-                multiUseButton.setX(displayX);
-                multiUseButton.setY(displayY + offset);
-                multiUseButton.render(context, mouseX, mouseY, 0);
-                offset += 20;
-            }
-            return offset;
-        }
-
-        @SuppressWarnings("UnusedReturnValue")
-        private int drawEditorButton(Text text, DrawContext context, int offset, int displayX, int displayY, int mouseX, int mouseY) {
-            if (editorButton != null) {
-                offset += 11;
-                context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, text, displayX, displayY + offset, 16777215);
-                offset += 11;
-                editorButton.setX(displayX);
-                editorButton.setY(displayY + offset);
-                editorButton.render(context, mouseX, mouseY, 0);
-                offset += 20;
-            }
-            return offset;
-        }
-
         @Override
         public int compareTo(@NotNull REResourceDisplayWrapper o) {
             return 0;
@@ -262,8 +419,6 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
         public String getDisplayName() {
             return getFileEntry().getDisplayName();
         }
-
-
 
 
         private static class RESound implements SoundInstance {

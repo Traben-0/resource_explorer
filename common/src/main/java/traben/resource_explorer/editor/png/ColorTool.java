@@ -89,7 +89,7 @@ class ColorTool {
         if (getColorAlpha() == 0) return;
         if (!colorHistory.contains(current)) {
             colorHistory.addFirst(current);
-            if (colorHistory.size() > 10) colorHistory.removeLast();
+            if (colorHistory.size() > 30) colorHistory.removeLast();
         }
     }
 

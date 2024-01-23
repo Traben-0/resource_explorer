@@ -51,9 +51,9 @@ public class ResourceExplorerClient {
     }
 
     @NotNull
-    public static NativeImage getEmptyNativeImage(int width, int height){
+    public static NativeImage getEmptyNativeImage(int width, int height) {
         var img = new NativeImage(width, height, false);
-        img.fillRect(0,0,width, height,0);
+        img.fillRect(0, 0, width, height, 0);
         return img;
     }
 

@@ -30,6 +30,7 @@ public class PNGEditorScreen extends Screen {
             (value) -> colorTool.setColorAlpha((int) (value * 255)));
     private final EditorWidget editorWidget;
     int lastSliderUpdate = 0;
+    private ButtonWidget undoButton = null;
 
     public PNGEditorScreen(final Screen parent, final Identifier pngToEdit, final Supplier<NativeImage> supplier) throws IOException, NullPointerException {
         super(Text.translatable(MOD_ID + ".png_editor.title"));
@@ -60,7 +61,7 @@ public class PNGEditorScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.export_button"),
                         (button) -> {
-                            ResourceExplorerClient.log("saved image = " + editorWidget.saveImage());
+                            editorWidget.saveImage();
                             Objects.requireNonNull(client).setScreen(parent);
                         })
                 .dimensions((int) (this.width * 0.6), (int) (this.height * 0.9), (int) (this.width * 0.3), 20)
@@ -114,7 +115,7 @@ public class PNGEditorScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.clear"),
                         (button) -> editorWidget.clearImage())
-                .dimensions(secondButtonRowX, (int) (this.height * 0.1), secondButtonRowWidth, 20)
+                .dimensions(secondButtonRowX, (int) (this.height * 0.2), secondButtonRowWidth, 20)
                 .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.clear.tooltip")))
                 .build());
 
@@ -124,7 +125,7 @@ public class PNGEditorScreen extends Screen {
                             editorWidget.undoLastPixel();
                             button.active = editorWidget.canUndo();
                         })
-                .dimensions(secondButtonRowX, (int) (this.height * 0.1), secondButtonRowWidth, 20)
+                .dimensions(secondButtonRowX, (int) (this.height * 0.3), secondButtonRowWidth, 20)
                 .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.undo.tooltip")))
                 .build();
         this.addDrawableChild(undoButton);
@@ -148,21 +149,20 @@ public class PNGEditorScreen extends Screen {
         updateSliders();
 
         //init the color history buttons
-        var colorDisplayX = getButtonAreaLeft() + (int) (this.width * 0.3);
-        int colorDisplayY = (int) (this.height * 0.4);
-        for (int i = 0; i < 5; i++) {
-            this.addDrawableChild(new ColorHistoryWidget(colorDisplayX, colorDisplayY, colorTool, i));
-            colorDisplayY += 16;
-        }
-        //second row
-        colorDisplayY = (int) (this.height * 0.4);
-        for (int i = 5; i < 10; i++) {
-            this.addDrawableChild(new ColorHistoryWidget(colorDisplayX+16, colorDisplayY, colorTool, i));
-            colorDisplayY += 16;
+        var colorDisplayX = secondButtonRowX + 1;
+        int xOffset = 0;
+        int count = 0;
+        for (int j = 0; j < 5; j++) {
+            int colorDisplayY = (int) (this.height * 0.4);
+            int countPlus6 = count + 6;
+            while (count < countPlus6) {
+                this.addDrawableChild(new ColorHistoryWidget(colorDisplayX + xOffset, colorDisplayY, colorTool, count));
+                colorDisplayY += 16;
+                count++;
+            }
+            xOffset += 16;
         }
     }
-
-    private ButtonWidget undoButton = null;
 
     private void updateSliders() {
         if (colorTool.getColor() != lastSliderUpdate) {
@@ -191,7 +191,7 @@ public class PNGEditorScreen extends Screen {
         boolean b = super.mouseClicked(mouseX, mouseY, button);
         if (isMouseOverEditor()) {
             updateSliders();
-            if(undoButton != null){
+            if (undoButton != null) {
                 undoButton.active = editorWidget.canUndo();
             }
         }
@@ -250,4 +250,12 @@ public class PNGEditorScreen extends Screen {
     }
 
 
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (Screen.hasControlDown() && keyCode == 90) {//z
+            editorWidget.undoLastPixel();
+            undoButton.active = editorWidget.canUndo();
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
 }

@@ -15,7 +15,7 @@ public class REResourceListWidget extends AlwaysSelectedEntryListWidget<REResour
     REExplorerScreen screen;
 
     public REResourceListWidget(MinecraftClient minecraftClient, REExplorerScreen screen, int width, int height) {
-        super(minecraftClient, width, height-83, 32/*, height - 55 + 4*/, 36);
+        super(minecraftClient, width, height - 83, 32/*, height - 55 + 4*/, 36);
         this.centerListVertically = false;
         this.screen = screen;
         screen.entriesInThisDirectory.forEach(entry -> {
@@ -23,7 +23,7 @@ public class REResourceListWidget extends AlwaysSelectedEntryListWidget<REResour
             addEntry(entry);
         });
 
-        if(!screen.cumulativePath.equals("assets/")) {
+        if (!screen.cumulativePath.equals("assets/")) {
             var entry = new NewFileEntry(screen);
             entry.setWidget(this);
             addEntry(entry);
@@ -31,7 +31,7 @@ public class REResourceListWidget extends AlwaysSelectedEntryListWidget<REResour
 
         //1.20.4
         Objects.requireNonNull(client.textRenderer);
-        this.setRenderHeader(true, (int)(9.0F * 1.5F));
+        this.setRenderHeader(true, (int) (9.0F * 1.5F));
     }
 
     @Override
@@ -63,9 +63,12 @@ public class REResourceListWidget extends AlwaysSelectedEntryListWidget<REResour
 
     private static class NewFileEntry extends REResourceEntry {
         private final REExplorerScreen screen;
-        NewFileEntry(REExplorerScreen screen){
+        private final Identifier icon = new Identifier("resource_explorer:textures/file_add.png");
+
+        NewFileEntry(REExplorerScreen screen) {
             this.screen = screen;
         }
+
         @Override
         boolean canExport() {
             return false;
@@ -91,7 +94,6 @@ public class REResourceListWidget extends AlwaysSelectedEntryListWidget<REResour
             return getDisplayName();
         }
 
-        private final Identifier icon = new Identifier("resource_explorer:textures/file_add.png");
         @Override
         Identifier getIcon(boolean hovered) {
             return icon;
