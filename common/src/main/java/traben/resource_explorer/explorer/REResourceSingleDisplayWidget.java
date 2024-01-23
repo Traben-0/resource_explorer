@@ -80,7 +80,7 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        if(getEntryCount() > 0){
+        if (getEntryCount() > 0) {
             return getEntry(0).charTyped(chr, modifiers);
         }
         return super.charTyped(chr, modifiers);
@@ -88,7 +88,7 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if(getEntryCount() > 0){
+        if (getEntryCount() > 0) {
             return getEntry(0).keyPressed(keyCode, scanCode, modifiers);
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
@@ -96,7 +96,7 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
 
     @Override
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if(getEntryCount() > 0){
+        if (getEntryCount() > 0) {
             return getEntry(0).keyReleased(keyCode, scanCode, modifiers);
         }
         return super.keyReleased(keyCode, scanCode, modifiers);

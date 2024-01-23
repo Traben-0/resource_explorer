@@ -18,6 +18,7 @@ class ColorHistoryWidget extends ClickableWidget {
         this.index = index;
     }
 
+
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         Integer color = colorSource.getFromIndex(index);

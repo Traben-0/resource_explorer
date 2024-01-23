@@ -115,6 +115,7 @@ public class REConfig {
         return Objects.hash(showResourcePackButton, logFullFileTree, filterMode, addCauseToReloadFailureToast);
     }
 
+
     public enum REFileFilter {
         ALL_RESOURCES(MOD_ID + ".filter.0",
                 (fileEntry) -> true),

@@ -9,7 +9,6 @@ import net.minecraft.client.texture.NativeImage;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
-import traben.resource_explorer.ResourceExplorerClient;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -148,6 +147,18 @@ public class PNGEditorScreen extends Screen {
 
         updateSliders();
 
+        //background button
+        this.addDrawableChild(ButtonWidget.builder(
+                        Text.of(Text.translatable("resource_explorer.png_editor.background").getString() +
+                                ": " + editorWidget.getBackgroundText().getString()),
+                        (button) -> {
+                            editorWidget.nextBackground();
+                            button.setMessage(Text.of(Text.translatable("resource_explorer.png_editor.background").getString() +
+                                    ": " + editorWidget.getBackgroundText().getString()));
+                        })
+                .dimensions(getButtonAreaLeft(), (int) (this.height * 0.8), buttonWidth + 4 + secondButtonRowWidth, 20)
+                .build());
+
         //init the color history buttons
         var colorDisplayX = secondButtonRowX + 1;
         int xOffset = 0;
@@ -163,6 +174,7 @@ public class PNGEditorScreen extends Screen {
             xOffset += 16;
         }
     }
+
 
     private void updateSliders() {
         if (colorTool.getColor() != lastSliderUpdate) {
@@ -201,6 +213,7 @@ public class PNGEditorScreen extends Screen {
     @Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         renderBackgroundTexture(context);
+
     }
 
     @Override

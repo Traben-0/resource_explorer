@@ -9,9 +9,9 @@ import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +32,7 @@ class EditorWidget extends ClickableWidget {
     private final Stack<ImmutableTriple<Integer, Integer, Integer>> undoHistory = new Stack<>();
     double renderXOffset = 0;
     double renderYOffset = 0;
+    double flashRedDelta = 0;
     private int imageRenderWidth = 0;
     private int imageRenderHeight = 0;
     private int uOffset = 0;
@@ -42,8 +43,7 @@ class EditorWidget extends ClickableWidget {
     private int lastClickY = Integer.MAX_VALUE;
     @NotNull
     private NativeImage image;
-    private int backgroundColor = Colors.BLACK;
-
+    private BackgroundMode backgroundMode = BackgroundMode.BLACK;
 
     public EditorWidget(ColorTool colorSource, Identifier identifier, final Supplier<NativeImage> supplier) throws IOException {
         super(0, 0, 0, 0, Text.of(""));
@@ -102,14 +102,14 @@ class EditorWidget extends ClickableWidget {
 
     void saveImage() {
         Util.getIoWorkerExecutor().execute(() ->
-            REExplorer.outputResourceToPackInternal(imageIdentifier, (file) -> {
-                try {
-                    image.writeTo(file);
-                    return true;
-                } catch (IOException e) {
-                    return false;
-                }
-            }));
+                REExplorer.outputResourceToPackInternal(imageIdentifier, (file) -> {
+                    try {
+                        image.writeTo(file);
+                        return true;
+                    } catch (IOException e) {
+                        return false;
+                    }
+                }));
 
     }
 
@@ -133,11 +133,18 @@ class EditorWidget extends ClickableWidget {
         fitImage();
     }
 
+    Text getBackgroundText() {
+        return Text.translatable(backgroundMode.getNameKey());
+    }
+
+    void nextBackground() {
+        backgroundMode = backgroundMode.next();
+    }
+
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         // image editor bounds
-        context.fill(getX() - 2, getY() - 2, getRight() + 2, getBottom() + 2, Colors.WHITE);
-        context.fill(getX(), getY(), getRight(), getBottom(), backgroundColor);
+        backgroundMode.render(context, getX(), getY(), getRight(), getBottom());
 
         //image itself render
         renderNonTilingImageInEditor(context);
@@ -207,9 +214,6 @@ class EditorWidget extends ClickableWidget {
             updateRenderedImage();
             undoHistory.push(ImmutableTriple.of(x, y, oldColor));
             return true;
-        }, () -> {
-            backgroundColor = colorSource.getColorARGB();
-            return true;
         });
     }
 
@@ -240,16 +244,11 @@ class EditorWidget extends ClickableWidget {
             //flatten transparency to black transparency, good habit for png compression
             if (colorSource.getColorAlpha() == 0) colorSource.setColor(0);
             return true;
-        }, () -> {
-            colorSource.setColor(backgroundColor);
-            //flip rb
-            colorSource.setColor(colorSource.getColorARGB());
-            return true;
         });
     }
 
     private boolean pixelAction(double mouseX, double mouseY, BiFunction<Integer, Integer,
-            Boolean> insideImageAction, Supplier<Boolean> backgroundAction) {
+            Boolean> insideImageAction) {
         int imageX = getInImageXOfMouseX(mouseX);
         int imageY = getInImageYOfMouseY(mouseY);
 
@@ -261,8 +260,8 @@ class EditorWidget extends ClickableWidget {
         try {
             if (imageX < image.getWidth() && imageY < image.getHeight() && imageX >= 0 && imageY >= 0) {
                 return insideImageAction.apply(imageX, imageY);
-            } else if(isHovered()){
-                return backgroundAction.get();
+            } else if (isMouseOver(mouseX, mouseY)) {
+                flashRedDelta = 1;
             }
         } catch (Exception e) {
             ResourceExplorerClient.log(e.getMessage());
@@ -321,6 +320,14 @@ class EditorWidget extends ClickableWidget {
             context.drawTexture(renderImage.getCurrent(),
                     imageBoxX, imageBoxY, imageU2, imageV2,
                     imageWidth2, imageHeight2, imageRenderWidth, imageRenderHeight);
+
+            if (flashRedDelta > 0) {
+                int color = ColorHelper.Argb.getArgb((int) (255 * flashRedDelta), 255, 0, 0);
+                context.fill(imageBoxX, imageBoxY, imageBoxX + imageWidth2, imageBoxY + imageHeight2, color);
+
+                int fpsFactor = MinecraftClient.getInstance().getCurrentFps() / 4;
+                flashRedDelta = MathHelper.clamp(flashRedDelta - (flashRedDelta / fpsFactor), 0, 1);
+            }
             RenderSystem.disableBlend();
 
         } catch (Exception e) {
@@ -328,4 +335,5 @@ class EditorWidget extends ClickableWidget {
                     getX() + 6, getY() + 6, 16777215);
         }
     }
+
 }

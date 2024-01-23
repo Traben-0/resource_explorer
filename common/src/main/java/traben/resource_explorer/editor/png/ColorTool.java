@@ -13,7 +13,30 @@ class ColorTool {
 
     ColorTool() {
         colorHistory.add(current);
-        saveColorInHistory();
+        initHistory(
+                ColorHelper.Abgr.getAbgr(255, 0, 0, 255),
+                ColorHelper.Abgr.getAbgr(255, 0, 255, 0),
+                ColorHelper.Abgr.getAbgr(255, 255, 0, 0),
+                ColorHelper.Abgr.getAbgr(255, 0, 0, 0),
+                ColorHelper.Abgr.getAbgr(255, 255, 255, 255),
+                ColorHelper.Abgr.getAbgr(255, 0, 255, 255),
+                ColorHelper.Abgr.getAbgr(255, 255, 255, 0),
+                ColorHelper.Abgr.getAbgr(255, 255, 0, 255),
+                ColorHelper.Abgr.getAbgr(255, 192, 192, 192),
+                ColorHelper.Abgr.getAbgr(255, 128, 128, 128),
+                ColorHelper.Abgr.getAbgr(255, 64, 64, 64),
+                ColorHelper.Abgr.getAbgr(255, 0, 0, 128),
+                ColorHelper.Abgr.getAbgr(255, 0, 128, 128),
+                ColorHelper.Abgr.getAbgr(255, 0, 128, 0),
+                ColorHelper.Abgr.getAbgr(255, 128, 0, 128),
+                ColorHelper.Abgr.getAbgr(255, 128, 128, 0),
+                ColorHelper.Abgr.getAbgr(255, 128, 0, 0));
+    }
+
+    void initHistory(int... colors) {
+        for (int color : colors) {
+            colorHistory.add(color);
+        }
     }
 
     int getColor() {
