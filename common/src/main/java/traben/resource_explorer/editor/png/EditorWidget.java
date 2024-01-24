@@ -10,12 +10,12 @@ import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.jetbrains.annotations.NotNull;
 import traben.resource_explorer.ResourceExplorerClient;
+import traben.resource_explorer.editor.ExportableFileContainerAndPreviewer;
 import traben.resource_explorer.explorer.REExplorer;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-class EditorWidget extends ClickableWidget {
+class EditorWidget extends ClickableWidget implements ExportableFileContainerAndPreviewer {
 
     private final ColorTool colorSource;
     private final RollingIdentifier renderImage = new RollingIdentifier();
@@ -43,7 +43,7 @@ class EditorWidget extends ClickableWidget {
     private int lastClickY = Integer.MAX_VALUE;
     @NotNull
     private NativeImage image;
-    private BackgroundMode backgroundMode = BackgroundMode.BLACK;
+    private BackgroundMode backgroundMode = BackgroundMode.CHECKER;
 
     public EditorWidget(ColorTool colorSource, Identifier identifier, final Supplier<NativeImage> supplier) throws IOException {
         super(0, 0, 0, 0, Text.of(""));
@@ -100,18 +100,6 @@ class EditorWidget extends ClickableWidget {
         }
     }
 
-    void saveImage() {
-        Util.getIoWorkerExecutor().execute(() ->
-                REExplorer.outputResourceToPackInternal(imageIdentifier, (file) -> {
-                    try {
-                        image.writeTo(file);
-                        return true;
-                    } catch (IOException e) {
-                        return false;
-                    }
-                }));
-
-    }
 
     void fitImage() {
         double max = Math.max(image.getWidth(), image.getHeight());
@@ -336,4 +324,33 @@ class EditorWidget extends ClickableWidget {
         }
     }
 
+    @Override
+    public boolean exportAsIdentifier(Identifier identifier) {
+        return REExplorer.outputResourceToPackInternal(identifier, (file) -> {
+                    try {
+                        image.writeTo(file);
+                        return true;
+                    } catch (IOException e) {
+                        return false;
+                    }
+                });
+    }
+
+    @Override
+    public Identifier getOriginalAssetIdentifier() {
+        return imageIdentifier;
+    }
+
+    @Override
+    public String assertFileTypeOnEnd(String possiblyEndsWithFilenameAlready) {
+        return possiblyEndsWithFilenameAlready.endsWith(".png") ?
+                possiblyEndsWithFilenameAlready : possiblyEndsWithFilenameAlready + ".png";
+    }
+
+    @Override
+    public void renderSimple(DrawContext context, int x, int y, int x2, int y2) {
+            fitImage();
+            renderWidget(context,0,0,0);
+            hovered = false;
+    }
 }

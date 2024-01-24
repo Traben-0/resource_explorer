@@ -228,7 +228,7 @@ public class REResourceFolder extends REResourceEntry {
         String path = "fabric-api".equals(getDisplayName()) ? parent.cumulativePath : parent.cumulativePath + getDisplayName() + "/";
 
         LinkedList<REResourceEntry> content = getContent();
-        MinecraftClient.getInstance().setScreen(new REExplorerScreen(parent.vanillaParent, parent, content, path));
+        MinecraftClient.getInstance().setScreen(new REExplorerScreen(parent, content, path));
         return false;
     }
 

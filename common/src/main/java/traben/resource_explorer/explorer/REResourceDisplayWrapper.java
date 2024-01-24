@@ -142,7 +142,9 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
 
         void setWidthHeight(boolean set) {
             widthInput.active = set;
+            widthInput.setEditable(set);
             heightInput.active = set;
+            heightInput.setEditable(set);
         }
 
         Integer getInputWidth() {

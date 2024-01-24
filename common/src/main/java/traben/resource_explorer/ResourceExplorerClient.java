@@ -1,11 +1,14 @@
 package traben.resource_explorer;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.resource.Resource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import traben.resource_explorer.explorer.REExplorerScreen;
 
 import java.io.InputStream;
 
@@ -55,6 +58,29 @@ public class ResourceExplorerClient {
         var img = new NativeImage(width, height, false);
         img.fillRect(0, 0, width, height, 0);
         return img;
+    }
+
+    private static Screen explorerExit = null;
+
+    public static void setExplorerExit(Screen explorerExit2){
+        explorerExit = explorerExit2;
+    }
+
+    public static void leaveEditorAndResourceReload(){
+        if (REExplorerScreen.currentDisplay != null)
+            REExplorerScreen.currentDisplay.close();
+        REExplorerScreen.currentDisplay = null;
+        REExplorerScreen.currentStats = null;
+
+        //reading resources this way has some... affects to the resource system
+        //thus a resource reload is required
+        MinecraftClient.getInstance().setScreen(explorerExit);
+        MinecraftClient.getInstance().reloadResources();
+        if (explorerExit instanceof REConfig.REConfigScreen configScreen) {
+            configScreen.tempConfig.filterMode = REConfig.getInstance().filterMode;
+            configScreen.reset();
+        }
+        explorerExit = null;
     }
 
 }

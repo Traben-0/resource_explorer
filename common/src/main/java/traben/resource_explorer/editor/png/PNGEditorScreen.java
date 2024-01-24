@@ -9,6 +9,7 @@ import net.minecraft.client.texture.NativeImage;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
+import traben.resource_explorer.editor.ConfirmExportScreen;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -59,10 +60,7 @@ public class PNGEditorScreen extends Screen {
 
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.export_button"),
-                        (button) -> {
-                            editorWidget.saveImage();
-                            Objects.requireNonNull(client).setScreen(parent);
-                        })
+                        (button) -> Objects.requireNonNull(client).setScreen(new ConfirmExportScreen(this,editorWidget)))
                 .dimensions((int) (this.width * 0.6), (int) (this.height * 0.9), (int) (this.width * 0.3), 20)
                 .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.export_button.tooltip")))
                 .build());
@@ -106,14 +104,22 @@ public class PNGEditorScreen extends Screen {
         //reset button
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.reset"),
-                        (button) -> editorWidget.resetImage())
+                        (button) -> {
+                            editorWidget.clearUndoHistory();
+                            undoButton.active = false;
+                            editorWidget.resetImage();
+                        })
                 .dimensions(secondButtonRowX, (int) (this.height * 0.1), secondButtonRowWidth, 20)
                 .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.reset.tooltip")))
                 .build());
 
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.clear"),
-                        (button) -> editorWidget.clearImage())
+                        (button) -> {
+                            editorWidget.clearUndoHistory();
+                            undoButton.active = false;
+                            editorWidget.clearImage();
+                        })
                 .dimensions(secondButtonRowX, (int) (this.height * 0.2), secondButtonRowWidth, 20)
                 .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.clear.tooltip")))
                 .build());

@@ -11,6 +11,7 @@ import net.minecraft.util.Colors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.REConfig;
+import traben.resource_explorer.ResourceExplorerClient;
 
 import java.util.LinkedList;
 
@@ -23,7 +24,6 @@ public class REExplorerScreen extends Screen {
 
     @Nullable
     static public REStats currentStats = null;
-    public final Screen vanillaParent;
     @Nullable
     public final REExplorerScreen reParent;
     public final LinkedList<REResourceEntry> entriesInThisDirectory;
@@ -35,15 +35,14 @@ public class REExplorerScreen extends Screen {
         super(Text.translatable(MOD_ID + ".title"));
         this.cumulativePath = "assets/";
         this.entriesInThisDirectory = REExplorer.getResourceFolderRoot();
-        this.vanillaParent = vanillaParent;
+        ResourceExplorerClient.setExplorerExit(vanillaParent);
         this.reParent = null;
     }
 
-    public REExplorerScreen(Screen vanillaParent, @NotNull REExplorerScreen reParent, LinkedList<REResourceEntry> entries, String cumulativePath) {
+    public REExplorerScreen(@NotNull REExplorerScreen reParent, LinkedList<REResourceEntry> entries, String cumulativePath) {
         super(Text.translatable(MOD_ID + ".title"));
         this.cumulativePath = cumulativePath;
         this.entriesInThisDirectory = entries;
-        this.vanillaParent = vanillaParent;
         this.reParent = reParent;
     }
 
@@ -107,19 +106,7 @@ public class REExplorerScreen extends Screen {
 
         entriesInThisDirectory.clear();
 
-        if (currentDisplay != null)
-            currentDisplay.close();
-        currentDisplay = null;
-        currentStats = null;
-
-        //reading resources this way has some... affects to the resource system
-        //thus a resource reload is required
-        MinecraftClient.getInstance().reloadResources();
-        if (vanillaParent instanceof REConfig.REConfigScreen configScreen) {
-            configScreen.tempConfig.filterMode = REConfig.getInstance().filterMode;
-            configScreen.reset();
-        }
-        MinecraftClient.getInstance().setScreen(vanillaParent);
+        ResourceExplorerClient.leaveEditorAndResourceReload();
     }
 
 
