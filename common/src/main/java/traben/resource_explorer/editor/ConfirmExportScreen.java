@@ -12,13 +12,13 @@ import traben.resource_explorer.ResourceExplorerClient;
 
 import java.util.Objects;
 
-public class ConfirmExportScreen extends Screen{
+public class ConfirmExportScreen extends Screen {
 
     private Screen parent;
 
     private ExportableFileContainerAndPreviewer fileData;
 
-    public ConfirmExportScreen(Screen parent, ExportableFileContainerAndPreviewer fileData){
+    public ConfirmExportScreen(Screen parent, ExportableFileContainerAndPreviewer fileData) {
         super(Text.translatable("resource_explorer.png_editor.export.title"));
         this.parent = parent;
         this.fileData = fileData;
@@ -56,15 +56,15 @@ public class ConfirmExportScreen extends Screen{
                                     MinecraftClient.getInstance().getTextureManager().destroyTexture(id.get());
                                     ResourceExplorerClient.leaveEditorAndResourceReload();
                                     button.active = false;
-                                }else{
+                                } else {
                                     button.setMessage(Text.of("resource_explorer.png_editor.export_button.fail"));
                                 }
-                            } else if (txt.getText().isBlank()){
+                            } else if (txt.getText().isBlank()) {
                                 if (fileData.exportAsIdentifier(fileData.getOriginalAssetIdentifier())) {
                                     MinecraftClient.getInstance().getTextureManager().destroyTexture(fileData.getOriginalAssetIdentifier());
                                     ResourceExplorerClient.leaveEditorAndResourceReload();
                                     button.active = false;
-                                }else{
+                                } else {
                                     button.setMessage(Text.of("resource_explorer.png_editor.export_button.fail"));
                                 }
                             } else {
@@ -78,7 +78,7 @@ public class ConfirmExportScreen extends Screen{
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        if(fileData != null) {
+        if (fileData != null) {
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable("resource_explorer.png_editor.export_save")
                     , (int) (this.width * 0.61), (int) (this.height * 0.1), Colors.WHITE);
 

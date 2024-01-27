@@ -7,6 +7,8 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import traben.resource_explorer.REConfig;
+import traben.resource_explorer.ResourceExplorerClient;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -30,6 +32,22 @@ public class REResourceFolder extends REResourceEntry {
     public REResourceFolder(String folderName) {
         this.displayName = folderName;
         this.displayText = trimmedTextToWidth(folderName).asOrderedText();
+        topLevelDirectory = false;
+    }
+
+    private boolean topLevelDirectory;
+
+    public REResourceFolder(String folderName, List<REResourceEntry> entries) {
+        topLevelDirectory = true;
+        this.displayName = folderName;
+        this.displayText = trimmedTextToWidth(folderName).asOrderedText();
+        for (REResourceEntry entry : entries) {
+            if (entry instanceof REResourceFolder folder) {
+                addSubFolder(folder);
+            } else {
+                ResourceExplorerClient.logError("non folder in folder only init");
+            }
+        }
     }
 
     @Override
@@ -55,18 +73,23 @@ public class REResourceFolder extends REResourceEntry {
     @Override
     List<Text> getExtraText(boolean smallMode) {
         ArrayList<Text> text = new ArrayList<>();
-        if (subFolders.size() > 0)
-            text.add(trimmedTextToWidth(" " + subFolders.size() + " " + translated(subFolders.size() > 1 ?
+
+        int sizeFolders = countOfFolderMatchingFilterAndSearch(REExplorerScreen.searchTerm);
+        if (sizeFolders > 0) {
+            text.add(trimmedTextToWidth(" " + sizeFolders + " " + translated(sizeFolders > 1 ?
                     "resource_explorer.detail.folders" : "resource_explorer.detail.folder")));
-        if (fileContent.size() > 0) {
-            boolean multiple = fileContent.size() > 1;
+        }
+        int sizeFiles = countOfFilesMatchingFilterAndSearch(REExplorerScreen.searchTerm);
+        if (sizeFiles > 0) {
+            boolean multiple = sizeFiles > 1;
             String fileWord;
+
             if (folderIcon == REExplorer.ICON_FOLDER_BUILT) {
                 fileWord = translated(multiple ? "resource_explorer.detail.built_files" : "resource_explorer.detail.built_file");
             } else {
                 fileWord = translated(multiple ? "resource_explorer.detail.files" : "resource_explorer.detail.file");
             }
-            text.add(trimmedTextToWidth(" " + fileContent.size() + " " + fileWord));
+            text.add(trimmedTextToWidth(" " + sizeFiles + " " + fileWord));
         }
 
         if (smallMode && text.size() >= 2) return text;
@@ -101,6 +124,7 @@ public class REResourceFolder extends REResourceEntry {
     public void addSubFolder(REResourceFolder resourceFolder) {
         subFolders.put(resourceFolder.displayName, resourceFolder);
     }
+
 
     @Override
     public void exportToOutputPack(REExplorer.REExportContext context) {
@@ -139,7 +163,7 @@ public class REResourceFolder extends REResourceEntry {
             //add the folder if absent
             if (!subFolders.containsKey(subFolderName)) {
                 subFolders.put(subFolderName, new REResourceFolder(subFolderName));
-                stats.folderCount++;
+                if (stats != null) stats.folderCount++;
             }
 
             //iterate placing file into this sub folder
@@ -150,18 +174,99 @@ public class REResourceFolder extends REResourceEntry {
 
     }
 
-    public LinkedList<REResourceEntry> getContent() {
+
+    int countOfContentMatchingFilter() {
+        return countOfFolderMatchingFilter() + countOfFilesMatchingFilter();
+    }
+
+    int countOfFilesMatchingFilter() {
+        int count = 0;
+        for (REResourceFile reResourceFile : fileContent) {
+            if (REConfig.getInstance().filterMode.allows(reResourceFile)) count++;
+        }
+        return count;
+    }
+
+    int countOfFolderMatchingFilter() {
+        int count = 0;
+        for (REResourceFolder value : subFolders.values()) {
+            if (value.countOfContentMatchingFilter() > 0) count++;
+        }
+        return count;
+    }
+
+    int countOfContentMatchingFilterAndSearch(String search) {
+        return countOfFolderMatchingFilterAndSearch(search) + countOfFilesMatchingFilterAndSearch(search);
+    }
+
+    int countOfFilesMatchingFilterAndSearch(String search) {
+        int count = 0;
+        for (REResourceFile reResourceFile : fileContent) {
+            if (reResourceFile.matchesSearch(search) && REConfig.getInstance().filterMode.allows(reResourceFile))
+                count++;
+        }
+        return count;
+    }
+
+    int countOfFolderMatchingFilterAndSearch(String search) {
+        int count = 0;
+        for (REResourceFolder value : subFolders.values()) {
+            if (value.displayName.contains(search) || value.countOfContentMatchingFilterAndSearch(search) > 0) count++;
+        }
+        return count;
+    }
+
+    public LinkedList<REResourceEntry> getContentFiltered() {
         LinkedList<REResourceEntry> allContent = new LinkedList<>();
-        subFolders.keySet().stream().sorted().forEachOrdered(key -> allContent.add(subFolders.get(key)));
-        fileContent.stream().sorted().forEachOrdered(allContent::add);
+        subFolders.keySet().stream().sorted().forEachOrdered(key -> {
+            var folder = subFolders.get(key);
+            if (folder.countOfContentMatchingFilter() > 0) {
+                allContent.add(folder);
+            }
+        });
+        fileContent.stream().sorted().forEachOrdered((file) -> {
+            if (REConfig.getInstance().filterMode.allows(file)) {
+                allContent.add(file);
+            }
+        });
+        return allContent;
+    }
+
+    public LinkedList<REResourceEntry> getContentSearched(final String search) {
+        LinkedList<REResourceEntry> allContent = new LinkedList<>();
+        for (REResourceEntry entry : getContentFiltered()) {
+            if (entry.matchesSearch(search)) {
+                allContent.add(entry);
+            }
+        }
+        return allContent;
+    }
+
+    public LinkedList<REResourceEntry> getContentViaSearch(final String search) {
+        final LinkedList<REResourceEntry> allContent;
+        if (search == null || search.isBlank()) {
+            allContent = getContentFiltered();
+        } else {
+            allContent = getContentSearched(search);
+        }
 
 
-        UpOneDirFolder upFolder = new UpOneDirFolder("...");
-        upFolder.setWidget(this.widget);
-        allContent.addFirst(upFolder);
+        if (topLevelDirectory) {
+            //move minecraft namespace to top
+            final var mc = subFolders.get("minecraft");
+            if (mc != null && allContent.remove(mc)) {
+                allContent.addFirst(mc);
+            }
+        } else {
+            //append navigation up folder to top
+            UpOneDirFolder upFolder = new UpOneDirFolder("...");
+            upFolder.setWidget(this.widget);
+            allContent.addFirst(upFolder);
+        }
 
         return allContent;
     }
+
 
     private Identifier getRegularIcon() {
         if (folderIcon == null) {
@@ -218,6 +323,20 @@ public class REResourceFolder extends REResourceEntry {
     }
 
     @Override
+    boolean matchesSearch(final String search) {
+        if (displayName.matches(search)) return true;
+
+        for (REResourceFolder value : subFolders.values()) {
+            if (value.matchesSearch(search)) return true;
+        }
+        for (REResourceFile reResourceFile : fileContent) {
+            if (reResourceFile.matchesSearch(search)) return true;
+        }
+
+        return false;
+    }
+
+    @Override
     public Identifier getIcon(boolean hovered) {
         return hovered ? getHoverIcon() : getRegularIcon();
     }
@@ -227,12 +346,14 @@ public class REResourceFolder extends REResourceEntry {
         REExplorerScreen parent = this.widget.screen;
         String path = "fabric-api".equals(getDisplayName()) ? parent.cumulativePath : parent.cumulativePath + getDisplayName() + "/";
 
-        LinkedList<REResourceEntry> content = getContent();
-        MinecraftClient.getInstance().setScreen(new REExplorerScreen(parent, content, path));
+//        LinkedList<REResourceEntry> content = getContent();
+        MinecraftClient.getInstance().setScreen(new REExplorerScreen(parent, this, path));
         return false;
     }
 
+
     public static class UpOneDirFolder extends REResourceFolder {
+
 
         public UpOneDirFolder(String folderName) {
             super(folderName);
@@ -260,5 +381,8 @@ public class REResourceFolder extends REResourceEntry {
         boolean canExport() {
             return false;
         }
+
     }
+
+
 }

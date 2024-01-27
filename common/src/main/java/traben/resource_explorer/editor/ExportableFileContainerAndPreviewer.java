@@ -6,7 +6,10 @@ import net.minecraft.util.Identifier;
 public interface ExportableFileContainerAndPreviewer {
 
     boolean exportAsIdentifier(Identifier identifier);
+
     Identifier getOriginalAssetIdentifier();
+
     String assertFileTypeOnEnd(String possiblyEndsWithFilenameAlready);
+
     void renderSimple(DrawContext context, int x, int y, int x2, int y2);
 }

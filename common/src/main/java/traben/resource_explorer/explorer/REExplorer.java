@@ -116,11 +116,11 @@ public class REExplorer {
                 namesSpaceFoldersRoot.addFirst(fabricApiFolder);
             }
             //get filter
-            REConfig.REFileFilter filter = REConfig.getInstance().filterMode;
+//            REConfig.REFileFilter filter = REConfig.getInstance().filterMode;
 
             //minecraft at the top
-            if (filter != REConfig.REFileFilter.ONLY_FROM_PACKS_NO_GENERATED)
-                namesSpaceFoldersRoot.addFirst(minecraftFolder);
+//            if (filter != REConfig.REFileFilter.ONLY_FROM_PACKS_NO_GENERATED)
+            namesSpaceFoldersRoot.addFirst(minecraftFolder);
 
             //here allFilesAndFoldersRoot is only empty namespace directories
 
@@ -129,19 +129,19 @@ public class REExplorer {
             //iterate over all files and give them folder structure
             for (REResourceFile resourceFile :
                     allFilesList) {
-                if (filter.allows(resourceFile)) {
-                    String namespace = resourceFile.identifier.getNamespace();
-                    REResourceFolder namespaceFolder = namespaceFolderMap.get(namespace);
-                    if (namespaceFolder == null) {
-                        namespaceFolder = new REResourceFolder(namespace);
-                        namespaceFolderMap.put(namespace, namespaceFolder);
-                        namesSpaceFoldersRoot.addLast(namespaceFolder);
-                    }
-                    namespaceFolder.addResourceFile(resourceFile, statistics);
-                    statistics.addEntryStatistic(resourceFile, true);
-                } else {
-                    statistics.addEntryStatistic(resourceFile, false);
+//                if (filter.allows(resourceFile)) {
+                String namespace = resourceFile.identifier.getNamespace();
+                REResourceFolder namespaceFolder = namespaceFolderMap.get(namespace);
+                if (namespaceFolder == null) {
+                    namespaceFolder = new REResourceFolder(namespace);
+                    namespaceFolderMap.put(namespace, namespaceFolder);
+                    namesSpaceFoldersRoot.addLast(namespaceFolder);
                 }
+                namespaceFolder.addResourceFile(resourceFile, statistics);
+                statistics.addEntryStatistic(resourceFile);//, true);
+//                } else {
+//                    statistics.addEntryStatistic(resourceFile, false);
+//                }
             }
 
             if (print) {

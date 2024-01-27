@@ -33,8 +33,8 @@ public class REStats {
     }};
     int totalResources = 0;
     int totalFileResources = 0;
-    int totalAllowedResources = 0;
-    int totalAllowedFileResources = 0;
+    //    int totalAllowedResources = 0;
+//    int totalAllowedFileResources = 0;
     int totalTextureResources = 0;
     int totalTextureFileResources = 0;
     int folderCount = 0;
@@ -47,46 +47,44 @@ public class REStats {
     }
 
 
-    void addEntryStatistic(REResourceFile entry, boolean allowedByFilter) {
+    void addEntryStatistic(REResourceFile entry) {//}, boolean allowedByFilter) {
         boolean isFile = entry.resource != null;
         boolean isTexture = entry.fileType == REResourceFile.FileType.PNG;
 
         //top level
         totalResources++;
-        if (isFile)
-            totalFileResources++;
+        if (isFile) totalFileResources++;
 
         //filtered
-        if (allowedByFilter) {
-            totalAllowedResources++;
-            if (isFile)
-                totalAllowedFileResources++;
+//        if (allowedByFilter) {
+//            totalAllowedResources++;
+//        if (isFile) totalAllowedFileResources++;
 
-            //per file type
-            totalPerFileType.put(entry.fileType, totalPerFileType.getInt(entry.fileType) + 1);
+        //per file type
+        totalPerFileType.put(entry.fileType, totalPerFileType.getInt(entry.fileType) + 1);
 
-            //textures only
-            if (isTexture) {
-                totalTextureResources++;
-                if (isFile) {
-                    totalTextureFileResources++;
-                }
-            }
-
-            //by namespace
-            incrementMap(totalPerNameSpace, entry.identifier.getNamespace());
-            if (isTexture)
-                incrementMap(totalTexturesPerNameSpace, entry.identifier.getNamespace());
-
-            //by resourcepack
+        //textures only
+        if (isTexture) {
+            totalTextureResources++;
             if (isFile) {
-                incrementMap(totalPerResourcepack, entry.resource.getResourcePackName());
-                if (isTexture)
-                    incrementMap(totalTexturesPerResourcepack, entry.resource.getResourcePackName());
+                totalTextureFileResources++;
             }
-
-
         }
+
+        //by namespace
+        incrementMap(totalPerNameSpace, entry.identifier.getNamespace());
+        if (isTexture)
+            incrementMap(totalTexturesPerNameSpace, entry.identifier.getNamespace());
+
+        //by resourcepack
+        if (isFile) {
+            incrementMap(totalPerResourcepack, entry.resource.getResourcePackName());
+            if (isTexture)
+                incrementMap(totalTexturesPerResourcepack, entry.resource.getResourcePackName());
+        }
+
+
+//        }
     }
 
     REStatsScreen getAsScreen(Screen parent) {
@@ -140,7 +138,7 @@ public class REStats {
 
             statText.renderValue("resource_explorer.explorer.stats.resources", stats.totalResources, stats.totalFileResources);
             statText.renderValue("resource_explorer.explorer.stats.all_textures", stats.totalTextureResources, stats.totalTextureFileResources);
-            statText.renderValue("resource_explorer.explorer.stats.post_filter", stats.totalAllowedResources, stats.totalAllowedFileResources);
+            //statText.renderValue("resource_explorer.explorer.stats.post_filter", stats.totalAllowedResources, stats.totalAllowedFileResources);
 
             statText.renderSubtitle("resource_explorer.explorer.stats.filetype",
                     Text.translatable("resource_explorer.explorer.stats.all").getString(), null);

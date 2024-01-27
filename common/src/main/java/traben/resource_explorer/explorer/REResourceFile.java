@@ -304,6 +304,11 @@ public class REResourceFile extends REResourceEntry {
         return hasMetaData ? REExplorer.ICON_HAS_META : null;
     }
 
+    @Override
+    boolean matchesSearch(final String search) {
+        return displayName.contains(search);
+    }
+
 
     @Override
     public boolean mouseClickExplorer() {

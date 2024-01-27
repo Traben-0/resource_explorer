@@ -18,7 +18,7 @@ public class REResourceListWidget extends AlwaysSelectedEntryListWidget<REResour
         super(minecraftClient, width, height - 83, 32/*, height - 55 + 4*/, 36);
         this.centerListVertically = false;
         this.screen = screen;
-        screen.entriesInThisDirectory.forEach(entry -> {
+        screen.getContentOfDirectoryAccordingToSearch().forEach(entry -> {
             entry.setWidget(this);
             addEntry(entry);
         });
@@ -97,6 +97,11 @@ public class REResourceListWidget extends AlwaysSelectedEntryListWidget<REResour
         @Override
         Identifier getIcon(boolean hovered) {
             return icon;
+        }
+
+        @Override
+        boolean matchesSearch(final String search) {
+            throw new UnsupportedOperationException("NewFileEntry shouldn't be searched");
         }
 
         @Override

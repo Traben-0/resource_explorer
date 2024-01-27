@@ -1,8 +1,8 @@
 {
   "resource_explorer.title": "Resource Explorer",
   "resource_explorer.explorer.apply_warn": "Applying a new filter will close the explorer and reload resources",
-  "resource_explorer.explorer.apply": "Apply",
-  "resource_explorer.explorer.settings": "More Settings",
+  "resource_explorer.explorer.filter": "Filter",
+  "resource_explorer.explorer.settings": "Settings",
   "resource_explorer.settings.title": "Resource Explorer Settings",
   "resource_explorer.settings.options_button": "Show options menu button: ",
   "resource_explorer.settings.options_button.tooltip": "Enable / Disable the button in the vanilla options screen",
@@ -36,7 +36,7 @@
   "resource_explorer.export_warn.fail": "# Assets failed to export",
   "resource_explorer.export_warn.partial": "# Assets exported out of $ files",
   "resource_explorer.stats.title": "Resource Explorer Statistics",
-  "resource_explorer.explorer.stats": "Stats",
+  "resource_explorer.explorer.stats": "Statistics",
   "resource_explorer.explorer.stats.all": "All",
   "resource_explorer.explorer.stats.files": "Files",
   "resource_explorer.explorer.stats.textures": "Textures",
@@ -90,5 +90,7 @@
   "resource_explorer.png_editor.eraser_button": "Eraser",
   "resource_explorer.png_editor.eraser_button.tooltip": "Changes the cursor to an eraser\nAlso appears whenever the color alpha is 0",
   "resource_explorer.png_editor.pick_button": "Pick color",
-  "resource_explorer.png_editor.pick_button.tooltip": "Changes the cursor to copy the color of the next image pixel clicked on\nYou can also just hold down Ctrl"
+  "resource_explorer.png_editor.pick_button.tooltip": "Changes the cursor to copy the color of the next image pixel clicked on\nYou can also just hold down Ctrl",
+  "resource_explorer.explorer.search": "Search",
+  "resource_explorer.explorer.exit": "Exit"
 }

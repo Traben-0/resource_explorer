@@ -109,6 +109,8 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
         }
     }
 
+    abstract boolean matchesSearch(final String search);
+
     abstract boolean mouseClickExplorer();
 
     abstract void exportToOutputPack(REExplorer.REExportContext context);

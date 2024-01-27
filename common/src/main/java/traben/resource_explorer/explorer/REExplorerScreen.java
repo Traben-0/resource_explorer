@@ -5,7 +5,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.screen.ScreenTexts;
+import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import org.jetbrains.annotations.NotNull;
@@ -13,9 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
 
-import java.util.LinkedList;
-
-import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
+import java.util.List;
 
 public class REExplorerScreen extends Screen {
 
@@ -24,26 +22,66 @@ public class REExplorerScreen extends Screen {
 
     @Nullable
     static public REStats currentStats = null;
+    static String searchTerm = "";
+    private static REConfig.REFileFilter filterChoice = REConfig.getInstance().filterMode;
     @Nullable
     public final REExplorerScreen reParent;
-    public final LinkedList<REResourceEntry> entriesInThisDirectory;
     public final String cumulativePath;
+    final TextFieldWidget searchBar = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 200, 20, Text.of(""));
+    public REResourceFolder resourceFolder;
     private REResourceListWidget fileList;
-    private REConfig.REFileFilter filterChoice = REConfig.getInstance().filterMode;
+    private ButtonWidget searchButton = null;
 
     public REExplorerScreen(Screen vanillaParent) {
-        super(Text.translatable(MOD_ID + ".title"));
+        super(Text.translatable("resource_explorer.title"));
         this.cumulativePath = "assets/";
-        this.entriesInThisDirectory = REExplorer.getResourceFolderRoot();
+        this.resourceFolder = new REResourceFolder("assets", REExplorer.getResourceFolderRoot());
         ResourceExplorerClient.setExplorerExit(vanillaParent);
         this.reParent = null;
+        searchTerm = "";
+        filterChoice = REConfig.getInstance().filterMode;
     }
 
-    public REExplorerScreen(@NotNull REExplorerScreen reParent, LinkedList<REResourceEntry> entries, String cumulativePath) {
-        super(Text.translatable(MOD_ID + ".title"));
+    public REExplorerScreen(@NotNull REExplorerScreen reParent, REResourceFolder resourceFolder, String cumulativePath) {
+        super(Text.translatable("resource_explorer.title"));
         this.cumulativePath = cumulativePath;
-        this.entriesInThisDirectory = entries;
+        this.resourceFolder = resourceFolder;
         this.reParent = reParent;
+    }
+
+    List<REResourceEntry> getContentOfDirectoryAccordingToSearch() {
+        return resourceFolder.getContentViaSearch(searchTerm);
+    }
+
+    void doSearch() {
+        searchTerm = searchBar.getText();
+        this.clearAndInit();
+    }
+
+    @Override
+    public boolean keyPressed(final int keyCode, final int scanCode, final int modifiers) {
+        if (keyCode == 257 && searchBar.isFocused()) {
+            doSearch();
+            return true;
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean keyReleased(final int keyCode, final int scanCode, final int modifiers) {
+        testSearchButtonActive();
+        return super.keyReleased(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean mouseReleased(final double mouseX, final double mouseY, final int button) {
+        testSearchButtonActive();
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    private void testSearchButtonActive() {
+        if (searchButton == null) return;
+        searchButton.active = (!searchTerm.equals(searchBar.getText()) || filterChoice != REConfig.getInstance().filterMode);
     }
 
     protected void init() {
@@ -56,33 +94,41 @@ public class REExplorerScreen extends Screen {
         currentDisplay.setDimensions(width / 2 + 4, 200, this.height);
         this.addSelectableChild(currentDisplay);
 
-        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE,
-                (button) -> this.close()).dimensions(this.width / 2 + 4, this.height - 48, 150, 20).build());
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("resource_explorer.explorer.exit"),
+                (button) -> this.close()).dimensions(this.width / 2 + 104, this.height - 24, 98, 20).build());
 
-        Tooltip warn = Tooltip.of(Text.translatable(MOD_ID + ".explorer.apply_warn"));
 
-        ButtonWidget apply = this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID + ".explorer.apply"), (button) -> {
-            this.close();
+        //search bar
+        searchBar.setPosition(this.width / 2 - 4 - 200, this.height - 48);
+        searchBar.setText(searchTerm);
+        this.addDrawableChild(searchBar);
+
+        //search button
+        searchButton = this.addDrawableChild(ButtonWidget.builder(Text.translatable("resource_explorer.explorer.search"), (button) -> {
             REConfig.getInstance().filterMode = filterChoice;
             REConfig.saveConfig();
-        }).dimensions(this.width / 2 - 4 - 46, this.height - 48, 46, 20).tooltip(warn).build());
-        apply.active = false;
-
-        this.addDrawableChild(ButtonWidget.builder(Text.translatable(REConfig.getInstance().filterMode.getKey()), (button) -> {
-            filterChoice = filterChoice.next();
-            button.setMessage(Text.translatable(filterChoice.getKey()));
-            apply.active = filterChoice != REConfig.getInstance().filterMode;
-        }).dimensions(this.width / 2 - 4 - 200, this.height - 48, 150, 20).tooltip(warn).build());
-
-        this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID + ".explorer.settings"), (button) -> {
-            this.close();
-            MinecraftClient.getInstance().setScreen(new REConfig.REConfigScreen(null));
-        }).dimensions(this.width / 2 - 4 - 200, this.height - 24, 150, 20).build());
-
-        this.addDrawableChild(ButtonWidget.builder(Text.translatable(MOD_ID + ".explorer.stats"), (button) -> {
-            if (currentStats != null) MinecraftClient.getInstance().setScreen(currentStats.getAsScreen(this));
+            doSearch();
         }).dimensions(this.width / 2 - 4 - 46, this.height - 24, 46, 20).build());
+
+        //filter
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable(REConfig.getInstance().filterMode.getKey()), (button) -> {
+                    filterChoice = filterChoice.next();
+                    button.setMessage(Text.translatable(filterChoice.getKey()));
+                }).dimensions(this.width / 2 - 4 - 200, this.height - 24, 150, 20)
+                .tooltip(Tooltip.of(Text.translatable("resource_explorer.explorer.apply_warn"))).build());
+
+        //settings
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("resource_explorer.explorer.settings"), (button) -> {
+            this.close();
+            MinecraftClient.getInstance().setScreen(new REConfig.REConfigScreen(this));
+        }).dimensions(this.width / 2 + 4, this.height - 24, 98, 20).build());
+
+        //stats
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("resource_explorer.explorer.stats"), (button) -> {
+            if (currentStats != null) MinecraftClient.getInstance().setScreen(currentStats.getAsScreen(this));
+        }).dimensions(this.width / 2 + 4, this.height - 48, 98, 20).build());
     }
+
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
@@ -104,7 +150,7 @@ public class REExplorerScreen extends Screen {
         this.fileList.close();
         super.close();
 
-        entriesInThisDirectory.clear();
+        resourceFolder = null;
 
         ResourceExplorerClient.leaveEditorAndResourceReload();
     }

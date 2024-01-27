@@ -16,7 +16,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import traben.resource_explorer.REConfig;
-import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.explorer.REExplorer;
 import traben.resource_explorer.explorer.REExplorerScreen;
 

@@ -327,13 +327,13 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
     @Override
     public boolean exportAsIdentifier(Identifier identifier) {
         return REExplorer.outputResourceToPackInternal(identifier, (file) -> {
-                    try {
-                        image.writeTo(file);
-                        return true;
-                    } catch (IOException e) {
-                        return false;
-                    }
-                });
+            try {
+                image.writeTo(file);
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        });
     }
 
     @Override
@@ -349,8 +349,8 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
 
     @Override
     public void renderSimple(DrawContext context, int x, int y, int x2, int y2) {
-            fitImage();
-            renderWidget(context,0,0,0);
-            hovered = false;
+        fitImage();
+        renderWidget(context, 0, 0, 0);
+        hovered = false;
     }
 }

@@ -15,6 +15,7 @@ import java.io.InputStream;
 public class ResourceExplorerClient {
     public static final String MOD_ID = "resource_explorer";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+    private static Screen explorerExit = null;
 
     public static void init() {
         log("loaded.");
@@ -60,13 +61,12 @@ public class ResourceExplorerClient {
         return img;
     }
 
-    private static Screen explorerExit = null;
-
-    public static void setExplorerExit(Screen explorerExit2){
+    public static void setExplorerExit(Screen explorerExit2) {
         explorerExit = explorerExit2;
     }
 
-    public static void leaveEditorAndResourceReload(){
+    public static void leaveEditorAndResourceReload() {
+
         if (REExplorerScreen.currentDisplay != null)
             REExplorerScreen.currentDisplay.close();
         REExplorerScreen.currentDisplay = null;

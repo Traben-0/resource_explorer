@@ -60,7 +60,7 @@ public class PNGEditorScreen extends Screen {
 
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.export_button"),
-                        (button) -> Objects.requireNonNull(client).setScreen(new ConfirmExportScreen(this,editorWidget)))
+                        (button) -> Objects.requireNonNull(client).setScreen(new ConfirmExportScreen(this, editorWidget)))
                 .dimensions((int) (this.width * 0.6), (int) (this.height * 0.9), (int) (this.width * 0.3), 20)
                 .tooltip(Tooltip.of(Text.translatable("resource_explorer.png_editor.export_button.tooltip")))
                 .build());
