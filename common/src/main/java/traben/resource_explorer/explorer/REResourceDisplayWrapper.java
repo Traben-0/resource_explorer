@@ -75,25 +75,23 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
     public static class CreateFile extends REResourceDisplayWrapper {
 
         final String identifierPrefix;
-        final REExplorerScreen screen;
         private final TextFieldWidget textInput = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 150, 20, Text.of("..."));
         private final TextFieldWidget widthInput = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 150, 20, Text.of("width..."));
         private final TextFieldWidget heightInput = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 150, 20, Text.of("height..."));
         private final ButtonWidget pngButton;
         private final ButtonWidget txtButton;
         private final ButtonWidget createButton;
-        List<ClickableWidget> widgets = new ArrayList<>();
+        final List<ClickableWidget> widgets = new ArrayList<>();
 
         CreateFile(REExplorerScreen screen) {
             identifierPrefix = screen.cumulativePath
                     .replaceFirst("assets/", "")
                     .replaceFirst("/", ":");
-            this.screen = screen;
-            pngButton = ButtonWidget.builder(Text.translatable("png"), (button) -> setPNG())
+            pngButton = ButtonWidget.builder(Text.translatable("resource_explorer.explorer.png"), (button) -> setPNG())
                     .dimensions(0, 0, 50, 20).build();
-            txtButton = ButtonWidget.builder(Text.translatable("txt"), (button) -> setTXT())
+            txtButton = ButtonWidget.builder(Text.translatable("resource_explorer.explorer.txt"), (button) -> setTXT())
                     .dimensions(0, 0, 50, 20).build();
-            createButton = ButtonWidget.builder(Text.translatable("create"), (button) -> {
+            createButton = ButtonWidget.builder(Text.translatable("resource_explorer.explorer.create"), (button) -> {
                 boolean png = !getPngButton().active;
                 if (png && !textInput.getText().isEmpty()) {
                     Optional<Identifier> validated = Identifier.validate(identifierPrefix + textInput.getText() + ".png").result();
@@ -238,20 +236,20 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
 
             int offset = 0;
 
-            offset = drawWidget(textInput, Text.translatable("File name:"), context, offset, displayX, displayY, mouseX, mouseY);
+            offset = drawWidget(textInput, Text.translatable("resource_explorer.explorer.file_name"), context, offset, displayX, displayY, mouseX, mouseY);
 
-            offset = drawWidget(pngButton, Text.translatable("File type:"), context, offset, displayX, displayY, mouseX, mouseY);
+            offset = drawWidget(pngButton, Text.translatable("resource_explorer.explorer.tile_type"), context, offset, displayX, displayY, mouseX, mouseY);
             drawWidgetOnly(txtButton, context, offset - 33, displayX + 68, displayY, mouseX, mouseY);
 
             if (widthInput.active) {
-                offset = drawWidget(widthInput, Text.translatable("Width:"), context, offset, displayX, displayY, mouseX, mouseY);
-                offset = drawWidget(heightInput, Text.translatable("height:"), context, offset, displayX, displayY, mouseX, mouseY);
+                offset = drawWidget(widthInput, Text.translatable("resource_explorer.explorer.width"), context, offset, displayX, displayY, mouseX, mouseY);
+                offset = drawWidget(heightInput, Text.translatable("resource_explorer.explorer.height"), context, offset, displayX, displayY, mouseX, mouseY);
             } else {
-                offset = drawWidgetSubtleText(widthInput, Text.translatable("Width:"), context, offset, displayX, displayY, mouseX, mouseY);
-                offset = drawWidgetSubtleText(heightInput, Text.translatable("height:"), context, offset, displayX, displayY, mouseX, mouseY);
+                offset = drawWidgetSubtleText(widthInput, Text.translatable("resource_explorer.explorer.width"), context, offset, displayX, displayY, mouseX, mouseY);
+                offset = drawWidgetSubtleText(heightInput, Text.translatable("resource_explorer.explorer.height"), context, offset, displayX, displayY, mouseX, mouseY);
             }
 
-            drawWidget(createButton, Text.translatable("Create file:"), context, offset, displayX, displayY, mouseX, mouseY);
+            drawWidget(createButton, Text.translatable("resource_explorer.explorer.create_file"), context, offset, displayX, displayY, mouseX, mouseY);
         }
 
         @Override

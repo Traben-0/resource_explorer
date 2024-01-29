@@ -1,4 +1,4 @@
-package traben.resource_explorer.mixin;
+package traben.resource_explorer.mixin.accessors;
 
 import net.minecraft.client.gui.widget.EntryListWidget;
 import org.spongepowered.asm.mixin.Mixin;

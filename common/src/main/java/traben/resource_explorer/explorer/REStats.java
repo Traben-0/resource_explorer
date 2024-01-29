@@ -7,6 +7,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -33,8 +34,6 @@ public class REStats {
     }};
     int totalResources = 0;
     int totalFileResources = 0;
-    //    int totalAllowedResources = 0;
-//    int totalAllowedFileResources = 0;
     int totalTextureResources = 0;
     int totalTextureFileResources = 0;
     int folderCount = 0;
@@ -47,7 +46,7 @@ public class REStats {
     }
 
 
-    void addEntryStatistic(REResourceFile entry) {//}, boolean allowedByFilter) {
+    void addEntryStatistic(REResourceFile entry) {
         boolean isFile = entry.resource != null;
         boolean isTexture = entry.fileType == REResourceFile.FileType.PNG;
 
@@ -55,10 +54,6 @@ public class REStats {
         totalResources++;
         if (isFile) totalFileResources++;
 
-        //filtered
-//        if (allowedByFilter) {
-//            totalAllowedResources++;
-//        if (isFile) totalAllowedFileResources++;
 
         //per file type
         totalPerFileType.put(entry.fileType, totalPerFileType.getInt(entry.fileType) + 1);
@@ -83,8 +78,6 @@ public class REStats {
                 incrementMap(totalTexturesPerResourcepack, entry.resource.getResourcePackName());
         }
 
-
-//        }
     }
 
     REStatsScreen getAsScreen(Screen parent) {
@@ -120,17 +113,7 @@ public class REStats {
         public void render(DrawContext context, int mouseX, int mouseY, float delta) {
             super.render(context, mouseX, mouseY, delta);
 
-            int offset;
-            int projectedHeight = 110 + stats.totalPerFileType.size() * 11 + stats.totalPerNameSpace.size() * 11 + stats.totalPerResourcepack.size() * 11;
-            if (projectedHeight > this.height * 0.7) {
-                int offsetMax = (int) (projectedHeight - this.height * 0.8) + 64;
-                float mouseScroll = (((float) mouseY) / this.height) * 1.15f;
-                offset = (int) (this.height * 0.25 - (mouseScroll > 1 ? 1 : mouseScroll) * offsetMax);
-            } else {
-                offset = (int) (this.height * 0.15);
-            }
-
-            StatDisplayUtil statText = new StatDisplayUtil(context, MinecraftClient.getInstance().textRenderer, this.width, this.height, offset);
+            StatDisplayUtil statText = getStatDisplayUtil(context, (float) mouseY);
 
             statText.renderSubtitle("resource_explorer.explorer.stats.totals",
                     Text.translatable("resource_explorer.explorer.stats.all").getString(),
@@ -153,6 +136,21 @@ public class REStats {
                     Text.translatable("resource_explorer.explorer.stats.all").getString(),
                     Text.translatable("resource_explorer.explorer.stats.textures").getString());
             stats.totalPerNameSpace.forEach((k, v) -> statText.renderValue(k, v, stats.totalTexturesPerNameSpace.getInt(k)));
+        }
+
+        @NotNull
+        private StatDisplayUtil getStatDisplayUtil(final DrawContext context, final float mouseY) {
+            int offset;
+            int projectedHeight = 110 + stats.totalPerFileType.size() * 11 + stats.totalPerNameSpace.size() * 11 + stats.totalPerResourcepack.size() * 11;
+            if (projectedHeight > this.height * 0.7) {
+                int offsetMax = (int) (projectedHeight - this.height * 0.8) + 64;
+                float mouseScroll = (mouseY / this.height) * 1.15f;
+                offset = (int) (this.height * 0.25 - (mouseScroll > 1 ? 1 : mouseScroll) * offsetMax);
+            } else {
+                offset = (int) (this.height * 0.15);
+            }
+
+            return new StatDisplayUtil(context, MinecraftClient.getInstance().textRenderer, this.width, this.height, offset);
         }
 
         private static class StatDisplayUtil {

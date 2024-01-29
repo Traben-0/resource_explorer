@@ -28,14 +28,13 @@ public class REResourceFolder extends REResourceEntry {
     private REResourceFile.FileType contentFileType = null;
     private boolean containsExportableFiles = false;
     private Identifier hoverIcon = null;
+    private final boolean topLevelDirectory;
 
     public REResourceFolder(String folderName) {
         this.displayName = folderName;
         this.displayText = trimmedTextToWidth(folderName).asOrderedText();
         topLevelDirectory = false;
     }
-
-    private boolean topLevelDirectory;
 
     public REResourceFolder(String folderName, List<REResourceEntry> entries) {
         topLevelDirectory = true;

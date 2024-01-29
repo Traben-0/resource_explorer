@@ -4,15 +4,16 @@
   "package": "traben.resource_explorer.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "accessors.SpriteAtlasTextureAccessor"
   ],
   "client": [
-    "EntryListWidgetAccessor",
     "MinecraftClientMixin",
     "OptionsScreenMixin",
     "PathUtilMixin",
-    "SpriteAtlasTextureAccessor",
-    "TextureManagerAccessor",
-    "ZipResourcePackMixin"
+    "ZipResourcePackMixin",
+    "accessors.EntryListWidgetAccessor",
+    "accessors.SpriteAtlasTextureAccessor",
+    "accessors.TextureManagerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

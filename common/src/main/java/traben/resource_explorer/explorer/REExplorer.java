@@ -11,7 +11,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
-import traben.resource_explorer.mixin.TextureManagerAccessor;
+import traben.resource_explorer.mixin.accessors.TextureManagerAccessor;
 
 import java.io.File;
 import java.io.FileWriter;

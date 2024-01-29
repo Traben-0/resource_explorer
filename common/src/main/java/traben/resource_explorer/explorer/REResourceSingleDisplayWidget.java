@@ -7,7 +7,7 @@ import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
-import traben.resource_explorer.mixin.EntryListWidgetAccessor;
+import traben.resource_explorer.mixin.accessors.EntryListWidgetAccessor;
 
 import java.util.Objects;
 

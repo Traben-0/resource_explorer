@@ -92,5 +92,13 @@
   "resource_explorer.png_editor.pick_button": "Pick color",
   "resource_explorer.png_editor.pick_button.tooltip": "Changes the cursor to copy the color of the next image pixel clicked on\nYou can also just hold down Ctrl",
   "resource_explorer.explorer.search": "Search",
-  "resource_explorer.explorer.exit": "Exit"
+  "resource_explorer.explorer.exit": "Exit",
+  "resource_explorer.explorer.png": "png",
+  "resource_explorer.explorer.txt": "txt",
+  "resource_explorer.explorer.create": "Create",
+  "resource_explorer.explorer.file_name": "File name:",
+  "resource_explorer.explorer.tile_type": "File type:",
+  "resource_explorer.explorer.width": "Width:",
+  "resource_explorer.explorer.height": "Height:",
+  "resource_explorer.explorer.create_file": "Create file:"
 }

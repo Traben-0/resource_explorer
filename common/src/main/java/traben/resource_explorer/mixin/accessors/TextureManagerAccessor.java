@@ -1,4 +1,4 @@
-package traben.resource_explorer.mixin;
+package traben.resource_explorer.mixin.accessors;
 
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.TextureManager;

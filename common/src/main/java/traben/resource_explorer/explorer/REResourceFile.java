@@ -13,7 +13,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;
-import traben.resource_explorer.mixin.SpriteAtlasTextureAccessor;
+import traben.resource_explorer.mixin.accessors.SpriteAtlasTextureAccessor;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -63,8 +63,8 @@ public class REResourceFile extends REResourceEntry {
 
         //try to capture some sizes
         if (abstractTexture instanceof SpriteAtlasTexture atlasTexture) {
-            width = ((SpriteAtlasTextureAccessor) atlasTexture).getWidth();
-            height = ((SpriteAtlasTextureAccessor) atlasTexture).getHeight();
+            width = ((SpriteAtlasTextureAccessor) atlasTexture).callGetWidth();
+            height = ((SpriteAtlasTextureAccessor) atlasTexture).callGetHeight();
         } else if (abstractTexture instanceof NativeImageBackedTexture nativeImageBackedTexture) {
             NativeImage image = nativeImageBackedTexture.getImage();
             if (image != null) {

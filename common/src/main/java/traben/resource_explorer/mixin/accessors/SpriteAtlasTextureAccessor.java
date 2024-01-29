@@ -1,14 +1,14 @@
-package traben.resource_explorer.mixin;
+package traben.resource_explorer.mixin.accessors;
 
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(SpriteAtlasTexture.class)
 public interface SpriteAtlasTextureAccessor {
-    @Accessor
-    int getWidth();
+    @Invoker
+    int callGetWidth();
 
-    @Accessor
-    int getHeight();
+    @Invoker
+    int callGetHeight();
 }
