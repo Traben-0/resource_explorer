@@ -8,22 +8,19 @@ import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.sound.Sound;
-import net.minecraft.client.sound.SoundInstance;
-import net.minecraft.client.sound.SoundManager;
-import net.minecraft.client.sound.WeightedSoundSet;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.editor.png.PNGEditorScreen;
+import traben.resource_explorer.editor.txt.TXTEditorScreen;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -274,7 +271,7 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
 
             //does button need to be initiated?
             if (fileEntry.fileType == REResourceFile.FileType.OGG) {
-                RESound easySound = new RESound(fileEntry);
+                RESoundPlayer easySound = new RESoundPlayer(fileEntry);
                 multiUseButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.play_sound"),
                         (button) -> MinecraftClient.getInstance().getSoundManager().play(easySound)
                 ).dimensions(0, 0, 150, 20).build();
@@ -300,6 +297,11 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
                 ).dimensions(0, 0, 150, 20).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip.file"))).build();
             }
 
+            initImageEditorButton();
+            initTextEditorButton();
+        }
+
+        private void initImageEditorButton(){
             if (fileEntry.fileType == REResourceFile.FileType.PNG) {
                 editorButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.edit_png"),
                         (button) -> {
@@ -320,6 +322,42 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
                 }
             }
         }
+        private void initTextEditorButton(){
+            if (fileEntry.fileType.isRawTextType()) {
+                editorButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.edit_txt"),
+                        (button) -> {
+                            try {
+                                MinecraftClient.getInstance().setScreen(
+                                        new TXTEditorScreen(
+                                                MinecraftClient.getInstance().currentScreen,
+                                                fileEntry.identifier,
+                                                getRawInputText()
+                                                ));
+                            } catch (Exception e) {
+                                ResourceExplorerClient.log("edit button failed: " + e.getMessage());
+                                button.active = false;
+                                e.printStackTrace();
+                                button.setMessage(Text.translatable("resource_explorer.edit_txt.fail"));
+                            }
+                        }
+                ).dimensions(0, 0, 150, 20).build();
+                editorButton.active = fileEntry.resource != null;
+                if (!editorButton.active) {
+                    editorButton.setMessage(Text.translatable("resource_explorer.edit_txt.fail"));
+                }
+            }
+        }
+
+        private String getRawInputText(){
+            if (fileEntry.resource != null) {
+                try (InputStream in = fileEntry.resource.getInputStream()) {
+                    return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+                } catch (Exception ignored) {}
+            }
+            return null;
+        }
+
+
 
         public REResourceFile getFileEntry() {
             return fileEntry;
@@ -330,7 +368,7 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
             int heightMargin = 100 + (fileEntry.getExtraText(false).size() * 11);
             return (int) (heightMargin + switch (fileEntry.fileType) {
                 case PNG -> 82 + fileEntry.height * ((entryWidth + 0f) / fileEntry.width);
-                case TXT, PROPERTIES, JEM, JPM, JSON -> 64 + fileEntry.getTextLines().count() * 10;
+                case TXT, PROPERTIES, JEM, JPM, JSON -> 106 + fileEntry.getTextLines().count() * 10;
                 case OTHER ->
                         50 + fileEntry.height * ((entryWidth + 0f) / fileEntry.width) + fileEntry.getTextLines().count() * 10;
                 case OGG, BLANK, ZIP -> 100;
@@ -377,11 +415,12 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
                 case PNG -> {
                     offset = drawAsImage(context, offset, displaySquareMaximum, displayX, displayY);
                     offset = drawWidget(multiUseButton, Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
-                    drawWidget(editorButton, Text.of("Edit:"), context, offset, displayX, displayY, mouseX, mouseY);
+                    drawWidget(editorButton, Text.of("Edit & Export:"), context, offset, displayX, displayY, mouseX, mouseY);
                 }
                 case TXT, PROPERTIES, JEM, JPM, JSON -> {
                     offset = drawText(fileEntry.getTextLines(), context, offset, displayX, displayY);
-                    drawWidget(multiUseButton, Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+                    offset = drawWidget(multiUseButton, Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+                    drawWidget(editorButton, Text.of("Edit & Export:"), context, offset, displayX, displayY, mouseX, mouseY);
                 }
                 case OTHER -> {
                     offset = drawText(fileEntry.getTextLines(), context, offset, displayX, displayY);
@@ -430,86 +469,6 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
         }
 
 
-        private static class RESound implements SoundInstance {
-
-            private final String id;
-            private final Sound sound;
-
-            RESound(REResourceFile fileEntry) {
-                id = "re_" + fileEntry.getDisplayName() + "2";
-                sound = new Sound("re_" + fileEntry.getDisplayName(), (a) -> 1, (a) -> 1, 1, Sound.RegistrationType.FILE, true, true, 1) {
-                    @Override
-                    public Identifier getLocation() {
-                        return fileEntry.identifier;
-                    }
-                };
-            }
-
-            @Override
-            public Identifier getId() {
-                return new Identifier(id);
-            }
-
-            @Nullable
-            @Override
-            public WeightedSoundSet getSoundSet(SoundManager soundManager) {
-                return new WeightedSoundSet(getId(), "wat");
-            }
-
-            @Override
-            public Sound getSound() {
-                return sound;
-            }
-
-            @Override
-            public SoundCategory getCategory() {
-                return SoundCategory.MASTER;
-            }
-
-            @Override
-            public boolean isRepeatable() {
-                return false;
-            }
-
-            @Override
-            public boolean isRelative() {
-                return false;
-            }
-
-            @Override
-            public int getRepeatDelay() {
-                return 0;
-            }
-
-            @Override
-            public float getVolume() {
-                return 1;
-            }
-
-            @Override
-            public float getPitch() {
-                return 1;
-            }
-
-            @Override
-            public double getX() {
-                return 0;
-            }
-
-            @Override
-            public double getY() {
-                return 0;
-            }
-
-            @Override
-            public double getZ() {
-                return 0;
-            }
-
-            @Override
-            public AttenuationType getAttenuationType() {
-                return AttenuationType.NONE;
-            }
-        }
     }
+
 }

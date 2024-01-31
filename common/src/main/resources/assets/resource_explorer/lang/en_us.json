@@ -100,5 +100,7 @@
   "resource_explorer.explorer.tile_type": "File type:",
   "resource_explorer.explorer.width": "Width:",
   "resource_explorer.explorer.height": "Height:",
-  "resource_explorer.explorer.create_file": "Create file:"
+  "resource_explorer.explorer.create_file": "Create file:",
+  "resource_explorer.edit_txt": "Edit text",
+  "resource_explorer.edit_txt.fail": "Text file failed"
 }
