@@ -3,6 +3,7 @@ package traben.resource_explorer.explorer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -24,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWidget.Entry<REResourceDisplayWrapper> implements Comparable<REResourceDisplayWrapper> {
 
@@ -72,39 +74,46 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
     public static class CreateFile extends REResourceDisplayWrapper {
 
         final String identifierPrefix;
+        final List<ClickableWidget> widgets = new ArrayList<>();
         private final TextFieldWidget textInput = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 150, 20, Text.of("..."));
         private final TextFieldWidget widthInput = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 150, 20, Text.of("width..."));
         private final TextFieldWidget heightInput = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 150, 20, Text.of("height..."));
         private final ButtonWidget pngButton;
         private final ButtonWidget txtButton;
+        private final ButtonWidget jsonButton;
+        private final ButtonWidget propertiesButton;
         private final ButtonWidget createButton;
-        final List<ClickableWidget> widgets = new ArrayList<>();
 
         CreateFile(REExplorerScreen screen) {
             identifierPrefix = screen.cumulativePath
                     .replaceFirst("assets/", "")
                     .replaceFirst("/", ":");
-            pngButton = ButtonWidget.builder(Text.translatable("resource_explorer.explorer.png"), (button) -> setPNG())
+            pngButton = ButtonWidget.builder(Text.of("png"), (button) -> setPNG())
                     .dimensions(0, 0, 50, 20).build();
-            txtButton = ButtonWidget.builder(Text.translatable("resource_explorer.explorer.txt"), (button) -> setTXT())
+            txtButton = ButtonWidget.builder(Text.of("txt"), (button) -> setTXT())
+                    .dimensions(0, 0, 50, 20).build();
+            jsonButton = ButtonWidget.builder(Text.of("json"), (button) -> setJSON())
+                    .dimensions(0, 0, 50, 20).build();
+            propertiesButton = ButtonWidget.builder(Text.of("properties"), (button) -> setPROPERTIES())
                     .dimensions(0, 0, 50, 20).build();
             createButton = ButtonWidget.builder(Text.translatable("resource_explorer.explorer.create"), (button) -> {
-                boolean png = !getPngButton().active;
-                if (png && !textInput.getText().isEmpty()) {
-                    Optional<Identifier> validated = Identifier.validate(identifierPrefix + textInput.getText() + ".png").result();
-                    var width = getInputWidth();
-                    var height = getInputHeight();
-                    if (validated.isPresent() && width != null && height != null) {
-                        try {
-                            MinecraftClient.getInstance().setScreen(new PNGEditorScreen(screen, validated.get(),
-                                    () -> ResourceExplorerClient.getEmptyNativeImage(width, height)));
-                        } catch (IOException e) {
-                            ResourceExplorerClient.log("image resource creation failed");
+                if (!textInput.getText().isEmpty()) {
+                    String txtExtension = getTxtExtensionChoice();
+                    try {
+                        if (txtExtension == null) {
+                            openPNGEditorScreen(screen, (str) -> button.setMessage(Text.translatable(str)));
+                        } else {
+                            openTXTEditorScreen(screen, txtExtension, (str) -> button.setMessage(Text.translatable(str)));
                         }
-                    } else {
-                        ResourceExplorerClient.log("image resource creation invalid");
+                    } catch (Exception e) {
+                        ResourceExplorerClient.log("create file failed: " + e.getMessage());
+                        button.active = false;
+                        button.setMessage(Text.translatable("resource_explorer.explorer.create.fail2"));
                     }
+                } else {
+                    button.setMessage(Text.translatable("resource_explorer.explorer.create.fail"));
                 }
+
             }).dimensions(0, 0, 150, 20).build();
 
             widgets.add(textInput);
@@ -112,19 +121,81 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
             widgets.add(heightInput);
             widgets.add(pngButton);
             widgets.add(txtButton);
+            widgets.add(jsonButton);
+            widgets.add(propertiesButton);
             widgets.add(createButton);
         }
 
+        void openTXTEditorScreen(Screen parent, String txtExtension, Consumer<String> setMessage) {
+            Optional<Identifier> validated = Identifier.validate(identifierPrefix + textInput.getText() + txtExtension).result();
+            if (validated.isPresent()) {
+                MinecraftClient.getInstance().setScreen(new TXTEditorScreen(parent, validated.get(),
+                        ".json".equals(txtExtension) ? "{\n\n}" : "", txtExtension));
+            } else {
+                ResourceExplorerClient.log("text resource creation invalid");
+                setMessage.accept("resource_explorer.explorer.create.fail_name");
+            }
+        }
+
+        void openPNGEditorScreen(Screen parent, Consumer<String> setMessage) {
+            Optional<Identifier> validated = Identifier.validate(identifierPrefix + textInput.getText() + ".png").result();
+            var width = getInputWidth();
+            var height = getInputHeight();
+            if (validated.isEmpty()) {
+                setMessage.accept("resource_explorer.explorer.create.fail_name");
+            } else if (width == null) {
+                setMessage.accept("resource_explorer.explorer.create.fail_width");
+            } else if (height == null) {
+                setMessage.accept("resource_explorer.explorer.create.fail_height");
+            } else {
+                try {
+                    MinecraftClient.getInstance().setScreen(new PNGEditorScreen(parent, validated.get(),
+                            () -> ResourceExplorerClient.getEmptyNativeImage(width, height)));
+                } catch (IOException e) {
+                    ResourceExplorerClient.log("image resource creation failed: " + e.getMessage());
+                    setMessage.accept("resource_explorer.explorer.create.fail2");
+                }
+            }
+        }
+
         void setPNG() {
+            setAllButtonsActiveAndWidthHeightFalse();
             getPngButton().active = false;
-            getTxtButton().active = true;
             setWidthHeight(true);
         }
 
         void setTXT() {
-            getPngButton().active = true;
+            setAllButtonsActiveAndWidthHeightFalse();
             getTxtButton().active = false;
+        }
+
+        void setJSON() {
+            setAllButtonsActiveAndWidthHeightFalse();
+            getJsonButton().active = false;
+        }
+
+        void setPROPERTIES() {
+            setAllButtonsActiveAndWidthHeightFalse();
+            getPropertiesButton().active = false;
+        }
+
+        private void setAllButtonsActiveAndWidthHeightFalse() {
+            getPngButton().active = true;
+            getTxtButton().active = true;
+            getJsonButton().active = true;
+            getPropertiesButton().active = true;
             setWidthHeight(false);
+        }
+
+        String getTxtExtensionChoice() {
+            if (getTxtButton().active) {
+                return ".txt";
+            } else if (getJsonButton().active) {
+                return ".json";
+            } else if (getPropertiesButton().active) {
+                return ".properties";
+            }
+            return null;
         }
 
         ButtonWidget getPngButton() {
@@ -133,6 +204,14 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
 
         ButtonWidget getTxtButton() {
             return txtButton;
+        }
+
+        ButtonWidget getJsonButton() {
+            return jsonButton;
+        }
+
+        ButtonWidget getPropertiesButton() {
+            return propertiesButton;
         }
 
         void setWidthHeight(boolean set) {
@@ -238,6 +317,10 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
             offset = drawWidget(pngButton, Text.translatable("resource_explorer.explorer.tile_type"), context, offset, displayX, displayY, mouseX, mouseY);
             drawWidgetOnly(txtButton, context, offset - 33, displayX + 68, displayY, mouseX, mouseY);
 
+            drawWidgetOnly(jsonButton, context, offset, displayX, displayY, mouseX, mouseY);
+            drawWidgetOnly(propertiesButton, context, offset, displayX + 68, displayY, mouseX, mouseY);
+            offset += 33;
+
             if (widthInput.active) {
                 offset = drawWidget(widthInput, Text.translatable("resource_explorer.explorer.width"), context, offset, displayX, displayY, mouseX, mouseY);
                 offset = drawWidget(heightInput, Text.translatable("resource_explorer.explorer.height"), context, offset, displayX, displayY, mouseX, mouseY);
@@ -301,7 +384,7 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
             initTextEditorButton();
         }
 
-        private void initImageEditorButton(){
+        private void initImageEditorButton() {
             if (fileEntry.fileType == REResourceFile.FileType.PNG) {
                 editorButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.edit_png"),
                         (button) -> {
@@ -322,7 +405,8 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
                 }
             }
         }
-        private void initTextEditorButton(){
+
+        private void initTextEditorButton() {
             if (fileEntry.fileType.isRawTextType()) {
                 editorButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.edit_txt"),
                         (button) -> {
@@ -331,12 +415,10 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
                                         new TXTEditorScreen(
                                                 MinecraftClient.getInstance().currentScreen,
                                                 fileEntry.identifier,
-                                                getRawInputText()
-                                                ));
+                                                getRawInputText()));
                             } catch (Exception e) {
                                 ResourceExplorerClient.log("edit button failed: " + e.getMessage());
                                 button.active = false;
-                                e.printStackTrace();
                                 button.setMessage(Text.translatable("resource_explorer.edit_txt.fail"));
                             }
                         }
@@ -348,15 +430,15 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
             }
         }
 
-        private String getRawInputText(){
+        private String getRawInputText() {
             if (fileEntry.resource != null) {
                 try (InputStream in = fileEntry.resource.getInputStream()) {
                     return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
             return null;
         }
-
 
 
         public REResourceFile getFileEntry() {

@@ -23,12 +23,12 @@ public class REResourceFolder extends REResourceEntry {
 
     private final String displayName;
     private final OrderedText displayText;
+    private final boolean topLevelDirectory;
     public Identifier contentIcon = null;
     private Identifier folderIcon = null;
     private REResourceFile.FileType contentFileType = null;
     private boolean containsExportableFiles = false;
     private Identifier hoverIcon = null;
-    private final boolean topLevelDirectory;
 
     public REResourceFolder(String folderName) {
         this.displayName = folderName;

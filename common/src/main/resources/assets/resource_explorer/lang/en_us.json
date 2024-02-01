@@ -102,5 +102,21 @@
   "resource_explorer.explorer.height": "Height:",
   "resource_explorer.explorer.create_file": "Create file:",
   "resource_explorer.edit_txt": "Edit text",
-  "resource_explorer.edit_txt.fail": "Text file failed"
+  "resource_explorer.edit_txt.fail": "Text file failed",
+  "resource_explorer.txt_editor.title": "Text editor",
+  "resource_explorer.txt_editor.reset": "Reset changes",
+  "resource_explorer.txt_editor.reset.tooltip": "Undo all changes made to the text",
+  "resource_explorer.txt_editor.clear": "Clear text",
+  "resource_explorer.txt_editor.clear.tooltip": "Clear all text from the text editor",
+  "resource_explorer.txt_editor.format": "Format json",
+  "resource_explorer.txt_editor.format.tooltip": "Format the text for json readability.\nAlso minimizes white space characters.\n Does nothing if it cant parse as valid json",
+  "resource_explorer.txt_editor.validator": "Check json",
+  "resource_explorer.txt_editor.validator.tooltip": "Checks if the text will parse as valid json",
+  "resource_explorer.txt_editor.validator.valid": "§aJson valid!",
+  "resource_explorer.txt_editor.validator.invalid": "§cJson invalid!",
+  "resource_explorer.explorer.create.fail": "Create (needs file name!)",
+  "resource_explorer.explorer.create.fail2": "Create (failed: check log)",
+  "resource_explorer.explorer.create.fail_name": "Create (file name invalid!)",
+  "resource_explorer.explorer.create.fail_height": "Create (height invalid!)",
+  "resource_explorer.explorer.create.fail_width": "Create (width invalid!)"
 }
