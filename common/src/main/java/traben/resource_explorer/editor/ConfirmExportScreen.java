@@ -50,7 +50,8 @@ public class ConfirmExportScreen extends Screen {
         this.addDrawableChild(ButtonWidget.builder(
                         Text.translatable("resource_explorer.png_editor.export_button"),
                         (button) -> {
-                            var id = Identifier.validate(fileData.assertFileTypeOnEnd(txt.getText())).result();
+//                            var id = Identifier.validate(fileData.assertFileTypeOnEnd(txt.getText())).result();
+                            var id = Identifier.validate(txt.getText()).result();
                             if (id.isPresent()) {
                                 if (fileData.exportAsIdentifier(id.get())) {
                                     MinecraftClient.getInstance().getTextureManager().destroyTexture(id.get());

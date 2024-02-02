@@ -23,14 +23,15 @@ import java.util.List;
 public class TextEditorWidget extends ClickableWidget implements ExportableFileContainerAndPreviewer {
 
 
+    protected final List<String> currentTextLines = new ArrayList<>();
     private final Identifier identifier;
     private final String initialText;
     private final String fileExtension;
-    protected final List<String> currentTextLines = new ArrayList<>();
     List<TextFieldWidgetWithIndex> textFields = new ArrayList<>();
     int topLineOfEditor = 0;
     int textHeight = 12;
     private int textOffset = 0;
+
     public TextEditorWidget(@NotNull Identifier identifier, @NotNull String initialText, @NotNull String fileExtension) {
         super(0, 0, 1, 1, Text.of(""));
 
@@ -452,6 +453,11 @@ public class TextEditorWidget extends ClickableWidget implements ExportableFileC
 
     @Override
     public String assertFileTypeOnEnd(final String possiblyEndsWithFilenameAlready) {
+        if (isJsonFormat() &&
+                (possiblyEndsWithFilenameAlready.endsWith(".jem")
+                || possiblyEndsWithFilenameAlready.endsWith(".jpm"))){
+            return possiblyEndsWithFilenameAlready;
+        }
         if (possiblyEndsWithFilenameAlready.endsWith(fileExtension)) {
             return possiblyEndsWithFilenameAlready;
         }
@@ -487,12 +493,10 @@ public class TextEditorWidget extends ClickableWidget implements ExportableFileC
 
     static class DisplayOnly extends TextEditorWidget {
 
+        private long lastTimeScrolled = 0;
+
         private DisplayOnly(@NotNull final Identifier identifier, @NotNull final String initialText, @NotNull final String fileExtension) {
             super(identifier, initialText, fileExtension);
-        }
-
-        static DisplayOnly of(TextEditorWidget widget) {
-            return new DisplayOnly(widget.identifier, widget.getText(), widget.fileExtension);
         }
 
 //        @Override
@@ -500,7 +504,9 @@ public class TextEditorWidget extends ClickableWidget implements ExportableFileC
 //            return false;
 //        }
 
-        private long lastTimeScrolled = 0;
+        static DisplayOnly of(TextEditorWidget widget) {
+            return new DisplayOnly(widget.identifier, widget.getText(), widget.fileExtension);
+        }
 
         @Override
         public void renderSimple(final DrawContext context, final int x, final int y, final int x2, final int y2) {
@@ -510,7 +516,7 @@ public class TextEditorWidget extends ClickableWidget implements ExportableFileC
             }
             if (System.currentTimeMillis() > lastTimeScrolled + 1000) {
                 lastTimeScrolled = System.currentTimeMillis();
-                topLineOfEditor = (topLineOfEditor + 1) % Math.max(1,currentTextLines.size() - textFields.size() + 1);
+                topLineOfEditor = (topLineOfEditor + 1) % Math.max(1, currentTextLines.size() - textFields.size() + 1);
                 updateTextWidgets();
             }
 
