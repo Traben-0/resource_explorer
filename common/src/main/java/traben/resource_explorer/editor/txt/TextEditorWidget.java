@@ -47,7 +47,14 @@ public class TextEditorWidget extends ClickableWidget implements ExportableFileC
             this.initialText = getText();
             updateTextWidgets();
         } else {
-            this.initialText = initialText;
+
+            this.initialText = initialText
+                    // format out weird whitespaces for our editor
+                    .replace("\r\n", "\n")
+                    .replace("\r", "\n")
+                    // use spaces in our editor just as a visual preference with the limited horizontal space and
+                    // odd horizontal scrolling per line behaviour
+                    .replace("\t", " ");
             resetText();
         }
 
@@ -221,6 +228,11 @@ public class TextEditorWidget extends ClickableWidget implements ExportableFileC
                     topLineOfEditor = Math.max(0, topLineOfEditor - textFields.size() + 1);
                     updateTextWidgets();
                     textFields.get(displayLine).setFocused(true);
+                    return true;
+                }
+                //tab will insert only 1 space as a style choice
+                case 258 -> {
+                    charTyped(' ', 0);
                     return true;
                 }
             }

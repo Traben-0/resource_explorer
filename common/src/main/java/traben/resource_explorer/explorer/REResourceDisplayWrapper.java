@@ -188,11 +188,11 @@ public abstract class REResourceDisplayWrapper extends AlwaysSelectedEntryListWi
         }
 
         String getTxtExtensionChoice() {
-            if (getTxtButton().active) {
+            if (!getTxtButton().active) {
                 return ".txt";
-            } else if (getJsonButton().active) {
+            } else if (!getJsonButton().active) {
                 return ".json";
-            } else if (getPropertiesButton().active) {
+            } else if (!getPropertiesButton().active) {
                 return ".properties";
             }
             return null;
