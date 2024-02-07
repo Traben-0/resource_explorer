@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.editor.ExportableFileContainerAndPreviewer;
-import traben.resource_explorer.explorer.REExplorer;
+import traben.resource_explorer.explorer.ExplorerUtils;
 
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class TextEditorWidget extends ClickableWidget implements ExportableFileC
     private final String fileExtension;
     List<TextFieldWidgetWithIndex> textFields = new ArrayList<>();
     int topLineOfEditor = 0;
-    int textHeight = 12;
+    final int textHeight = 12;
     private int textOffset = 0;
 
     public TextEditorWidget(@NotNull Identifier identifier, @NotNull String initialText, @NotNull String fileExtension) {
@@ -367,7 +367,7 @@ public class TextEditorWidget extends ClickableWidget implements ExportableFileC
 
     @Override
     public boolean exportAsIdentifier(final Identifier identifier) {
-        return REExplorer.outputResourceToPackInternal(identifier == null ? this.identifier : identifier, (file) -> {
+        return ExplorerUtils.outputResourceToPackInternal(identifier == null ? this.identifier : identifier, (file) -> {
             try (var writer = new FileWriter(file)) {
                 writer.write(getText());
                 ResourceExplorerClient.log("Exported file: " + file.getAbsolutePath());
@@ -451,18 +451,18 @@ public class TextEditorWidget extends ClickableWidget implements ExportableFileC
     }
 
 
-    @Override
-    public String assertFileTypeOnEnd(final String possiblyEndsWithFilenameAlready) {
-        if (isJsonFormat() &&
-                (possiblyEndsWithFilenameAlready.endsWith(".jem")
-                || possiblyEndsWithFilenameAlready.endsWith(".jpm"))){
-            return possiblyEndsWithFilenameAlready;
-        }
-        if (possiblyEndsWithFilenameAlready.endsWith(fileExtension)) {
-            return possiblyEndsWithFilenameAlready;
-        }
-        return possiblyEndsWithFilenameAlready + fileExtension;
-    }
+//    @Override
+//    public String assertFileTypeOnEnd(final String possiblyEndsWithFilenameAlready) {
+//        if (isJsonFormat() &&
+//                (possiblyEndsWithFilenameAlready.endsWith(".jem")
+//                        || possiblyEndsWithFilenameAlready.endsWith(".jpm"))) {
+//            return possiblyEndsWithFilenameAlready;
+//        }
+//        if (possiblyEndsWithFilenameAlready.endsWith(fileExtension)) {
+//            return possiblyEndsWithFilenameAlready;
+//        }
+//        return possiblyEndsWithFilenameAlready + fileExtension;
+//    }
 
     @Override
     public void renderSimple(final DrawContext context, final int x, final int y, final int x2, final int y2) {

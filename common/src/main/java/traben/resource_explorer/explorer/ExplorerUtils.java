@@ -11,6 +11,12 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
+import traben.resource_explorer.explorer.display.ExplorerScreen;
+import traben.resource_explorer.explorer.display.resources.entries.ExplorerDetailsEntry;
+import traben.resource_explorer.explorer.display.resources.entries.ResourceEntry;
+import traben.resource_explorer.explorer.display.resources.entries.ResourceFileEntry;
+import traben.resource_explorer.explorer.display.resources.entries.ResourceFolderEntry;
+import traben.resource_explorer.explorer.stats.ExplorerStats;
 import traben.resource_explorer.mixin.accessors.TextureManagerAccessor;
 
 import java.io.File;
@@ -21,7 +27,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Function;
 
-public class REExplorer {
+public abstract class ExplorerUtils {
     public static final Identifier ICON_FILE_BUILT = new Identifier("resource_explorer:textures/file_built.png");
     public static final Identifier ICON_FOLDER_BUILT = new Identifier("resource_explorer:textures/folder_built.png");
     public static final Identifier ICON_FOLDER = new Identifier("resource_explorer:textures/folder.png");
@@ -49,12 +55,33 @@ public class REExplorer {
     public static final Identifier ICON_FOLDER_OGG = new Identifier("resource_explorer:textures/folder_ogg.png");
     public static final Identifier ICON_MOD = new Identifier("resource_explorer:textures/icon.png");
 
+    public static final String SEARCH_KEY = "resource_explorer$search";
+    private static final List<String> searchedExceptions = new ArrayList<>();
+    private static boolean isSearching = false;
 
-    public static LinkedList<REResourceEntry> getResourceFolderRoot() {
+    public static boolean isSearching() {
+        return isSearching;
+    }
+
+    /**
+     * performs a search of all loaded packs and returns the root namespace level directory for the explorer to navigate from
+     * This search 'breaks' the minecraft resource system (explained below) and all screens and tasks that utilise this should trigger a
+     * full resource reload upon completion, As all Resource Explorer screens do, as well as handle their texture usage accordingly.
+     * <p>
+     * It seems this searching method specifically 'breaks' the resource system in a way that makes it so all textures not
+     * already registered to the TextureManager will no longer automatically register upon attempts to use the texture.
+     * I.E if "cobblestone.png" is not already registered prior to this search, it will resolve to an error texture if used.
+     * While in this 'broken' state this issue can be rectified where required by manually registering the texture to the TextureManager before usage.
+     * If a resource reload is not triggered upon closing the screen, the resource system will remain in this 'broken' state.
+     *
+     * @return a list of all namespace folders or a singleton list containing the failure context
+     */
+    public static LinkedList<ResourceEntry> getResourceFolderRoot() {
         try {
+            isSearching = true;
+            searchedExceptions.clear();
 
-            ObjectLinkedOpenHashSet<REResourceFile> allFilesList = new ObjectLinkedOpenHashSet<>();
-
+            ObjectLinkedOpenHashSet<ResourceFileEntry> allFilesList = new ObjectLinkedOpenHashSet<>();
 
             boolean print = REConfig.getInstance().logFullFileTree;
 
@@ -64,21 +91,26 @@ public class REExplorer {
             }
 
             //perform vanilla search with placeholder string that will trigger a blanket resource search
+            // zip resource-packs specifically do not allow empty search strings
             try {
-                Map<Identifier, Resource> resourceMap = MinecraftClient.getInstance().getResourceManager().findResources("resource_explorer$search", (id) -> true);
-                resourceMap.forEach((k, v) -> allFilesList.add(new REResourceFile(k, v)));
+                Map<Identifier, Resource> resourceMap = MinecraftClient.getInstance().getResourceManager().findResources(SEARCH_KEY, (id) -> true);
+                resourceMap.forEach((k, v) -> allFilesList.add(new ResourceFileEntry(k, v)));
 
             } catch (Exception ignored) {
                 //the method I use to explore all resources will cause an exception once at the end of the resource list as I need to search for blank file names
             }
 
             //fabric mod resources allow direct blank searches so catch those too
-            Map<Identifier, Resource> resourceMap2 = MinecraftClient.getInstance().getResourceManager().findResources("", (id) -> true);
-            resourceMap2.forEach((k, v) -> allFilesList.add(new REResourceFile(k, v)));
+            try {
+                Map<Identifier, Resource> resourceMap2 = MinecraftClient.getInstance().getResourceManager().findResources("", (id) -> true);
+                resourceMap2.forEach((k, v) -> allFilesList.add(new ResourceFileEntry(k, v)));
+            } catch (Exception ignored) {
+            }
+
 
             //search for generated texture assets
             Map<Identifier, AbstractTexture> textures = ((TextureManagerAccessor) MinecraftClient.getInstance().getTextureManager()).getTextures();
-            textures.forEach((k, v) -> allFilesList.add(new REResourceFile(k, v)));
+            textures.forEach((k, v) -> allFilesList.add(new ResourceFileEntry(k, v)));
 
 
             if (print) {
@@ -87,18 +119,18 @@ public class REExplorer {
             }
             Set<String> namespaces = MinecraftClient.getInstance().getResourceManager().getAllNamespaces();
 
-            LinkedList<REResourceEntry> namesSpaceFoldersRoot = new LinkedList<>();
-            Map<String, REResourceFolder> namespaceFolderMap = new HashMap<>();
+            LinkedList<ResourceEntry> namesSpaceFoldersRoot = new LinkedList<>();
+            Map<String, ResourceFolderEntry> namespaceFolderMap = new HashMap<>();
 
-            LinkedList<REResourceFolder> fabricApiFolders = new LinkedList<>();
+            LinkedList<ResourceFolderEntry> fabricApiFolders = new LinkedList<>();
 
-            REResourceFolder minecraftFolder = new REResourceFolder("minecraft");
+            ResourceFolderEntry minecraftFolder = new ResourceFolderEntry("minecraft");
             namespaceFolderMap.put("minecraft", minecraftFolder);
             namespaces.remove("minecraft");
 
             for (String nameSpace :
                     namespaces) {
-                REResourceFolder namespaceFolder = new REResourceFolder(nameSpace);
+                ResourceFolderEntry namespaceFolder = new ResourceFolderEntry(nameSpace);
 
                 if ("fabric".equals(nameSpace) || nameSpace.matches("(fabric-.*|renderer-registries)(renderer|api|-v\\d).*")) {
                     fabricApiFolders.add(namespaceFolder);
@@ -110,7 +142,7 @@ public class REExplorer {
             }
             //fabric api all in 1
             if (!fabricApiFolders.isEmpty()) {
-                REResourceFolder fabricApiFolder = new REResourceFolder("fabric-api");
+                ResourceFolderEntry fabricApiFolder = new ResourceFolderEntry("fabric-api");
                 fabricApiFolder.contentIcon = new Identifier("fabricloader", "icon.png");
                 fabricApiFolders.forEach(fabricApiFolder::addSubFolder);
                 namesSpaceFoldersRoot.addFirst(fabricApiFolder);
@@ -124,16 +156,16 @@ public class REExplorer {
 
             //here allFilesAndFoldersRoot is only empty namespace directories
 
-            REStats statistics = new REStats();
+            ExplorerStats statistics = new ExplorerStats();
 
             //iterate over all files and give them folder structure
-            for (REResourceFile resourceFile :
+            for (ResourceFileEntry resourceFile :
                     allFilesList) {
 //                if (filter.allows(resourceFile)) {
                 String namespace = resourceFile.identifier.getNamespace();
-                REResourceFolder namespaceFolder = namespaceFolderMap.get(namespace);
+                ResourceFolderEntry namespaceFolder = namespaceFolderMap.get(namespace);
                 if (namespaceFolder == null) {
-                    namespaceFolder = new REResourceFolder(namespace);
+                    namespaceFolder = new ResourceFolderEntry(namespace);
                     namespaceFolderMap.put(namespace, namespaceFolder);
                     namesSpaceFoldersRoot.addLast(namespaceFolder);
                 }
@@ -150,14 +182,52 @@ public class REExplorer {
                 ResourceExplorerClient.log("/END/");
             }
 
-            REExplorerScreen.currentStats = statistics;
+            ExplorerScreen.currentStats = statistics;
+
+            insertFeedbackIfRequired(namesSpaceFoldersRoot, print);
 
             return namesSpaceFoldersRoot;
         } catch (Exception e) {
-            LinkedList<REResourceEntry> fail = new LinkedList<>();
-            fail.add(REResourceFile.FAILED_FILE);
+            e.printStackTrace();
+            LinkedList<ResourceEntry> fail = new LinkedList<>();
+
+            StringBuilder error = new StringBuilder(e.getMessage()).append("\n");
+            for (StackTraceElement line : e.getStackTrace()) {
+                error.append(line.toString()).append("\n");
+            }
+            addSearchException(error.toString());
+            insertFeedbackIfRequired(fail, true);
             return fail;
+        } finally {
+            searchedExceptions.clear();
+            isSearching = false;
         }
+    }
+
+    private static void insertFeedbackIfRequired(LinkedList<ResourceEntry> namesSpaceFoldersRoot, boolean print) {
+        //insert feedback if there were any exceptions
+        //or if the search returned no results
+        boolean resultOnlyContainsEmptyMCFolder = namesSpaceFoldersRoot.size() == 1 && namesSpaceFoldersRoot.getFirst().isEmpty();
+        if (resultOnlyContainsEmptyMCFolder || !searchedExceptions.isEmpty()) {
+            StringBuilder feedbackMessage = new StringBuilder(Text.translatable("resource_explorer.explorer.feedback.info.header").getString());
+            if (resultOnlyContainsEmptyMCFolder) {
+                feedbackMessage.append(Text.translatable("resource_explorer.explorer.feedback.info.empty").getString());
+                namesSpaceFoldersRoot.clear();
+            } else {
+                feedbackMessage.append(Text.translatable("resource_explorer.explorer.feedback.info.exceptions").getString());
+            }
+            feedbackMessage.append(Text.translatable("resource_explorer.explorer.feedback.info.exceptions_list").getString());
+            searchedExceptions.forEach(s -> feedbackMessage.append(s).append("\n"));
+
+            namesSpaceFoldersRoot.add(new ExplorerDetailsEntry(feedbackMessage.toString()));
+            if (print) ResourceExplorerClient.log(feedbackMessage);
+        }
+    }
+
+    public static void addSearchException(String exception) {
+        String[] split = exception.split("\n");
+        searchedExceptions.addAll(Arrays.asList(split));
+        searchedExceptions.add("");
     }
 
 
@@ -255,14 +325,14 @@ public class REExplorer {
     public static class REExportContext {
 
 
-        final Set<REResourceFile.FileType> types = new HashSet<>();
+        final Set<ResourceFileEntry.FileType> types = new HashSet<>();
         int vanillaCount = 0;
         int packCount = 0;
         int moddedCount = 0;
         int totalAttempted = 0;
 
 
-        REExportContext() {
+        public REExportContext() {
         }
 
         public void sendLargeFolderWarning() {
@@ -281,7 +351,7 @@ public class REExplorer {
             return totalAttempted;
         }
 
-        public void tried(REResourceFile file, boolean exported) {
+        public void tried(ResourceFileEntry file, boolean exported) {
             if (file.resource != null) {
                 totalAttempted++;
                 if (exported) {

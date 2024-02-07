@@ -9,7 +9,7 @@ public interface ExportableFileContainerAndPreviewer {
 
     Identifier getOriginalAssetIdentifier();
 
-    String assertFileTypeOnEnd(String possiblyEndsWithFilenameAlready);
+//    String assertFileTypeOnEnd(String possiblyEndsWithFilenameAlready);
 
     void renderSimple(DrawContext context, int x, int y, int x2, int y2);
 }

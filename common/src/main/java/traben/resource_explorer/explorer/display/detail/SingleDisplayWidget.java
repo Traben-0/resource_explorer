@@ -1,4 +1,4 @@
-package traben.resource_explorer.explorer;
+package traben.resource_explorer.explorer.display.detail;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -7,25 +7,29 @@ import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
+import traben.resource_explorer.explorer.display.detail.entries.DisplayEntry;
 import traben.resource_explorer.mixin.accessors.EntryListWidgetAccessor;
 
 import java.util.Objects;
 
-public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget<REResourceDisplayWrapper> {
+public class SingleDisplayWidget extends AlwaysSelectedEntryListWidget<DisplayEntry> {
 
 
     private Text title = null;
 
-
-    public REResourceSingleDisplayWidget(MinecraftClient minecraftClient, int width, int height) {
+    public SingleDisplayWidget(MinecraftClient minecraftClient, int width, int height, @Nullable DisplayEntry initialDisplay) {
         super(minecraftClient, width, height - 83, 32/*, height - 55 + 4*/, 32);
         this.centerListVertically = false;
         //1.20.4
         Objects.requireNonNull(client.textRenderer);
         this.setRenderHeader(true, (int) (9.0F * 1.5F));
+
+        if (initialDisplay != null) {
+            setSelectedEntry(initialDisplay);
+        }
     }
 
-    void setSelectedEntry(@Nullable REResourceDisplayWrapper newFile) {
+    public void setSelectedEntry(@Nullable DisplayEntry newFile) {
         setScrollAmount(0);
         clearEntries();
         if (newFile != null) {
@@ -48,6 +52,8 @@ public class REResourceSingleDisplayWidget extends AlwaysSelectedEntryListWidget
         this.setX(x);
 //        this.right = x + width;
     }
+
+
 
 
     @Override

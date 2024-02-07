@@ -1,4 +1,4 @@
-package traben.resource_explorer.explorer;
+package traben.resource_explorer.explorer.display.resources.entries;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
@@ -13,6 +13,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;
+import traben.resource_explorer.explorer.ExplorerUtils;
+import traben.resource_explorer.explorer.display.ExplorerScreen;
+import traben.resource_explorer.explorer.display.detail.entries.DisplayEntry;
+import traben.resource_explorer.explorer.display.detail.entries.FileDisplayEntry;
 import traben.resource_explorer.mixin.accessors.SpriteAtlasTextureAccessor;
 
 import java.io.FileOutputStream;
@@ -25,11 +29,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import static traben.resource_explorer.explorer.REExplorer.outputResourceToPackInternal;
+import static traben.resource_explorer.explorer.ExplorerUtils.outputResourceToPackInternal;
 
-public class REResourceFile extends REResourceEntry {
+public class ResourceFileEntry extends ResourceEntry {
 
-    public static final REResourceFile FAILED_FILE = new REResourceFile();
+
     public final Identifier identifier;
     @Nullable
     public final Resource resource;
@@ -44,19 +48,18 @@ public class REResourceFile extends REResourceEntry {
     boolean imageDone = false;
     Boolean hasMetaData = null;
 
-    private REResourceFile() {
-        //failed file
-        this.identifier = new Identifier("search_failed:fail");
+    ResourceFileEntry() {
+        //feedback file
+        this.identifier = new Identifier("resource_explorer:feedback_entry");
         this.resource = null;
         this.abstractTexture = null;
         this.fileType = FileType.OTHER;
-        displayName = "search_failed";
+        displayName = "Explorer details";
         folderStructureList = new LinkedList<>();
-        this.displayText = Text.of("search_failed").asOrderedText();
+        this.displayText = Text.of("Explorer details").asOrderedText();
     }
 
-
-    public REResourceFile(Identifier identifier, AbstractTexture texture) {
+    public ResourceFileEntry(Identifier identifier, AbstractTexture texture) {
         this.identifier = identifier;
         this.resource = null;
         this.abstractTexture = texture;
@@ -90,7 +93,8 @@ public class REResourceFile extends REResourceEntry {
         this.displayText = trimmedTextToWidth(displayName).asOrderedText();
     }
 
-    public REResourceFile(Identifier identifier, @Nullable Resource resource) {
+
+    public ResourceFileEntry(Identifier identifier, @Nullable Resource resource) {
         this.identifier = identifier;
         this.resource = resource;
         this.abstractTexture = null;
@@ -111,10 +115,15 @@ public class REResourceFile extends REResourceEntry {
     }
 
     @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        REResourceFile that = (REResourceFile) o;
+        ResourceFileEntry that = (ResourceFileEntry) o;
         return identifier.equals(that.identifier);
     }
 
@@ -151,7 +160,7 @@ public class REResourceFile extends REResourceEntry {
     }
 
     @Override
-    List<Text> getExtraText(boolean smallMode) {
+    public List<Text> getExtraText(boolean smallMode) {
         ArrayList<Text> lines = new ArrayList<>();
         lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.type") + ": " + fileType.toString() +
                 (hasMetaData ? " + " + translated("resource_explorer.detail.metadata") : "")));
@@ -181,7 +190,7 @@ public class REResourceFile extends REResourceEntry {
         return lines;
     }
 
-    MultilineText getTextLines() {
+    public MultilineText getTextLines() {
         if (!fileType.isRawTextType())
             return MultilineText.EMPTY;
         if (readTextByLineBreaks == null) {
@@ -235,7 +244,7 @@ public class REResourceFile extends REResourceEntry {
         return readTextByLineBreaks;
     }
 
-    public void exportToOutputPack(REExplorer.REExportContext context) {
+    public void exportToOutputPack(ExplorerUtils.REExportContext context) {
         boolean exported = outputResourceToPackInternal(this.identifier,
                 resource == null ? null : (file) -> {
                     try {
@@ -280,11 +289,11 @@ public class REResourceFile extends REResourceEntry {
             } catch (Exception ignored) {
             }
         }
-        return resource == null ? REExplorer.ICON_FILE_BUILT : fileType.getDefaultIcon();
+        return resource == null ? ExplorerUtils.ICON_FILE_BUILT : fileType.getDefaultIcon();
     }
 
-    public REResourceDisplayWrapper.File wrapEntryAsDetailed() {
-        return new REResourceDisplayWrapper.File(this);
+    public DisplayEntry wrapEntryAsDetailed() {
+        return new FileDisplayEntry(this);
     }
 
     @Override
@@ -301,7 +310,7 @@ public class REResourceFile extends REResourceEntry {
                 hasMetaData = false;
             }
         }
-        return hasMetaData ? REExplorer.ICON_HAS_META : null;
+        return hasMetaData ? ExplorerUtils.ICON_HAS_META : null;
     }
 
     @Override
@@ -312,23 +321,23 @@ public class REResourceFile extends REResourceEntry {
 
     @Override
     public boolean mouseClickExplorer() {
-        if (REExplorerScreen.currentDisplay != null) {
-            REExplorerScreen.currentDisplay.setSelectedEntry(this.wrapEntryAsDetailed());
+        if (ExplorerScreen.currentDisplay != null) {
+            ExplorerScreen.currentDisplay.setSelectedEntry(this.wrapEntryAsDetailed());
         }
         return true;
     }
 
     public enum FileType {
-        PNG(REExplorer.ICON_FILE_PNG),
-        TXT(REExplorer.ICON_FILE_TEXT),
-        JSON(REExplorer.ICON_FILE_JSON),
-        PROPERTIES(REExplorer.ICON_FILE_PROPERTY),
-        OGG(REExplorer.ICON_FILE_OGG),
-        ZIP(REExplorer.ICON_FILE_ZIP),
-        JEM(REExplorer.ICON_FILE_JEM),
-        JPM(REExplorer.ICON_FILE_JEM),
-        OTHER(REExplorer.ICON_FILE_UNKNOWN),
-        BLANK(REExplorer.ICON_FILE_BLANK);
+        PNG(ExplorerUtils.ICON_FILE_PNG),
+        TXT(ExplorerUtils.ICON_FILE_TEXT),
+        JSON(ExplorerUtils.ICON_FILE_JSON),
+        PROPERTIES(ExplorerUtils.ICON_FILE_PROPERTY),
+        OGG(ExplorerUtils.ICON_FILE_OGG),
+        ZIP(ExplorerUtils.ICON_FILE_ZIP),
+        JEM(ExplorerUtils.ICON_FILE_JEM),
+        JPM(ExplorerUtils.ICON_FILE_JEM),
+        OTHER(ExplorerUtils.ICON_FILE_UNKNOWN),
+        BLANK(ExplorerUtils.ICON_FILE_BLANK);
 
         private final Identifier defaultIcon;
 
@@ -392,4 +401,5 @@ public class REResourceFile extends REResourceEntry {
             };
         }
     }
+
 }

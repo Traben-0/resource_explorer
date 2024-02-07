@@ -66,5 +66,10 @@
       <option name="name" value="maven3" />
       <option name="url" value="https://maven.neoforged.net/releases/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="CrowdinTranslate source" />
+      <option name="name" value="CrowdinTranslate source" />
+      <option name="url" value="https://minecraft.guntram.de/maven/" />
+    </remote-repository>
   </component>
 </project>

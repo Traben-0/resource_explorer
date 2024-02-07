@@ -16,7 +16,7 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.jetbrains.annotations.NotNull;
 import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.editor.ExportableFileContainerAndPreviewer;
-import traben.resource_explorer.explorer.REExplorer;
+import traben.resource_explorer.explorer.ExplorerUtils;
 
 import java.io.IOException;
 import java.util.Stack;
@@ -326,7 +326,7 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
 
     @Override
     public boolean exportAsIdentifier(Identifier identifier) {
-        return REExplorer.outputResourceToPackInternal(identifier, (file) -> {
+        return ExplorerUtils.outputResourceToPackInternal(identifier, (file) -> {
             try {
                 image.writeTo(file);
                 return true;
@@ -341,11 +341,11 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
         return imageIdentifier;
     }
 
-    @Override
-    public String assertFileTypeOnEnd(String possiblyEndsWithFilenameAlready) {
-        return possiblyEndsWithFilenameAlready.endsWith(".png") ?
-                possiblyEndsWithFilenameAlready : possiblyEndsWithFilenameAlready + ".png";
-    }
+//    @Override
+//    public String assertFileTypeOnEnd(String possiblyEndsWithFilenameAlready) {
+//        return possiblyEndsWithFilenameAlready.endsWith(".png") ?
+//                possiblyEndsWithFilenameAlready : possiblyEndsWithFilenameAlready + ".png";
+//    }
 
     @Override
     public void renderSimple(DrawContext context, int x, int y, int x2, int y2) {

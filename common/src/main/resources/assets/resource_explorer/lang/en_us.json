@@ -118,5 +118,12 @@
   "resource_explorer.explorer.create.fail2": "Create (failed: check log)",
   "resource_explorer.explorer.create.fail_name": "Create (file name invalid!)",
   "resource_explorer.explorer.create.fail_height": "Create (height invalid!)",
-  "resource_explorer.explorer.create.fail_width": "Create (width invalid!)"
+  "resource_explorer.explorer.create.fail_width": "Create (width invalid!)",
+  "resource_explorer.explorer.log_feedback": "Send info to log",
+  "resource_explorer.explorer.feedback.info": "Info:",
+  "resource_explorer.explorer.feedback.title": "Resource explorer details!",
+  "resource_explorer.explorer.feedback.info.header": "Explorer failure info:\n\n",
+  "resource_explorer.explorer.feedback.info.empty": "No resources were found.\nPlease see below exceptions\nfor possible causes.\n\n",
+  "resource_explorer.explorer.feedback.info.exceptions": "As some exceptions occurred while\nreading resources some resources\nmight be incorrect in the explorer.\n\nSuch as resources from lower\npacks appearing to be on top.\n\n",
+  "resource_explorer.explorer.feedback.info.exceptions_list": "Resource explorer experienced the\nfollowing failures while reading\nresources:\n\n"
 }

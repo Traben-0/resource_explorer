@@ -12,9 +12,9 @@ import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import traben.resource_explorer.explorer.REExplorer;
-import traben.resource_explorer.explorer.REExplorerScreen;
-import traben.resource_explorer.explorer.REResourceFile;
+import traben.resource_explorer.explorer.ExplorerUtils;
+import traben.resource_explorer.explorer.display.ExplorerScreen;
+import traben.resource_explorer.explorer.display.resources.entries.ResourceFileEntry;
 
 import java.io.File;
 import java.io.FileReader;
@@ -124,20 +124,20 @@ public class REConfig {
         ONLY_FROM_PACKS_NO_GENERATED(MOD_ID + ".filter.2",
                 (fileEntry) -> fileEntry.resource != null && !"vanilla".equals(fileEntry.resource.getResourcePackName())),
         ONLY_TEXTURES(MOD_ID + ".filter.3",
-                (fileEntry) -> fileEntry.fileType == REResourceFile.FileType.PNG),
+                (fileEntry) -> fileEntry.fileType == ResourceFileEntry.FileType.PNG),
         ONLY_TEXTURE_NO_GENERATED(MOD_ID + ".filter.4",
-                (fileEntry) -> fileEntry.resource != null && fileEntry.fileType == REResourceFile.FileType.PNG),
+                (fileEntry) -> fileEntry.resource != null && fileEntry.fileType == ResourceFileEntry.FileType.PNG),
         ONLY_TEXTURE_FROM_PACKS_NO_GENERATED(MOD_ID + ".filter.5",
-                (fileEntry) -> fileEntry.resource != null && fileEntry.fileType == REResourceFile.FileType.PNG && !"vanilla".equals(fileEntry.resource.getResourcePackName())),
+                (fileEntry) -> fileEntry.resource != null && fileEntry.fileType == ResourceFileEntry.FileType.PNG && !"vanilla".equals(fileEntry.resource.getResourcePackName())),
         SOUNDS_ONLY(MOD_ID + ".filter.6",
-                (fileEntry) -> fileEntry.resource != null && fileEntry.fileType == REResourceFile.FileType.OGG),
+                (fileEntry) -> fileEntry.resource != null && fileEntry.fileType == ResourceFileEntry.FileType.OGG),
         TEXT_ONLY(MOD_ID + ".filter.7",
                 (fileEntry) -> fileEntry.resource != null && fileEntry.fileType.isRawTextType());
 
         private final String key;
-        private final Predicate<REResourceFile> test;
+        private final Predicate<ResourceFileEntry> test;
 
-        REFileFilter(String key, Predicate<REResourceFile> test) {
+        REFileFilter(String key, Predicate<ResourceFileEntry> test) {
             this.key = key;
             this.test = test;
         }
@@ -146,7 +146,7 @@ public class REConfig {
             return key;
         }
 
-        public boolean allows(REResourceFile fileEntry) {
+        public boolean allows(ResourceFileEntry fileEntry) {
             return test.test(fileEntry);
         }
 
@@ -173,7 +173,7 @@ public class REConfig {
 
         public REConfigScreen(Screen parent) {
             super(Text.translatable(MOD_ID + ".settings.title"));
-            if (parent instanceof REExplorerScreen) {
+            if (parent instanceof ExplorerScreen) {
                 this.parent = null;
             } else {
                 this.parent = parent;
@@ -248,10 +248,10 @@ public class REConfig {
             int square = (int) Math.min(this.height * 0.6, this.width * 0.45);
             this.addDrawableChild(new TexturedButtonWidget(
                     x, y, square, square,
-                    new ButtonTextures(REExplorer.ICON_FOLDER, REExplorer.ICON_FOLDER_OPEN),
+                    new ButtonTextures(ExplorerUtils.ICON_FOLDER, ExplorerUtils.ICON_FOLDER_OPEN),
                     (button) -> {
                         assert this.client != null;
-                        this.client.setScreen(new REExplorerScreen(this));
+                        this.client.setScreen(new ExplorerScreen(this));
                     },
                     Text.translatable(MOD_ID + ".open_tooltip")) {
                 {
@@ -261,7 +261,7 @@ public class REConfig {
                 //override required because textured button widget just doesnt work
                 @Override
                 public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-                    Identifier identifier = this.isSelected() ? REExplorer.ICON_FOLDER_OPEN : REExplorer.ICON_MOD;
+                    Identifier identifier = this.isSelected() ? ExplorerUtils.ICON_FOLDER_OPEN : ExplorerUtils.ICON_MOD;
                     context.drawTexture(identifier, this.getX(), this.getY(), 0, 0, this.width, this.height, this.width, this.height);
                 }
 

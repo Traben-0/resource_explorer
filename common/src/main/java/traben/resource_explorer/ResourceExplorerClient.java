@@ -4,13 +4,15 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.resource.Resource;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import traben.resource_explorer.explorer.REExplorerScreen;
+import traben.resource_explorer.explorer.display.ExplorerScreen;
 
 import java.io.InputStream;
+import java.util.Optional;
 
 public class ResourceExplorerClient {
     public static final String MOD_ID = "resource_explorer";
@@ -35,7 +37,15 @@ public class ResourceExplorerClient {
     }
 
     @Nullable
+    public static NativeImage getNativeImageElseNull(final Identifier identifier) {
+        if (identifier == null) return null;
+        Optional<Resource> resource = MinecraftClient.getInstance().getResourceManager().getResource(identifier);
+        return resource.map(ResourceExplorerClient::getNativeImageElseNull).orElse(null);
+    }
+
+    @Nullable
     public static NativeImage getNativeImageElseNull(final Resource pngResource) {
+        if (pngResource == null) return null;
         NativeImage img;
         try {
             InputStream in = pngResource.getInputStream();
@@ -61,19 +71,19 @@ public class ResourceExplorerClient {
         return img;
     }
 
-    public static void setExplorerExit(Screen explorerExit2) {
+    public static void setExitScreen(Screen explorerExit2) {
         explorerExit = explorerExit2;
     }
 
-    public static void leaveEditorAndResourceReload() {
+    public static void leaveModScreensAndResourceReload() {
 
-        if (REExplorerScreen.currentDisplay != null)
-            REExplorerScreen.currentDisplay.close();
-        REExplorerScreen.currentDisplay = null;
-        REExplorerScreen.currentStats = null;
+        if (ExplorerScreen.currentDisplay != null)
+            ExplorerScreen.currentDisplay.close();
+        ExplorerScreen.currentDisplay = null;
+        ExplorerScreen.currentStats = null;
 
-        //reading resources this way has some... affects to the resource system
-        //thus a resource reload is required
+        //reading resources has some... affects to minecraft's resource system
+        //thus a resource reload is required to fix everything up
         MinecraftClient.getInstance().setScreen(explorerExit);
         MinecraftClient.getInstance().reloadResources();
         if (explorerExit instanceof REConfig.REConfigScreen configScreen) {

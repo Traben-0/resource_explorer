@@ -1,4 +1,4 @@
-package traben.resource_explorer.explorer;
+package traben.resource_explorer.explorer.display;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -6,50 +6,73 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.texture.NativeImage;
+import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
+import traben.resource_explorer.explorer.ExplorerUtils;
+import traben.resource_explorer.explorer.display.detail.SingleDisplayWidget;
+import traben.resource_explorer.explorer.display.resources.ResourceListWidget;
+import traben.resource_explorer.explorer.display.resources.entries.ResourceEntry;
+import traben.resource_explorer.explorer.display.resources.entries.ResourceFolderEntry;
+import traben.resource_explorer.explorer.stats.ExplorerStats;
 
 import java.util.List;
 
-public class REExplorerScreen extends Screen {
+public class ExplorerScreen extends Screen {
 
     @Nullable
-    static public REResourceSingleDisplayWidget currentDisplay = null;
+    static public SingleDisplayWidget currentDisplay = null;
 
     @Nullable
-    static public REStats currentStats = null;
+    static public ExplorerStats currentStats = null;
     static String searchTerm = "";
     private static REConfig.REFileFilter filterChoice = REConfig.getInstance().filterMode;
     @Nullable
-    public final REExplorerScreen reParent;
+    public final ExplorerScreen reParent;
     public final String cumulativePath;
     final TextFieldWidget searchBar = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 200, 20, Text.of(""));
-    public REResourceFolder resourceFolder;
-    private REResourceListWidget fileList;
+    public ResourceFolderEntry resourceFolder;
+    private ResourceListWidget fileList;
     private ButtonWidget searchButton = null;
-
-    public REExplorerScreen(Screen vanillaParent) {
+    public ExplorerScreen(Screen vanillaParent) {
         super(Text.translatable("resource_explorer.title"));
         this.cumulativePath = "assets/";
-        this.resourceFolder = new REResourceFolder("assets", REExplorer.getResourceFolderRoot());
-        ResourceExplorerClient.setExplorerExit(vanillaParent);
+        assertOptionsBackgroundTextureBeforeSearch();
+        this.resourceFolder = new ResourceFolderEntry("assets", ExplorerUtils.getResourceFolderRoot());
+        ResourceExplorerClient.setExitScreen(vanillaParent);
         this.reParent = null;
         searchTerm = "";
         filterChoice = REConfig.getInstance().filterMode;
     }
 
-    public REExplorerScreen(@NotNull REExplorerScreen reParent, REResourceFolder resourceFolder, String cumulativePath) {
+    public ExplorerScreen(@NotNull ExplorerScreen reParent, ResourceFolderEntry resourceFolder, String cumulativePath) {
         super(Text.translatable("resource_explorer.title"));
         this.cumulativePath = cumulativePath;
         this.resourceFolder = resourceFolder;
         this.reParent = reParent;
     }
 
-    List<REResourceEntry> getContentOfDirectoryAccordingToSearch() {
+    public static String getSearchTerm() {
+        return searchTerm;
+    }
+
+    //this texture can be made invalid by the resource search, ensure it is registered first
+    //normally not an issue but at-least 1 mod I know of removes the options background from the options screen
+    //meaning it does not get registered before the search breaks textures
+    private void assertOptionsBackgroundTextureBeforeSearch() {
+        Identifier backgroundId = new Identifier("minecraft:textures/gui/options_background.png");
+        NativeImage background = ResourceExplorerClient.getNativeImageElseNull(backgroundId);
+        if (background == null) return;
+        MinecraftClient.getInstance().getTextureManager().registerTexture(backgroundId, new NativeImageBackedTexture(background));
+    }
+
+    public List<ResourceEntry> getContentOfDirectoryAccordingToSearch() {
         return resourceFolder.getContentViaSearch(searchTerm);
     }
 
@@ -85,9 +108,11 @@ public class REExplorerScreen extends Screen {
     }
 
     protected void init() {
-        if (currentDisplay == null) currentDisplay = new REResourceSingleDisplayWidget(client, 200, this.height);
+        if (currentDisplay == null) {
+            currentDisplay = new SingleDisplayWidget(client, 200, this.height, resourceFolder.getDetailEntryIfRoot());
+        }
 
-        this.fileList = new REResourceListWidget(this.client, this, 200, this.height);
+        this.fileList = new ResourceListWidget(this.client, this, 200, this.height);
         this.fileList.setX(this.width / 2 - 4 - 200);
         this.addSelectableChild(this.fileList);
 
@@ -152,7 +177,7 @@ public class REExplorerScreen extends Screen {
 
         resourceFolder = null;
 
-        ResourceExplorerClient.leaveEditorAndResourceReload();
+        ResourceExplorerClient.leaveModScreensAndResourceReload();
     }
 
 

@@ -55,7 +55,7 @@ public class ConfirmExportScreen extends Screen {
                             if (id.isPresent()) {
                                 if (fileData.exportAsIdentifier(id.get())) {
                                     MinecraftClient.getInstance().getTextureManager().destroyTexture(id.get());
-                                    ResourceExplorerClient.leaveEditorAndResourceReload();
+                                    ResourceExplorerClient.leaveModScreensAndResourceReload();
                                     button.active = false;
                                 } else {
                                     button.setMessage(Text.of("resource_explorer.png_editor.export_button.fail"));
@@ -63,7 +63,7 @@ public class ConfirmExportScreen extends Screen {
                             } else if (txt.getText().isBlank()) {
                                 if (fileData.exportAsIdentifier(fileData.getOriginalAssetIdentifier())) {
                                     MinecraftClient.getInstance().getTextureManager().destroyTexture(fileData.getOriginalAssetIdentifier());
-                                    ResourceExplorerClient.leaveEditorAndResourceReload();
+                                    ResourceExplorerClient.leaveModScreensAndResourceReload();
                                     button.active = false;
                                 } else {
                                     button.setMessage(Text.of("resource_explorer.png_editor.export_button.fail"));

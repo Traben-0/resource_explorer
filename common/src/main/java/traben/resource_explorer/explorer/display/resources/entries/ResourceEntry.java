@@ -1,4 +1,4 @@
-package traben.resource_explorer.explorer;
+package traben.resource_explorer.explorer.display.resources.entries;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.MultilineText;
@@ -12,17 +12,19 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
+import traben.resource_explorer.explorer.ExplorerUtils;
+import traben.resource_explorer.explorer.display.resources.ResourceListWidget;
 
 import java.util.List;
 
-public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entry<REResourceEntry> implements Comparable<REResourceEntry> {
+public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<ResourceEntry> implements Comparable<ResourceEntry> {
 
     private final ButtonWidget exportButton;
-    protected REResourceListWidget widget = null;
+    protected ResourceListWidget widget = null;
 
-    REResourceEntry() {
+    ResourceEntry() {
         exportButton = ButtonWidget.builder(Text.translatable("resource_explorer.export"), button -> {
-                    REExplorer.REExportContext context = new REExplorer.REExportContext();
+                    ExplorerUtils.REExportContext context = new ExplorerUtils.REExportContext();
                     if (isFolder()) context.sendLargeFolderWarning();
 
                     Util.getIoWorkerExecutor().execute(() -> {
@@ -60,8 +62,10 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
         }
     }
 
+    public abstract boolean isEmpty();
+
     @Override
-    public int compareTo(@NotNull REResourceEntry o) {
+    public int compareTo(@NotNull ResourceEntry o) {
         return getDisplayName().compareTo(o.getDisplayName());
     }
 
@@ -94,7 +98,7 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
         return Text.of(getDisplayName());
     }
 
-    public void setWidget(REResourceListWidget widget) {
+    public void setWidget(ResourceListWidget widget) {
         this.widget = widget;
     }
 
@@ -113,7 +117,7 @@ public abstract class REResourceEntry extends AlwaysSelectedEntryListWidget.Entr
 
     abstract boolean mouseClickExplorer();
 
-    abstract void exportToOutputPack(REExplorer.REExportContext context);
+    abstract void exportToOutputPack(ExplorerUtils.REExportContext context);
 
 
     protected String translated(String key) {
