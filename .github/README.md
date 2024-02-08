@@ -15,14 +15,25 @@
 [![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/traben)
 
 
-### A mod allowing the exploration & exporting of all the resources & packs available to Minecraft, as it sees them.
+### A mod allowing the exploration, editing, & exporting of all the resources & assets available to Minecraft, as it sees them.
+
+*(Basically a Windows explorer / editor for Minecraft's resource-pack assets)*
 
 ### To help resource-pack makers with creating packs and exploring modded asset locations, without having to open .jar files or deal with dozens of separate resource-packs & mods
 
-# Examples
+# Exploring | Editing | Exporting
+# *Examples*
 
 ## Viewing game resources
+
+### Search function
+*(new ui image of V1.1)*
+
+<img src="image/search.png" width="450" alt="0">
+
 ### Textures
+*(old ui image of V1.0)*
+
 <img src="image/main.png" width="450" alt="1">
 <img src="image/main2.png" width="450" alt="2">
 
@@ -34,6 +45,18 @@
 
 ### Even in-game built assets
 <img src="image/atlases.png" width="450" alt="5">
+
+## Editing assets
+#### Edit & export image assets
+<img src="image/png_edit.png" width="450" alt="6">
+<img src="image/png_save.png" width="450" alt="7">
+
+#### Edit & export text assets
+<img src="image/txt_edit.png" width="450" alt="6">
+<img src="image/txt_save.png" width="450" alt="7">
+
+#### Create & export new text or image assets
+<img src="image/create_file.png" width="450" alt="6">
 
 ## Exporting assets and folders
 #### Do not re-distribute un-altered vanilla / mod / resource-pack, assets without permission!

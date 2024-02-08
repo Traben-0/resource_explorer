@@ -6,13 +6,14 @@
   "mixins": [
   ],
   "client": [
-    "EntryListWidgetAccessor",
     "MinecraftClientMixin",
+    "NamespaceResourceManagerMixin",
     "OptionsScreenMixin",
     "PathUtilMixin",
-    "SpriteAtlasTextureAccessor",
-    "TextureManagerAccessor",
-    "ZipResourcePackMixin"
+    "ZipResourcePackMixin",
+    "accessors.EntryListWidgetAccessor",
+    "accessors.SpriteAtlasTextureAccessor",
+    "accessors.TextureManagerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

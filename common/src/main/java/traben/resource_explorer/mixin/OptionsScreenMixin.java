@@ -16,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import traben.resource_explorer.REConfig;
-import traben.resource_explorer.explorer.REExplorer;
-import traben.resource_explorer.explorer.REExplorerScreen;
+import traben.resource_explorer.explorer.ExplorerUtils;
+import traben.resource_explorer.explorer.display.ExplorerScreen;
 
 import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 
@@ -40,10 +40,10 @@ public abstract class OptionsScreenMixin extends Screen {
                     y,
                     16,
                     16,
-                    new ButtonTextures(REExplorer.ICON_FOLDER, REExplorer.ICON_FOLDER_OPEN),
+                    new ButtonTextures(ExplorerUtils.ICON_FOLDER, ExplorerUtils.ICON_FOLDER_OPEN),
                     (button) -> {
                         assert this.client != null;
-                        this.client.setScreen(new REExplorerScreen(this));
+                        this.client.setScreen(new ExplorerScreen(this));
                     },
                     Text.translatable(MOD_ID + ".open_tooltip")) {
                 {
@@ -53,7 +53,7 @@ public abstract class OptionsScreenMixin extends Screen {
                 //override required because textured button widget just doesnt work
                 @Override
                 public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-                    Identifier identifier = this.isSelected() ? REExplorer.ICON_FOLDER_OPEN : REExplorer.ICON_FOLDER;
+                    Identifier identifier = this.isSelected() ? ExplorerUtils.ICON_FOLDER_OPEN : ExplorerUtils.ICON_FOLDER;
                     context.drawTexture(identifier, this.getX(), this.getY(), 0, 0, this.width, this.height, 16, 16);
                 }
             });

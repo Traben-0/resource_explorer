@@ -6,6 +6,8 @@
 /forge/build/
 /forge/.gradle/
 /neoforge/build/
+/neoforge/.gradle/architechtury/
+/neoforge/.gradle/loom-cache/
 /neoforge/.gradle/
 /fabric/run/
 /forge/run/
