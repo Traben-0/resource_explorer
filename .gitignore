@@ -5,8 +5,13 @@
 /fabric/build/
 /forge/build/
 /forge/.gradle/
+/neoforge/build/
+/neoforge/.gradle/architechtury/
+/neoforge/.gradle/loom-cache/
+/neoforge/.gradle/
 /fabric/run/
 /forge/run/
+/neoforge/run/
 /common/.gradle/.architectury-transformer/debug.log
 /build/tmp/
 /common/.gradle/architectury-cache/projectID
