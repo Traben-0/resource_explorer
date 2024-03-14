@@ -62,5 +62,6 @@ public class ResourceListWidget extends AlwaysSelectedEntryListWidget<ResourceEn
 
     public void setX(final int i) {
         this.left = i;
+        this.right = i + this.width;
     }
 }
