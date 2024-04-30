@@ -48,9 +48,11 @@ public class ResourceListWidget extends AlwaysSelectedEntryListWidget<ResourceEn
     }
 
 
-    protected int getScrollbarPositionX() {
+    protected int getScrollbarX() {
         return this.getRight() - 6;
     }
+
+
 
     @Override
     protected void drawSelectionHighlight(DrawContext context, int y, int entryWidth, int entryHeight, int borderColor, int fillColor) {

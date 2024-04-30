@@ -69,9 +69,10 @@ public class SingleDisplayWidget extends AlwaysSelectedEntryListWidget<DisplayEn
         return this.width;
     }
 
-    protected int getScrollbarPositionX() {
+    protected int getScrollbarX() {
         return this.getRight() - 6;
     }
+
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {

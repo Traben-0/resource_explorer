@@ -67,9 +67,9 @@ public class ExplorerStats {
 
         //by resourcepack
         if (isFile) {
-            incrementMap(totalPerResourcepack, entry.resource.getResourcePackName());
+            incrementMap(totalPerResourcepack, entry.resource.getPackId());
             if (isTexture)
-                incrementMap(totalTexturesPerResourcepack, entry.resource.getResourcePackName());
+                incrementMap(totalTexturesPerResourcepack, entry.resource.getPackId());
         }
 
     }

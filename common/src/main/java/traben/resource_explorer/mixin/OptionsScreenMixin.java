@@ -6,11 +6,14 @@ import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.DirectionalLayoutWidget;
 import net.minecraft.client.gui.widget.GridWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -25,16 +28,34 @@ import static traben.resource_explorer.ResourceExplorerClient.MOD_ID;
 @Mixin(OptionsScreen.class)
 public abstract class OptionsScreenMixin extends Screen {
 
+
     @SuppressWarnings("unused")
     protected OptionsScreenMixin(Text title) {
         super(title);
     }
 
-    @Inject(method = "init", at = @At(value = "TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
-    private void re$afterAdder(CallbackInfo ci, GridWidget gridWidget, GridWidget.Adder adder) {
+
+    @Unique
+    private int re$resourcePackX =0;
+    @Unique
+    private int re$resourcePackY =0;
+
+    @Inject(method = "init", at = @At(value = "TAIL"), locals = LocalCapture.CAPTURE_FAILSOFT)
+    private void re$afterAdder(final CallbackInfo ci, final DirectionalLayoutWidget directionalLayoutWidget, final DirectionalLayoutWidget directionalLayoutWidget2, final GridWidget gridWidget, final GridWidget.Adder adder) {
         if (REConfig.getInstance().showResourcePackButton) {
-            int x = gridWidget.getX() - 16;
-            int y = gridWidget.getY() + 128;
+            var test = Text.translatable("options.resourcepack");
+            children().forEach((w)->{
+                if (w instanceof ButtonWidget button && test.equals(button.getMessage())){
+                    this.re$resourcePackX = button.getX();
+                    this.re$resourcePackY = button.getY();
+//                    System.out.println("found pack button: "+re$resourcePackX+", "+re$resourcePackY);
+                }
+            });
+
+
+            //fallbacks
+            int x = re$resourcePackX == 0 ? gridWidget.getX() - 16 : re$resourcePackX - 20;
+            int y = re$resourcePackY == 0 ? gridWidget.getY() + 96 : re$resourcePackY;
             addDrawableChild(new TexturedButtonWidget(
                     x,
                     y,

@@ -215,12 +215,12 @@ public class PNGEditorScreen extends Screen {
         }
         return b;
     }
-
-    @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackgroundTexture(context);
-
-    }
+//1.20.5
+//    @Override
+//    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+//        renderBackgroundTexture(context);
+//
+//    }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {

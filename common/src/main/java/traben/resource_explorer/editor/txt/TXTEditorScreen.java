@@ -165,11 +165,10 @@ public class TXTEditorScreen extends Screen {
         return Math.min((int) (width * 0.7), (int) (height * 0.7));
     }
 
-    @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackgroundTexture(context);
-
-    }
+//1.20.5
+//    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+//        this.renderBackgroundTexture(context);
+//    }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
