@@ -16,7 +16,7 @@ class SoundPlayer implements SoundInstance {
 
     SoundPlayer(ResourceFileEntry fileEntry) {
         id = "re_" + fileEntry.getDisplayName() + "2";
-        sound = new Sound("re_" + fileEntry.getDisplayName(), (a) -> 1, (a) -> 1, 1, Sound.RegistrationType.FILE, true, true, 1) {
+        sound = new Sound(Identifier.of("re_" + fileEntry.getDisplayName()), (a) -> 1, (a) -> 1, 1, Sound.RegistrationType.FILE, true, true, 1) {
             @Override
             public Identifier getLocation() {
                 return fileEntry.identifier;
@@ -26,7 +26,7 @@ class SoundPlayer implements SoundInstance {
 
     @Override
     public Identifier getId() {
-        return new Identifier(id);
+        return Identifier.of(id);
     }
 
     @Nullable

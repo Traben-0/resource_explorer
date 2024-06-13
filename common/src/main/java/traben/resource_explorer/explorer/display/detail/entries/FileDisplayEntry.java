@@ -163,7 +163,7 @@ public class FileDisplayEntry extends DisplayEntry {
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Details:"), displayX, displayY + offset, 16777215);
         offset += 11;
 
-        MultilineText extraText = MultilineText.createFromTexts(MinecraftClient.getInstance().textRenderer, fileEntry.getExtraText(false));
+        MultilineText extraText = MultilineText.create(MinecraftClient.getInstance().textRenderer, fileEntry.getExtraText(false).toArray(new Text[0]));
         extraText.drawWithShadow(context, displayX, displayY + offset, 10, -8355712);
         offset += extraText.count() * 11;
 

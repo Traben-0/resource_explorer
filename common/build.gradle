@@ -14,7 +14,7 @@ dependencies {
 //}
 
 architectury {
-    common("fabric", "forge", "neoforge")
+    common("fabric")//todo , "forge", "neoforge")
 }
 
 publishing {

@@ -148,7 +148,7 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
             context.drawTexture(thirdIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
         }
         OrderedText orderedText = getDisplayText();
-        MultilineText multilineText = MultilineText.createFromTexts(MinecraftClient.getInstance().textRenderer, getExtraText(true));
+        MultilineText multilineText = MultilineText.create(MinecraftClient.getInstance().textRenderer, getExtraText(true).toArray(new Text[0]));
 
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 32 + 2, y + 1, 16777215);
         multilineText.drawWithShadow(context, x + 32 + 2, y + 12, 10, -8355712);

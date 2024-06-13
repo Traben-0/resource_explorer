@@ -50,7 +50,7 @@ public class ResourceFileEntry extends ResourceEntry {
 
     ResourceFileEntry() {
         //feedback file
-        this.identifier = new Identifier("resource_explorer:feedback_entry");
+        this.identifier = Identifier.of("resource_explorer:feedback_entry");
         this.resource = null;
         this.abstractTexture = null;
         this.fileType = FileType.OTHER;
@@ -227,7 +227,7 @@ public class ResourceFileEntry extends ResourceEntry {
                             }
                             text.add(Text.of(line));
                         }
-                        readTextByLineBreaks = MultilineText.createFromTexts(MinecraftClient.getInstance().textRenderer, text);
+                        readTextByLineBreaks = MultilineText.create(MinecraftClient.getInstance().textRenderer, text.toArray(new Text[0]));
 
                     } catch (Exception e) {
                         //resource.close();
