@@ -5,7 +5,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.client.ConfigScreenHandler;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
 
@@ -16,8 +16,8 @@ public class ResourceExplorerForge {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             try {
                 ModLoadingContext.get().registerExtensionPoint(
-                        ConfigScreenHandler.ConfigScreenFactory.class,
-                        () -> new ConfigScreenHandler.ConfigScreenFactory((minecraftClient, screen) -> new REConfig.REConfigScreen(screen)));
+                        IConfigScreenFactory.class,
+                        () -> (minecraftClient, screen) -> new REConfig.REConfigScreen(screen));
             } catch (NoClassDefFoundError e) {
                 ResourceExplorerClient.logError(" Mod config screen broken, download latest forge version");
             }

@@ -66,10 +66,23 @@ public class ExplorerScreen extends Screen {
     //normally not an issue but at-least 1 mod I know of removes the options background from the options screen
     //meaning it does not get registered before the search breaks textures
     private void assertOptionsBackgroundTextureBeforeSearch() {
-        Identifier backgroundId = new Identifier("minecraft:textures/gui/options_background.png");
-        NativeImage background = ResourceExplorerClient.getNativeImageElseNull(backgroundId);
+        assertTexture(new Identifier("minecraft:textures/gui/options_background.png"));
+        assertTexture(new Identifier("widget/scroller"));
+        assertTexture(new Identifier("widget/scroller_background"));
+        assertTexture(new Identifier("textures/gui/menu_list_background.png"));
+        assertTexture(new Identifier("textures/gui/inworld_menu_list_background.png"));
+        assertTexture(new Identifier("textures/gui/menu_background.png"));
+        assertTexture(new Identifier("textures/gui/header_separator.png"));
+        assertTexture(new Identifier("textures/gui/footer_separator.png"));
+        assertTexture(new Identifier("textures/gui/inworld_menu_background.png"));
+        assertTexture(new Identifier("textures/gui/inworld_header_separator.png"));
+        assertTexture(new Identifier("textures/gui/inworld_footer_separator.png"));
+    }
+
+    private static void assertTexture(Identifier id) {
+        NativeImage background = ResourceExplorerClient.getNativeImageElseNull(id);
         if (background == null) return;
-        MinecraftClient.getInstance().getTextureManager().registerTexture(backgroundId, new NativeImageBackedTexture(background));
+        MinecraftClient.getInstance().getTextureManager().registerTexture(id, new NativeImageBackedTexture(background));
     }
 
     public List<ResourceEntry> getContentOfDirectoryAccordingToSearch() {
@@ -166,9 +179,10 @@ public class ExplorerScreen extends Screen {
         context.drawCenteredTextWithShadow(this.textRenderer, Text.of(cumulativePath), this.width / 2, 20, Colors.GRAY);
     }
 
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderBackgroundTexture(context);
-    }
+//1.20.5
+//    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+//        this.renderBackgroundTexture(context);
+//    }
 
     @Override
     public void close() {

@@ -356,7 +356,7 @@ public abstract class ExplorerUtils {
                 totalAttempted++;
                 if (exported) {
                     types.add(file.fileType);
-                    String packName = file.resource.getResourcePackName();
+                    String packName = file.resource.getPackId();
                     if ("fabric".equals(packName) || "mod_resources".equals(packName)) {
                         moddedCount++;
                     } else if ("vanilla".equals(packName) &&

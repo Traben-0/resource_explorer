@@ -165,7 +165,7 @@ public class ResourceFileEntry extends ResourceEntry {
         lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.type") + ": " + fileType.toString() +
                 (hasMetaData ? " + " + translated("resource_explorer.detail.metadata") : "")));
         if (resource != null) {
-            lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.pack") + ": " + resource.getResourcePackName().replace("file/", "")));
+            lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.pack") + ": " + resource.getPackId().replace("file/", "")));
         } else {
             lines.add(trimmedTextToWidth("§8§o " + translated("resource_explorer.detail.built_msg")));
         }

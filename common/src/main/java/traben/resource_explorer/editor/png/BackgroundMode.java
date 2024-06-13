@@ -4,7 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 
-import static net.minecraft.client.gui.screen.Screen.OPTIONS_BACKGROUND_TEXTURE;
+
 
 public enum BackgroundMode {
     BLACK("resource_explorer.png_editor.background.black") {
@@ -40,9 +40,9 @@ public enum BackgroundMode {
         void render(DrawContext context, int x, int y, int x2, int y2) {
             renderWhiteOutlineSingleBox(context, x, y, x2, y2);
 
-            context.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
-            renderSolidImage(context, x, y, x2, y2, OPTIONS_BACKGROUND_TEXTURE, 32);
-            context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+//            context.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
+//            renderSolidImage(context, x, y, x2, y2, new Identifier("textures/block/dirt.png"), 32);
+//            context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     };
 
