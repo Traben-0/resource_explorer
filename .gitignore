@@ -17,3 +17,5 @@
 /common/.gradle/architectury-cache/projectID
 /build/libs/
 /.architectury-transformer/debug.log
+/.idea/modules/neoforge/traben.resource_explorer.neoforge.main.iml
+/.idea/modules/neoforge/traben.resource_explorer.neoforge.test.iml
