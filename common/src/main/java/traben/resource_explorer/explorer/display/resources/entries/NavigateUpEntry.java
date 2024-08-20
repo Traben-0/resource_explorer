@@ -34,7 +34,7 @@ public class NavigateUpEntry extends ResourceFolderEntry {
     }
 
     @Override
-    List<Text> getExtraText(boolean ignored) {
+    public List<Text> getExtraText(boolean ignored) {
         return List.of(Text.of("§8§o move up directory"));
     }
 

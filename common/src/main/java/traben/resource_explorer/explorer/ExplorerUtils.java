@@ -9,6 +9,7 @@ import net.minecraft.client.toast.ToastManager;
 import net.minecraft.resource.Resource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.explorer.display.ExplorerScreen;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 public abstract class ExplorerUtils {
@@ -119,7 +121,7 @@ public abstract class ExplorerUtils {
             }
             Set<String> namespaces = MinecraftClient.getInstance().getResourceManager().getAllNamespaces();
 
-            LinkedList<ResourceEntry> namesSpaceFoldersRoot = new LinkedList<>();
+            LinkedList<ResourceFolderEntry> namesSpaceFoldersRoot = new LinkedList<>();
             Map<String, ResourceFolderEntry> namespaceFolderMap = new HashMap<>();
 
             LinkedList<ResourceFolderEntry> fabricApiFolders = new LinkedList<>();
@@ -142,10 +144,7 @@ public abstract class ExplorerUtils {
             }
             //fabric api all in 1
             if (!fabricApiFolders.isEmpty()) {
-                ResourceFolderEntry fabricApiFolder = new ResourceFolderEntry("fabric-api");
-                fabricApiFolder.contentIcon = Identifier.of("fabricloader", "icon.png");
-                fabricApiFolders.forEach(fabricApiFolder::addSubFolder);
-                namesSpaceFoldersRoot.addFirst(fabricApiFolder);
+                namesSpaceFoldersRoot.addFirst(new ResourceFolderEntry.FabricApi(fabricApiFolders));
             }
             //get filter
 //            REConfig.REFileFilter filter = REConfig.getInstance().filterMode;
@@ -184,9 +183,18 @@ public abstract class ExplorerUtils {
 
             ExplorerScreen.currentStats = statistics;
 
-            insertFeedbackIfRequired(namesSpaceFoldersRoot, print);
 
-            return namesSpaceFoldersRoot;
+
+            //lets format with assets/ as a root
+
+            ResourceFolderEntry assetsFolder = new ResourceFolderEntry("assets");
+            namesSpaceFoldersRoot.forEach(assetsFolder::addSubFolder);
+
+            LinkedList<ResourceEntry> root = new LinkedList<>();
+            root.add(assetsFolder);
+            insertFeedbackIfRequired(root, print);
+
+            return root;
         } catch (Exception e) {
             e.printStackTrace();
             LinkedList<ResourceEntry> fail = new LinkedList<>();
@@ -228,6 +236,25 @@ public abstract class ExplorerUtils {
         String[] split = exception.split("\n");
         searchedExceptions.addAll(Arrays.asList(split));
         searchedExceptions.add("");
+    }
+
+    public static Future<?> task = null;
+
+    public static boolean canExportToOutputPack() {
+        return task == null || task.isDone();
+    }
+
+    public static boolean tryExportToOutputPack(Runnable runnable) {
+        if (!canExportToOutputPack()) {
+            return false;
+        }
+        try {
+            task = Util.getIoWorkerExecutor().submit(runnable);
+            return true;
+        }catch (Exception e){
+            ResourceExplorerClient.log("Exporting to output pack failed: " + e.getMessage());
+            return false;
+        }
     }
 
 
@@ -297,7 +324,7 @@ public abstract class ExplorerUtils {
                 \t"pack": {
                 \t\t"pack_format": 15,
                 \t\t"supported_formats":[0,99],
-                \t\t"description": "Output file for the Resource Explorer mod"
+                \t\t"description": "Output folder for the Resource Explorer mod"
                 \t}
                 }""";
         try {

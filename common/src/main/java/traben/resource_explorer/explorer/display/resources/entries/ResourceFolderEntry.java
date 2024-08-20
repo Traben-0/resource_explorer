@@ -39,11 +39,11 @@ public class ResourceFolderEntry extends ResourceEntry {
         topLevelDirectory = false;
     }
 
-    public ResourceFolderEntry(String folderName, List<ResourceEntry> entries) {
+    private ResourceFolderEntry(List<ResourceEntry> initEntries) {
         topLevelDirectory = true;
-        this.displayName = folderName;
-        this.displayText = trimmedTextToWidth(folderName).asOrderedText();
-        for (ResourceEntry entry : entries) {
+        this.displayName = "";
+        this.displayText = Text.of("").asOrderedText();
+        for (ResourceEntry entry : initEntries) {
             if (entry instanceof ResourceFolderEntry folder) {
                 addSubFolder(folder);
             } else if (entry instanceof ExplorerDetailsEntry feedbackEntry) {
@@ -52,6 +52,10 @@ public class ResourceFolderEntry extends ResourceEntry {
                 ResourceExplorerClient.logError("non resource in init");
             }
         }
+    }
+
+    public static ResourceFolderEntry getRoot(){
+        return new ResourceFolderEntry(ExplorerUtils.getResourceFolderRoot());
     }
 
     public DisplayEntry getDetailEntryIfRoot() {
@@ -92,7 +96,7 @@ public class ResourceFolderEntry extends ResourceEntry {
     }
 
     @Override
-    List<Text> getExtraText(boolean smallMode) {
+    public List<Text> getExtraText(boolean smallMode) {
         ArrayList<Text> text = new ArrayList<>();
 
         int sizeFolders = countOfFolderMatchingFilterAndSearch(ExplorerScreen.getSearchTerm());
@@ -144,6 +148,7 @@ public class ResourceFolderEntry extends ResourceEntry {
 
     public void addSubFolder(ResourceFolderEntry resourceFolder) {
         subFolders.put(resourceFolder.displayName, resourceFolder);
+        if (resourceFolder.canExport()) containsExportableFiles = true;
     }
 
 
@@ -190,9 +195,7 @@ public class ResourceFolderEntry extends ResourceEntry {
             //iterate placing file into this sub folder
             ResourceFolderEntry subFolder = subFolders.get(subFolderName);
             subFolder.addResourceFile(resourceFile, stats);
-
         }
-
     }
 
 
@@ -250,6 +253,15 @@ public class ResourceFolderEntry extends ResourceEntry {
                 allContent.add(file);
             }
         });
+
+        if (displayName.equals("assets")){
+            ResourceEntry minecraftFolder = subFolders.get("minecraft");
+            if (minecraftFolder != null){
+                allContent.remove(minecraftFolder);
+                allContent.addFirst(minecraftFolder);
+            }
+        }
+
         return allContent;
     }
 
@@ -372,5 +384,22 @@ public class ResourceFolderEntry extends ResourceEntry {
         return false;
     }
 
+    public static class FabricApi extends ResourceFolderEntry {
+        public FabricApi(List<ResourceFolderEntry> fabricApiFolders) {
+            super("fabric-api");
+            contentIcon = Identifier.of("fabricloader", "icon.png");
+            fabricApiFolders.forEach(this::addSubFolder);
+        }
 
+        @Override
+        public List<Text> getExtraText(boolean ignored) {
+            return List.of(Text.translatable("resource_explorer.explorer.folder.fabric.1"),
+                    Text.translatable("resource_explorer.explorer.folder.fabric.2"));
+        }
+
+        @Override
+        boolean canExport() {
+            return true;
+        }
+    }
 }
