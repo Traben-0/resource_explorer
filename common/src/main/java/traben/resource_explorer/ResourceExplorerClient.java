@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.util.Optional;
 
 public class ResourceExplorerClient {
+
     public static final String MOD_ID = "resource_explorer";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     private static Screen explorerExit = null;

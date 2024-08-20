@@ -6,7 +6,7 @@ import java.util.Random;
 
 class RollingIdentifier {
 
-    private Identifier current = new Identifier("resource_explorer", "png_editor/" + System.currentTimeMillis());
+    private Identifier current = Identifier.of("resource_explorer", "png_editor/" + System.currentTimeMillis());
     private Identifier next = null;
 
     Identifier getCurrent() {
@@ -14,9 +14,9 @@ class RollingIdentifier {
     }
 
     Identifier getNext() {
-        next = new Identifier("resource_explorer", "png_editor/" + System.currentTimeMillis());
+        next = Identifier.of("resource_explorer", "png_editor/" + System.currentTimeMillis());
         while (next.equals(current)) {
-            next = new Identifier("resource_explorer", "png_editor/" + System.currentTimeMillis() + "/" + new Random().nextInt());
+            next = Identifier.of("resource_explorer", "png_editor/" + System.currentTimeMillis() + "/" + new Random().nextInt());
         }
         return next;
     }

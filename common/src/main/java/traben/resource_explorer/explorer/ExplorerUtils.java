@@ -9,6 +9,7 @@ import net.minecraft.client.toast.ToastManager;
 import net.minecraft.resource.Resource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.explorer.display.ExplorerScreen;
@@ -25,35 +26,36 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 public abstract class ExplorerUtils {
-    public static final Identifier ICON_FILE_BUILT = new Identifier("resource_explorer:textures/file_built.png");
-    public static final Identifier ICON_FOLDER_BUILT = new Identifier("resource_explorer:textures/folder_built.png");
-    public static final Identifier ICON_FOLDER = new Identifier("resource_explorer:textures/folder.png");
-    public static final Identifier ICON_FOLDER_OPEN = new Identifier("resource_explorer:textures/folder_open.png");
-    public static final Identifier ICON_FOLDER_BACK = new Identifier("resource_explorer:textures/folder_back.png");
-    public static final Identifier ICON_FILE_PNG = new Identifier("resource_explorer:textures/file_png.png");
-    public static final Identifier ICON_FILE_TEXT = new Identifier("resource_explorer:textures/file_text.png");
-    public static final Identifier ICON_FILE_PROPERTY = new Identifier("resource_explorer:textures/file_property.png");
-    public static final Identifier ICON_FILE_OGG = new Identifier("resource_explorer:textures/file_ogg.png");
-    public static final Identifier ICON_FILE_UNKNOWN = new Identifier("resource_explorer:textures/file_unknown.png");
-    public static final Identifier ICON_FOLDER_MOJANG = new Identifier("resource_explorer:textures/folder_mojang.png");
-    public static final Identifier ICON_FOLDER_OPTIFINE = new Identifier("resource_explorer:textures/folder_optifine.png");
-    public static final Identifier ICON_FOLDER_ETF = new Identifier("resource_explorer:textures/folder_etf.png");
-    public static final Identifier ICON_FOLDER_EMF = new Identifier("resource_explorer:textures/folder_emf.png");
-    public static final Identifier ICON_FOLDER_CORNER = new Identifier("resource_explorer:textures/folder_corner.png");
-    public static final Identifier ICON_FILE_BLANK = new Identifier("resource_explorer:textures/file_blank.png");
-    public static final Identifier ICON_FILE_JSON = new Identifier("resource_explorer:textures/file_json.png");
-    public static final Identifier ICON_FOLDER_UP = new Identifier("resource_explorer:textures/folder_up.png");
-    public static final Identifier ICON_FOLDER_UP_SELECTED = new Identifier("resource_explorer:textures/folder_up_selected.png");
-    public static final Identifier ICON_FILE_ZIP = new Identifier("resource_explorer:textures/file_zip.png");
-    public static final Identifier ICON_FILE_JEM = new Identifier("resource_explorer:textures/file_jem.png");
-    public static final Identifier ICON_HAS_META = new Identifier("resource_explorer:textures/has_meta.png");
-    public static final Identifier ICON_FOLDER_FABRIC = new Identifier("resource_explorer:textures/folder_fabric.png");
-    public static final Identifier ICON_FOLDER_PNG = new Identifier("resource_explorer:textures/folder_png.png");
-    public static final Identifier ICON_FOLDER_OGG = new Identifier("resource_explorer:textures/folder_ogg.png");
-    public static final Identifier ICON_MOD = new Identifier("resource_explorer:textures/icon.png");
+    public static final Identifier ICON_FILE_BUILT = Identifier.of("resource_explorer:textures/file_built.png");
+    public static final Identifier ICON_FOLDER_BUILT = Identifier.of("resource_explorer:textures/folder_built.png");
+    public static final Identifier ICON_FOLDER = Identifier.of("resource_explorer:textures/folder.png");
+    public static final Identifier ICON_FOLDER_OPEN = Identifier.of("resource_explorer:textures/folder_open.png");
+    public static final Identifier ICON_FOLDER_BACK = Identifier.of("resource_explorer:textures/folder_back.png");
+    public static final Identifier ICON_FILE_PNG = Identifier.of("resource_explorer:textures/file_png.png");
+    public static final Identifier ICON_FILE_TEXT = Identifier.of("resource_explorer:textures/file_text.png");
+    public static final Identifier ICON_FILE_PROPERTY = Identifier.of("resource_explorer:textures/file_property.png");
+    public static final Identifier ICON_FILE_OGG = Identifier.of("resource_explorer:textures/file_ogg.png");
+    public static final Identifier ICON_FILE_UNKNOWN = Identifier.of("resource_explorer:textures/file_unknown.png");
+    public static final Identifier ICON_FOLDER_MOJANG = Identifier.of("resource_explorer:textures/folder_mojang.png");
+    public static final Identifier ICON_FOLDER_OPTIFINE = Identifier.of("resource_explorer:textures/folder_optifine.png");
+    public static final Identifier ICON_FOLDER_ETF = Identifier.of("resource_explorer:textures/folder_etf.png");
+    public static final Identifier ICON_FOLDER_EMF = Identifier.of("resource_explorer:textures/folder_emf.png");
+    public static final Identifier ICON_FOLDER_CORNER = Identifier.of("resource_explorer:textures/folder_corner.png");
+    public static final Identifier ICON_FILE_BLANK = Identifier.of("resource_explorer:textures/file_blank.png");
+    public static final Identifier ICON_FILE_JSON = Identifier.of("resource_explorer:textures/file_json.png");
+    public static final Identifier ICON_FOLDER_UP = Identifier.of("resource_explorer:textures/folder_up.png");
+    public static final Identifier ICON_FOLDER_UP_SELECTED = Identifier.of("resource_explorer:textures/folder_up_selected.png");
+    public static final Identifier ICON_FILE_ZIP = Identifier.of("resource_explorer:textures/file_zip.png");
+    public static final Identifier ICON_FILE_JEM = Identifier.of("resource_explorer:textures/file_jem.png");
+    public static final Identifier ICON_HAS_META = Identifier.of("resource_explorer:textures/has_meta.png");
+    public static final Identifier ICON_FOLDER_FABRIC = Identifier.of("resource_explorer:textures/folder_fabric.png");
+    public static final Identifier ICON_FOLDER_PNG = Identifier.of("resource_explorer:textures/folder_png.png");
+    public static final Identifier ICON_FOLDER_OGG = Identifier.of("resource_explorer:textures/folder_ogg.png");
+    public static final Identifier ICON_MOD = Identifier.of("resource_explorer:textures/icon.png");
 
     public static final String SEARCH_KEY = "resource_explorer$search";
     private static final List<String> searchedExceptions = new ArrayList<>();
@@ -119,7 +121,7 @@ public abstract class ExplorerUtils {
             }
             Set<String> namespaces = MinecraftClient.getInstance().getResourceManager().getAllNamespaces();
 
-            LinkedList<ResourceEntry> namesSpaceFoldersRoot = new LinkedList<>();
+            LinkedList<ResourceFolderEntry> namesSpaceFoldersRoot = new LinkedList<>();
             Map<String, ResourceFolderEntry> namespaceFolderMap = new HashMap<>();
 
             LinkedList<ResourceFolderEntry> fabricApiFolders = new LinkedList<>();
@@ -142,10 +144,7 @@ public abstract class ExplorerUtils {
             }
             //fabric api all in 1
             if (!fabricApiFolders.isEmpty()) {
-                ResourceFolderEntry fabricApiFolder = new ResourceFolderEntry("fabric-api");
-                fabricApiFolder.contentIcon = new Identifier("fabricloader", "icon.png");
-                fabricApiFolders.forEach(fabricApiFolder::addSubFolder);
-                namesSpaceFoldersRoot.addFirst(fabricApiFolder);
+                namesSpaceFoldersRoot.addFirst(new ResourceFolderEntry.FabricApi(fabricApiFolders));
             }
             //get filter
 //            REConfig.REFileFilter filter = REConfig.getInstance().filterMode;
@@ -184,9 +183,18 @@ public abstract class ExplorerUtils {
 
             ExplorerScreen.currentStats = statistics;
 
-            insertFeedbackIfRequired(namesSpaceFoldersRoot, print);
 
-            return namesSpaceFoldersRoot;
+
+            //lets format with assets/ as a root
+
+            ResourceFolderEntry assetsFolder = new ResourceFolderEntry("assets");
+            namesSpaceFoldersRoot.forEach(assetsFolder::addSubFolder);
+
+            LinkedList<ResourceEntry> root = new LinkedList<>();
+            root.add(assetsFolder);
+            insertFeedbackIfRequired(root, print);
+
+            return root;
         } catch (Exception e) {
             e.printStackTrace();
             LinkedList<ResourceEntry> fail = new LinkedList<>();
@@ -228,6 +236,25 @@ public abstract class ExplorerUtils {
         String[] split = exception.split("\n");
         searchedExceptions.addAll(Arrays.asList(split));
         searchedExceptions.add("");
+    }
+
+    public static Future<?> task = null;
+
+    public static boolean canExportToOutputPack() {
+        return task == null || task.isDone();
+    }
+
+    public static boolean tryExportToOutputPack(Runnable runnable) {
+        if (!canExportToOutputPack()) {
+            return false;
+        }
+        try {
+            task = Util.getIoWorkerExecutor().submit(runnable);
+            return true;
+        }catch (Exception e){
+            ResourceExplorerClient.log("Exporting to output pack failed: " + e.getMessage());
+            return false;
+        }
     }
 
 
@@ -297,7 +324,7 @@ public abstract class ExplorerUtils {
                 \t"pack": {
                 \t\t"pack_format": 15,
                 \t\t"supported_formats":[0,99],
-                \t\t"description": "Output file for the Resource Explorer mod"
+                \t\t"description": "Output folder for the Resource Explorer mod"
                 \t}
                 }""";
         try {

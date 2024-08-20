@@ -22,7 +22,7 @@ public class ResourceListWidget extends AlwaysSelectedEntryListWidget<ResourceEn
             addEntry(entry);
         });
 
-        if (!explorerScreen.cumulativePath.equals("assets/")) {
+        if (!explorerScreen.cumulativePath.isEmpty() && !explorerScreen.cumulativePath.equals("assets/")) {
             var entry = new CreateResourceEntry(explorerScreen);
             entry.setWidget(this);
             addEntry(entry);
@@ -35,8 +35,14 @@ public class ResourceListWidget extends AlwaysSelectedEntryListWidget<ResourceEn
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        return super.mouseClicked(mouseX, mouseY, button);
+        rowModify = 16;
+        boolean ret = super.mouseClicked(mouseX, mouseY, button);
+        rowModify = 0;
+        return ret;
     }
+
+    private int rowModify = 0;
+
 
     public void close() {
         this.explorerScreen = null;
@@ -44,7 +50,7 @@ public class ResourceListWidget extends AlwaysSelectedEntryListWidget<ResourceEn
     }
 
     public int getRowWidth() {
-        return this.width;
+        return this.width - rowModify;
     }
 
 

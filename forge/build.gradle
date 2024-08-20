@@ -14,6 +14,10 @@ configurations {
     developmentForge.extendsFrom common
 }
 
+configurations.configureEach {
+    resolutionStrategy.force("net.sf.jopt-simple:jopt-simple:5.0.4")
+}
+
 dependencies {
     forge "net.minecraftforge:forge:${rootProject.forge_version}"
 
@@ -58,7 +62,7 @@ jar {
     archiveClassifier.set("dev")
 }
 
-archivesBaseName = rootProject.archives_base_name + "_forge_1.20.6"
+archivesBaseName = rootProject.archives_base_name + "_forge_1.21"
 
 sourcesJar {
     def commonSources = project(":common").sourcesJar

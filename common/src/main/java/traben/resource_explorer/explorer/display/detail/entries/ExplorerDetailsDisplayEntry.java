@@ -22,7 +22,7 @@ public class ExplorerDetailsDisplayEntry extends DisplayEntry {
         for (String line : reasonSource) {
             textsSplitByLine.add(Text.of(line));
         }
-        reason = MultilineText.createFromTexts(MinecraftClient.getInstance().textRenderer, textsSplitByLine);
+        reason = MultilineText.create(MinecraftClient.getInstance().textRenderer, textsSplitByLine.toArray(new Text[0]));
         logButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.explorer.log_feedback"),
                 (button) -> {
                     StringBuilder out = new StringBuilder();

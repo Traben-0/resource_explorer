@@ -6,7 +6,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.NotNull;
 import traben.resource_explorer.ResourceExplorerClient;
@@ -36,19 +35,18 @@ public class FileDisplayEntry extends DisplayEntry {
         } else if (fileEntry.resource != null && (fileEntry.fileType.isRawTextType() || fileEntry.fileType == ResourceFileEntry.FileType.PNG)) {
             multiUseButton = new ButtonWidget.Builder(Text.translatable("resource_explorer.export_single"),
                     (button) -> {
-                        button.active = false;
-
-                        ExplorerUtils.REExportContext context = new ExplorerUtils.REExportContext();
-                        Util.getIoWorkerExecutor().execute(() -> {
-                            fileEntry.exportToOutputPack(context);
-                            context.showExportToast();
-                            button.setMessage(Text.translatable(
-                                    context.getTotalExported() == 1 ?
-                                            "resource_explorer.export_single.success" :
-                                            "resource_explorer.export_single.fail"
-                            ));
-                        });
-
+                        if(ExplorerUtils.canExportToOutputPack()) {
+                            ExplorerUtils.REExportContext context = new ExplorerUtils.REExportContext();
+                            button.active = !ExplorerUtils.tryExportToOutputPack(() -> {
+                                fileEntry.exportToOutputPack(context);
+                                context.showExportToast();
+                                button.setMessage(Text.translatable(
+                                        context.getTotalExported() == 1 ?
+                                                "resource_explorer.export_single.success" :
+                                                "resource_explorer.export_single.fail"
+                                ));
+                            });
+                        }
 
                     }
             ).dimensions(0, 0, 150, 20).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip.file"))).build();
@@ -163,7 +161,7 @@ public class FileDisplayEntry extends DisplayEntry {
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Details:"), displayX, displayY + offset, 16777215);
         offset += 11;
 
-        MultilineText extraText = MultilineText.createFromTexts(MinecraftClient.getInstance().textRenderer, fileEntry.getExtraText(false));
+        MultilineText extraText = MultilineText.create(MinecraftClient.getInstance().textRenderer, fileEntry.getExtraText(false).toArray(new Text[0]));
         extraText.drawWithShadow(context, displayX, displayY + offset, 10, -8355712);
         offset += extraText.count() * 11;
 

@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CreateResourceEntry extends ResourceEntry {
     private final ExplorerScreen screen;
-    private final Identifier icon = new Identifier("resource_explorer:textures/file_add.png");
+    private final Identifier icon = Identifier.of("resource_explorer:textures/file_add.png");
 
     public CreateResourceEntry(ExplorerScreen screen) {
         this.screen = screen;
