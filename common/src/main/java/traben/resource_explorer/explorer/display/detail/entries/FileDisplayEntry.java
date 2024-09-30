@@ -151,14 +151,14 @@ public class FileDisplayEntry extends DisplayEntry {
 
         int offset = 0;
 
-        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Resource path:"), displayX, displayY + offset, 16777215);
+        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable("resource_explorer.explorer.details.resource_path"), displayX, displayY + offset, 16777215);
         offset += 11;
 
         MultilineText identifierText = MultilineText.create(MinecraftClient.getInstance().textRenderer, Text.of("§o" + fileEntry.identifier), entryWidth - 20);
         identifierText.drawWithShadow(context, displayX + 4, displayY + offset, 11, -8355712);
         offset += 11 + identifierText.count() * 11;
 
-        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Details:"), displayX, displayY + offset, 16777215);
+        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable("resource_explorer.explorer.details.details"), displayX, displayY + offset, 16777215);
         offset += 11;
 
         MultilineText extraText = MultilineText.create(MinecraftClient.getInstance().textRenderer, fileEntry.getExtraText(false).toArray(new Text[0]));
@@ -168,20 +168,20 @@ public class FileDisplayEntry extends DisplayEntry {
         switch (fileEntry.fileType) {
             case PNG -> {
                 offset = drawAsImage(context, offset, displaySquareMaximum, displayX, displayY);
-                offset = drawWidget(multiUseButton, Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
-                drawWidget(editorButton, Text.of("Edit & Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+                offset = drawWidget(multiUseButton, Text.translatable("resource_explorer.explorer.details.export"), context, offset, displayX, displayY, mouseX, mouseY);
+                drawWidget(editorButton, Text.translatable("resource_explorer.explorer.details.edit_and_export"), context, offset, displayX, displayY, mouseX, mouseY);
             }
             case TXT, PROPERTIES, JEM, JPM, JSON -> {
-                offset = drawText(Text.of("Text:"), fileEntry.getTextLines(), context, offset, displayX, displayY);
-                offset = drawWidget(multiUseButton, Text.of("Export:"), context, offset, displayX, displayY, mouseX, mouseY);
-                drawWidget(editorButton, Text.of("Edit & Export:"), context, offset, displayX, displayY, mouseX, mouseY);
+                offset = drawText(Text.translatable("resource_explorer.explorer.details.text"), fileEntry.getTextLines(), context, offset, displayX, displayY);
+                offset = drawWidget(multiUseButton, Text.translatable("resource_explorer.explorer.details.export"), context, offset, displayX, displayY, mouseX, mouseY);
+                drawWidget(editorButton, Text.translatable("resource_explorer.explorer.details.edit_and_export"), context, offset, displayX, displayY, mouseX, mouseY);
             }
             case OTHER -> {
-                offset = drawText(Text.of("Text:"), fileEntry.getTextLines(), context, offset, displayX, displayY);
+                offset = drawText(Text.translatable("resource_explorer.explorer.details.text"), fileEntry.getTextLines(), context, offset, displayX, displayY);
                 drawAsImage(context, offset, displaySquareMaximum, displayX, displayY);
             }
             case OGG ->
-                    drawWidget(multiUseButton, Text.of("Sound:"), context, offset, displayX, displayY, mouseX, mouseY);
+                    drawWidget(multiUseButton, Text.translatable("resource_explorer.explorer.details.sound"), context, offset, displayX, displayY, mouseX, mouseY);
         }
     }
 
@@ -193,7 +193,7 @@ public class FileDisplayEntry extends DisplayEntry {
 
         //title
         offset += 11;
-        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("Image:"), displayX, displayY + offset, 16777215);
+        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable("resource_explorer.explorer.details.image"), displayX, displayY + offset, 16777215);
         offset += 13;
 
         //outline
