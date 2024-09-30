@@ -30,8 +30,8 @@
   "resource_explorer.export_single": "导出到输出包",
   "resource_explorer.export_single.success": "成功导出到输出包",
   "resource_explorer.export_single.fail": "导出失败 :(",
-  "resource_explorer.export.tooltip.file": "将此资源导出到[resource_explorer]输出资源包",
-  "resource_explorer.export.tooltip.folder": "将这些资源导出到[resource_explorer]输出资源包",
+  "resource_explorer.export.tooltip.file": "将此资源导出到 [resource_explorer] 输出资源包",
+  "resource_explorer.export.tooltip.folder": "将这些资源导出到 [resource_explorer] 输出资源包",
   "resource_explorer.export_warn": "# 资源成功导出",
   "resource_explorer.export_warn.fail": "# 资源导出失败",
   "resource_explorer.export_warn.partial": "# 从 $ 个文件中导出资源",
@@ -95,7 +95,7 @@
   "resource_explorer.png_editor.export_save": "另存为：",
   "resource_explorer.png_editor.export.title": "保存资源？",
   "resource_explorer.png_editor.export_button.tooltip": "将此资源保存到资源浏览器导出资源包",
-  "resource_explorer.png_editor.export_button.warn": "您需要在资源包列表中启用\n资源浏览器输出包\n以查看此更改。\n\n导出后，浏览器\n将退出并\n资源将重新加载。",
+  "resource_explorer.png_editor.export_button.warn": "您需要在资源包列表中启用\n资源浏览器输出包以查看此更改。\n\n导出后，资源浏览器将退出，\n且资源将重新加载。",
   "resource_explorer.png_editor.eraser_button": "橡皮擦",
   "resource_explorer.png_editor.eraser_button.tooltip": "将光标更改为橡皮擦\n当颜色 alpha 为 0 时也会出现",
   "resource_explorer.png_editor.pick_button": "拾取颜色",
@@ -134,7 +134,7 @@
   "resource_explorer.explorer.feedback.info": "信息：",
   "resource_explorer.explorer.feedback.title": "资源浏览器详细信息！",
   "resource_explorer.explorer.feedback.info.header": "浏览器失败信息：\n\n",
-  "resource_explorer.explorer.feedback.info.empty": "未找到任何资源。\n请查看下面的异常\n以获取可能的原因。\n\n",
-  "resource_explorer.explorer.feedback.info.exceptions": "由于在读取资源时发生了一些异常，某些资源\n可能在浏览器中不正确。\n\n例如，较低\n包的资源可能显示在上面。\n\n",
-  "resource_explorer.explorer.feedback.info.exceptions_list": "资源浏览器在读取资源时经历了\n以下失败：\n\n"
+  "resource_explorer.explorer.feedback.info.empty": "未找到任何资源。\n请查看下面的异常以获取可能的原因。\n\n",
+  "resource_explorer.explorer.feedback.info.exceptions": "由于在读取资源时发生了一些异常，某些资源可能在浏览器中不正确。\n\n例如，较低包的资源可能显示在上面。\n\n",
+  "resource_explorer.explorer.feedback.info.exceptions_list": "资源浏览器在读取资源时经历了以下失败：\n\n"
 }
