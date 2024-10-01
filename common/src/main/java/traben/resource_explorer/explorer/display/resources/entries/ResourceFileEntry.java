@@ -220,9 +220,11 @@ public class ResourceFileEntry extends ResourceEntry {
                                 splitByLines) {
                             lineCount++;
                             if (lineCount > 512) {//todo set limit in config
-                                text.add(Text.of("§l§4-- TEXT LONGER THAN " + 512 + " LINES --"));
-                                text.add(Text.of("§r§o " + (height - lineCount) + " lines skipped."));
-                                text.add(Text.of("§l§4-- END --"));
+                                text.add(Text.of(Text.translatable("resource_explorer.explorer.details.lines_too_long")
+                                                     .getString().replace("$", String.valueOf(512))));
+                                text.add(Text.of(Text.translatable("resource_explorer.explorer.details.lines_skipped")
+                                                     .getString().replace("$", String.valueOf(height - lineCount))));
+                                text.add(Text.translatable("resource_explorer.explorer.details.lines_end"));
                                 break;
                             }
                             text.add(Text.of(line));
