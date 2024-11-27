@@ -11,7 +11,6 @@ import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
 import traben.resource_explorer.explorer.ExplorerUtils;
 import traben.resource_explorer.explorer.display.resources.ResourceListWidget;
@@ -23,15 +22,14 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
 
     ResourceEntry() {
         exportButton = ButtonWidget.builder(Text.translatable("resource_explorer.export"), button -> {
-                    ExplorerUtils.REExportContext context = new ExplorerUtils.REExportContext();
-                    if (isFolder()) context.sendLargeFolderWarning();
-
-                    Util.getIoWorkerExecutor().execute(() -> {
-                        this.exportToOutputPack(context);
-                        context.showExportToast();
-                    });
-
-                    button.active = false;
+                    if (ExplorerUtils.canExportToOutputPack()) {
+                        ExplorerUtils.REExportContext context = new ExplorerUtils.REExportContext();
+                        button.active = !ExplorerUtils.tryExportToOutputPack(() -> {
+                            if (isFolder()) context.sendLargeFolderWarning();
+                            this.exportToOutputPack(context);
+                            context.showExportToast();
+                        });
+                    }
                 }).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip." + (isFolder() ? "folder" : "file"))))
                 .dimensions(0, 0, 42, 15).build();
     }
@@ -40,7 +38,7 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
         Text text = Text.of(string);
         MinecraftClient client = MinecraftClient.getInstance();
         int i = client.textRenderer.getWidth(text);
-        if (i > 157) {
+        if (i > 150) {
             StringVisitable stringVisitable = StringVisitable.concat(client.textRenderer.trimToWidth(text, 157 - client.textRenderer.getWidth("...")), StringVisitable.plain("..."));
             return Text.of(stringVisitable.getString());
         } else {
@@ -72,7 +70,7 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
         return false;
     }
 
-    abstract boolean canExport();
+    protected abstract boolean canExport();
 
     abstract String getDisplayName();
 
