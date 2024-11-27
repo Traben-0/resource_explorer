@@ -13,6 +13,7 @@ import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.editor.png.PNGEditorScreen;
 import traben.resource_explorer.editor.txt.TXTEditorScreen;
 import traben.resource_explorer.explorer.ExplorerUtils;
+import traben.resource_explorer.explorer.display.ExplorerScreen;
 import traben.resource_explorer.explorer.display.resources.entries.ResourceFileEntry;
 
 import java.io.InputStream;
@@ -47,6 +48,8 @@ public class FileDisplayEntry extends DisplayEntry {
                                                 "resource_explorer.export_single.fail"
                                 ));
                             });
+                        } if (ExplorerScreen.currentDisplay != null) {//always true but just to be safe
+                            ExplorerScreen.currentDisplay.setSelectedEntry(SimpleTextDisplayEntry.exportWaitMessage);
                         }
                     }
             ).dimensions(0, 0, 150, 20).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip.file"))).build();

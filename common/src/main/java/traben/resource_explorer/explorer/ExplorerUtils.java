@@ -13,6 +13,7 @@ import net.minecraft.util.Util;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.explorer.display.ExplorerScreen;
+import traben.resource_explorer.explorer.display.detail.entries.SimpleTextDisplayEntry;
 import traben.resource_explorer.explorer.display.resources.entries.ExplorerDetailsEntry;
 import traben.resource_explorer.explorer.display.resources.entries.ResourceEntry;
 import traben.resource_explorer.explorer.display.resources.entries.ResourceFileEntry;
@@ -361,11 +362,12 @@ public abstract class ExplorerUtils {
         }
 
         public void sendLargeFolderWarning() {
-            ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
-            toastManager.clear();
-            SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION,
-                    Text.translatable("resource_explorer.export_start.1"), Text.translatable("resource_explorer.export_start.2"));
-
+            try {
+                ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
+                toastManager.clear();
+                SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION,
+                        Text.translatable("resource_explorer.export_start.1"), Text.translatable("resource_explorer.export_start.2"));
+            }catch (Exception ignored){}
         }
 
         public int getTotalExported() {
@@ -396,19 +398,35 @@ public abstract class ExplorerUtils {
         }
 
         public void showExportToast() {
-            ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
-            toastManager.clear();
-            boolean partially = getTotalAttempted() != getTotalExported() && totalAttempted != 1 && getTotalExported() != 0;
-            Text title = partially ?
-                    Text.of(Text.translatable("resource_explorer.export_warn.partial").getString()
-                            .replace("#", String.valueOf(getTotalExported())).replace("$", String.valueOf(getTotalAttempted()))) :
-                    Text.of(getTotalAttempted() == getTotalExported() ?
-                            Text.translatable(ResourceExplorerClient.MOD_ID + ".export_warn").getString()
-                                    .replace("#", String.valueOf(getTotalExported())) :
-                            Text.translatable(ResourceExplorerClient.MOD_ID + ".export_warn.fail").getString()
-                                    .replace("#", String.valueOf(getTotalExported())));
+            Text title;
+            try {
+                ToastManager toastManager = MinecraftClient.getInstance().getToastManager();
+                toastManager.clear();
+                boolean partially = getTotalAttempted() != getTotalExported() && totalAttempted != 1 && getTotalExported() != 0;
+                title = partially ?
+                        Text.of(Text.translatable("resource_explorer.export_warn.partial").getString()
+                                .replace("#", String.valueOf(getTotalExported())).replace("$", String.valueOf(getTotalAttempted()))) :
+                        Text.of(getTotalAttempted() == getTotalExported() ?
+                                Text.translatable(ResourceExplorerClient.MOD_ID + ".export_warn").getString()
+                                        .replace("#", String.valueOf(getTotalExported())) :
+                                Text.translatable(ResourceExplorerClient.MOD_ID + ".export_warn.fail").getString()
+                                        .replace("#", String.valueOf(getTotalExported())));
 
-            SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION, title, getMessage());
+                SystemToast.show(toastManager, SystemToast.Type.PERIODIC_NOTIFICATION, title, getMessage());
+            }catch (Exception e){
+                title = Text.of("Export exception: "+e.getMessage());
+            }
+
+            if (ExplorerScreen.currentDisplay != null
+                    && ExplorerScreen.currentDisplay.getFirst() == SimpleTextDisplayEntry.exportWaitMessage) {
+                //if the export wait message is still showing, replace it
+                ExplorerScreen.currentDisplay.setSelectedEntry(new SimpleTextDisplayEntry(
+                        Text.translatable("resource_explorer.export.complete.title").getString(),
+                        title.getString(),
+                        "-",
+                        getMessage().getString()
+                ));
+            }
         }
 
         private Text getMessage() {

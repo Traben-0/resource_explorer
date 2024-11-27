@@ -13,11 +13,13 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import traben.resource_explorer.explorer.ExplorerUtils;
+import traben.resource_explorer.explorer.display.ExplorerScreen;
+import traben.resource_explorer.explorer.display.detail.entries.SimpleTextDisplayEntry;
 import traben.resource_explorer.explorer.display.resources.ResourceListWidget;
 
 public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<ResourceEntry> implements Comparable<ResourceEntry> {
 
-    private final ButtonWidget exportButton;
+    protected final ButtonWidget exportButton;
     protected ResourceListWidget widget = null;
 
     ResourceEntry() {
@@ -29,6 +31,8 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
                             this.exportToOutputPack(context);
                             context.showExportToast();
                         });
+                    } else if (ExplorerScreen.currentDisplay != null) {
+                            ExplorerScreen.currentDisplay.setSelectedEntry(SimpleTextDisplayEntry.exportWaitMessage);
                     }
                 }).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip." + (isFolder() ? "folder" : "file"))))
                 .dimensions(0, 0, 42, 15).build();
@@ -102,12 +106,20 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (exportButton != null && exportButton.isMouseOver(mouseX, mouseY)) {
-            exportButton.onPress();
+        if (exportButton != null && isMouseOverExportButtonSkipActiveCheck(mouseX, mouseY)) {
+            if (exportButton.active) exportButton.onPress();
             return true;
         } else {
             return mouseClickExplorer();
         }
+    }
+
+    private boolean isMouseOverExportButtonSkipActiveCheck(double mouseX, double mouseY) {
+        return exportButton.visible
+                && mouseX >= exportButton.getX()
+                && mouseY >= exportButton.getY()
+                && mouseX < (exportButton.getX() + exportButton.getWidth())
+                && mouseY < (exportButton.getY() + exportButton.getHeight());
     }
 
     abstract boolean matchesSearch(final String search);
