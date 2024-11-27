@@ -6,7 +6,6 @@ import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 
 
-
 public enum BackgroundMode {
     BLACK("resource_explorer.png_editor.background.black") {
         @Override

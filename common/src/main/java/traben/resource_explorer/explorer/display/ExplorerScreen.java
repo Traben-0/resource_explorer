@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import traben.resource_explorer.REConfig;
 import traben.resource_explorer.ResourceExplorerClient;
-import traben.resource_explorer.explorer.ExplorerUtils;
 import traben.resource_explorer.explorer.display.detail.SingleDisplayWidget;
 import traben.resource_explorer.explorer.display.resources.ResourceListWidget;
 import traben.resource_explorer.explorer.display.resources.entries.ResourceEntry;
@@ -42,9 +41,9 @@ public class ExplorerScreen extends Screen {
     private ButtonWidget searchButton = null;
     public ExplorerScreen(Screen vanillaParent) {
         super(Text.translatable("resource_explorer.title"));
-        this.cumulativePath = "assets/";
+        this.cumulativePath = "";
         assertOptionsBackgroundTextureBeforeSearch();
-        this.resourceFolder = new ResourceFolderEntry("assets", ExplorerUtils.getResourceFolderRoot());
+        this.resourceFolder = ResourceFolderEntry.getRoot();
         ResourceExplorerClient.setExitScreen(vanillaParent);
         this.reParent = null;
         searchTerm = "";

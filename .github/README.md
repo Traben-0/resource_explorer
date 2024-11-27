@@ -77,5 +77,4 @@
 
 # Reminder: Do not re-distribute un-altered vanilla / mod / resource-pack, assets without permission!
 
-
 </div>
