@@ -21,7 +21,7 @@ public class CreateResourceEntry extends ResourceEntry {
     }
 
     @Override
-    boolean canExport() {
+    protected boolean canExport() {
         return false;
     }
 

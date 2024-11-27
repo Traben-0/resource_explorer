@@ -26,7 +26,7 @@ public class ResourceFolderEntry extends ResourceEntry {
 
     private final String displayName;
     private final OrderedText displayText;
-    private final boolean topLevelDirectory;
+    private final boolean isRootDirectory;
     public Identifier contentIcon = null;
     private Identifier folderIcon = null;
     private ResourceFileEntry.FileType contentFileType = null;
@@ -36,14 +36,14 @@ public class ResourceFolderEntry extends ResourceEntry {
     public ResourceFolderEntry(String folderName) {
         this.displayName = folderName;
         this.displayText = trimmedTextToWidth(folderName).asOrderedText();
-        topLevelDirectory = false;
+        isRootDirectory = false;
     }
 
-    public ResourceFolderEntry(String folderName, List<ResourceEntry> entries) {
-        topLevelDirectory = true;
-        this.displayName = folderName;
-        this.displayText = trimmedTextToWidth(folderName).asOrderedText();
-        for (ResourceEntry entry : entries) {
+    private ResourceFolderEntry(List<ResourceEntry> initEntries) {
+        isRootDirectory = true;
+        this.displayName = "";
+        this.displayText = Text.of("").asOrderedText();
+        for (ResourceEntry entry : initEntries) {
             if (entry instanceof ResourceFolderEntry folder) {
                 addSubFolder(folder);
             } else if (entry instanceof ExplorerDetailsEntry feedbackEntry) {
@@ -54,10 +54,14 @@ public class ResourceFolderEntry extends ResourceEntry {
         }
     }
 
+    public static ResourceFolderEntry getRoot(){
+        return new ResourceFolderEntry(ExplorerUtils.getResourceFolderRoot());
+    }
+
     public DisplayEntry getDetailEntryIfRoot() {
         // returns only if this is the root directory, and it only contains a single file with a hash of -1 which
         // can only be the explorer feedback entry. hash faster than instance check.
-        if (topLevelDirectory && fileContent.size() == 1 && fileContent.getFirst().hashCode() == -1) {
+        if (isRootDirectory && fileContent.size() == 1 && fileContent.getFirst().hashCode() == -1) {
             return fileContent.getFirst().wrapEntryAsDetailed();
         }
         return null;
@@ -65,7 +69,7 @@ public class ResourceFolderEntry extends ResourceEntry {
 
 
     @Override
-    boolean canExport() {
+    protected boolean canExport() {
         return containsExportableFiles;
     }
 
@@ -92,7 +96,7 @@ public class ResourceFolderEntry extends ResourceEntry {
     }
 
     @Override
-    Text[] getExtraText(boolean smallMode) {
+    public Text[] getExtraText(boolean smallMode) {
         ArrayList<Text> text = new ArrayList<>();
 
         int sizeFolders = countOfFolderMatchingFilterAndSearch(ExplorerScreen.getSearchTerm());
@@ -144,6 +148,7 @@ public class ResourceFolderEntry extends ResourceEntry {
 
     public void addSubFolder(ResourceFolderEntry resourceFolder) {
         subFolders.put(resourceFolder.displayName, resourceFolder);
+        if (resourceFolder.canExport()) containsExportableFiles = true;
     }
 
 
@@ -190,11 +195,8 @@ public class ResourceFolderEntry extends ResourceEntry {
             //iterate placing file into this sub folder
             ResourceFolderEntry subFolder = subFolders.get(subFolderName);
             subFolder.addResourceFile(resourceFile, stats);
-
         }
-
     }
-
 
     int countOfContentMatchingFilter() {
         return countOfFolderMatchingFilter() + countOfFilesMatchingFilter();
@@ -250,6 +252,15 @@ public class ResourceFolderEntry extends ResourceEntry {
                 allContent.add(file);
             }
         });
+
+        if (displayName.equals("assets")){
+            ResourceEntry minecraftFolder = subFolders.get("minecraft");
+            if (minecraftFolder != null){
+                allContent.remove(minecraftFolder);
+                allContent.addFirst(minecraftFolder);
+            }
+        }
+
         return allContent;
     }
 
@@ -272,18 +283,19 @@ public class ResourceFolderEntry extends ResourceEntry {
         }
 
 
-        if (topLevelDirectory) {
-            //move minecraft namespace to top
-            final var mc = subFolders.get("minecraft");
-            if (mc != null && allContent.remove(mc)) {
-                allContent.addFirst(mc);
-            }
-        } else {
+        if (!isRootDirectory) {
             //append navigation up folder to top
             NavigateUpEntry upFolder = new NavigateUpEntry("...");
             upFolder.setWidget(this.widget);
             allContent.addFirst(upFolder);
         }
+//        else {
+//            //move minecraft namespace to top
+//            final var mc = subFolders.get("minecraft");
+//            if (mc != null && allContent.remove(mc)) {
+//                allContent.addFirst(mc);
+//            }
+//        }
 
         return allContent;
     }
@@ -372,5 +384,22 @@ public class ResourceFolderEntry extends ResourceEntry {
         return false;
     }
 
+    public static class FabricApi extends ResourceFolderEntry {
+        public FabricApi(List<ResourceFolderEntry> fabricApiFolders) {
+            super("fabric-api");
+            contentIcon = Identifier.of("fabricloader", "icon.png");
+            fabricApiFolders.forEach(this::addSubFolder);
+        }
 
+        @Override
+        public Text[] getExtraText(boolean ignored) {
+            return new Text[]{Text.translatable("resource_explorer.explorer.folder.fabric.1"),
+                    Text.translatable("resource_explorer.explorer.folder.fabric.2")};
+        }
+
+        @Override
+        protected boolean canExport() {
+            return true;
+        }
+    }
 }

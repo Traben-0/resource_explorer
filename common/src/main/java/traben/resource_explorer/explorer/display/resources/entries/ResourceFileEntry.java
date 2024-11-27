@@ -133,7 +133,7 @@ public class ResourceFileEntry extends ResourceEntry {
     }
 
     @Override
-    boolean canExport() {
+    protected boolean canExport() {
         return resource != null;
     }
 

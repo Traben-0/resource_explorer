@@ -32,12 +32,12 @@ public class NavigateUpEntry extends ResourceFolderEntry {
     }
 
     @Override
-    Text[] getExtraText(boolean ignored) {
+    public Text[] getExtraText(boolean ignored) {
         return new Text[]{Text.of("§8§o move up directory")};
     }
 
     @Override
-    boolean canExport() {
+    protected boolean canExport() {
         return false;
     }
 
