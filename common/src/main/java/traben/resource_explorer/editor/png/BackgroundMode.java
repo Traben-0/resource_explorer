@@ -1,6 +1,7 @@
 package traben.resource_explorer.editor.png;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 
@@ -64,7 +65,7 @@ public enum BackgroundMode {
     }
 
     protected void renderSolidImage(DrawContext context, int x, int y, int x2, int y2, Identifier identifier, int scale) {
-        context.drawTexture(identifier, x, y, 0, 0, x2 - x, y2 - y, scale, scale);
+        context.drawTexture(RenderLayer::getGuiTextured,identifier, x, y, 0, 0, x2 - x, y2 - y, scale, scale);
     }
 
     abstract void render(DrawContext context, int x, int y, int x2, int y2);
