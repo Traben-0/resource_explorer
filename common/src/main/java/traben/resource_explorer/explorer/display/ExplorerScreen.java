@@ -66,17 +66,17 @@ public class ExplorerScreen extends Screen {
     //normally not an issue but at-least 1 mod I know of removes the options background from the options screen
     //meaning it does not get registered before the search breaks textures
     private void assertOptionsBackgroundTextureBeforeSearch() {
-        assertTexture(new Identifier("minecraft:textures/gui/options_background.png"));
-        assertTexture(new Identifier("widget/scroller"));
-        assertTexture(new Identifier("widget/scroller_background"));
-        assertTexture(new Identifier("textures/gui/menu_list_background.png"));
-        assertTexture(new Identifier("textures/gui/inworld_menu_list_background.png"));
-        assertTexture(new Identifier("textures/gui/menu_background.png"));
-        assertTexture(new Identifier("textures/gui/header_separator.png"));
-        assertTexture(new Identifier("textures/gui/footer_separator.png"));
-        assertTexture(new Identifier("textures/gui/inworld_menu_background.png"));
-        assertTexture(new Identifier("textures/gui/inworld_header_separator.png"));
-        assertTexture(new Identifier("textures/gui/inworld_footer_separator.png"));
+        assertTexture(Identifier.of("minecraft:textures/gui/options_background.png"));
+        assertTexture(Identifier.of("widget/scroller"));
+        assertTexture(Identifier.of("widget/scroller_background"));
+        assertTexture(Identifier.of("textures/gui/menu_list_background.png"));
+        assertTexture(Identifier.of("textures/gui/inworld_menu_list_background.png"));
+        assertTexture(Identifier.of("textures/gui/menu_background.png"));
+        assertTexture(Identifier.of("textures/gui/header_separator.png"));
+        assertTexture(Identifier.of("textures/gui/footer_separator.png"));
+        assertTexture(Identifier.of("textures/gui/inworld_menu_background.png"));
+        assertTexture(Identifier.of("textures/gui/inworld_header_separator.png"));
+        assertTexture(Identifier.of("textures/gui/inworld_footer_separator.png"));
     }
 
     private static void assertTexture(Identifier id) {

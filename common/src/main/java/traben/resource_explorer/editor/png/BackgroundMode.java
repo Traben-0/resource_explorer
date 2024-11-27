@@ -1,6 +1,7 @@
 package traben.resource_explorer.editor.png;
 
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 
@@ -31,7 +32,7 @@ public enum BackgroundMode {
         @Override
         void render(DrawContext context, int x, int y, int x2, int y2) {
             renderWhiteOutlineSingleBox(context, x, y, x2, y2);
-            renderSolidImage(context, x, y, x2, y2, new Identifier("resource_explorer:textures/editor_checker.png"), 64);
+            renderSolidImage(context, x, y, x2, y2, Identifier.of("resource_explorer:textures/editor_checker.png"), 64);
 
         }
     },
@@ -41,7 +42,7 @@ public enum BackgroundMode {
             renderWhiteOutlineSingleBox(context, x, y, x2, y2);
 
 //            context.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
-//            renderSolidImage(context, x, y, x2, y2, new Identifier("textures/block/dirt.png"), 32);
+//            renderSolidImage(context, x, y, x2, y2, Identifier.of("textures/block/dirt.png"), 32);
 //            context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     };
@@ -65,7 +66,7 @@ public enum BackgroundMode {
     }
 
     protected void renderSolidImage(DrawContext context, int x, int y, int x2, int y2, Identifier identifier, int scale) {
-        context.drawTexture(identifier, x, y, 0, 0, x2 - x, y2 - y, scale, scale);
+        context.drawTexture(RenderLayer::getGuiTextured,identifier, x, y, 0, 0, x2 - x, y2 - y, scale, scale);
     }
 
     abstract void render(DrawContext context, int x, int y, int x2, int y2);

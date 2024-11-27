@@ -9,28 +9,31 @@ import java.util.LinkedList;
 class ColorTool {
     private final LinkedList<Integer> colorHistory = new LinkedList<>();
 
-    private int current = ColorHelper.Abgr.getAbgr(255, 0, 0, 255);
+    private int current = ColorHelper.getArgb(255, 255, 0, 0);
 
     ColorTool() {
         colorHistory.add(current);
         initHistory(
-                ColorHelper.Abgr.getAbgr(255, 0, 0, 255),
-                ColorHelper.Abgr.getAbgr(255, 0, 255, 0),
-                ColorHelper.Abgr.getAbgr(255, 255, 0, 0),
-                ColorHelper.Abgr.getAbgr(255, 0, 0, 0),
-                ColorHelper.Abgr.getAbgr(255, 255, 255, 255),
-                ColorHelper.Abgr.getAbgr(255, 0, 255, 255),
-                ColorHelper.Abgr.getAbgr(255, 255, 255, 0),
-                ColorHelper.Abgr.getAbgr(255, 255, 0, 255),
-                ColorHelper.Abgr.getAbgr(255, 192, 192, 192),
-                ColorHelper.Abgr.getAbgr(255, 128, 128, 128),
-                ColorHelper.Abgr.getAbgr(255, 64, 64, 64),
-                ColorHelper.Abgr.getAbgr(255, 0, 0, 128),
-                ColorHelper.Abgr.getAbgr(255, 0, 128, 128),
-                ColorHelper.Abgr.getAbgr(255, 0, 128, 0),
-                ColorHelper.Abgr.getAbgr(255, 128, 0, 128),
-                ColorHelper.Abgr.getAbgr(255, 128, 128, 0),
-                ColorHelper.Abgr.getAbgr(255, 128, 0, 0));
+                ColorHelper.getArgb(255, 255, 0, 0),
+                ColorHelper.getArgb(255, 0, 255, 0),
+                ColorHelper.getArgb(255, 0, 0, 255),
+                ColorHelper.getArgb(255, 0, 0, 0),
+                ColorHelper.getArgb(255, 255, 255, 255),
+                ColorHelper.getArgb(255, 255, 255, 0),
+                ColorHelper.getArgb(255, 0, 255, 255),
+                ColorHelper.getArgb(255, 255, 0, 255),
+                ColorHelper.getArgb(255, 192, 192, 192),
+                ColorHelper.getArgb(255, 128, 128, 128),
+                ColorHelper.getArgb(255, 64, 64, 64),
+                ColorHelper.getArgb(255, 128, 0, 0),
+                ColorHelper.getArgb(255, 128, 128, 0),
+                ColorHelper.getArgb(255, 0, 128, 0),
+                ColorHelper.getArgb(255, 128, 0, 128),
+                ColorHelper.getArgb(255, 0, 128, 128),
+                ColorHelper.getArgb(255, 0, 0, 128));
+
+
+
     }
 
     void initHistory(int... colors) {
@@ -49,63 +52,58 @@ class ColorTool {
     }
 
     int getColorARGB() {
-        return getABGRasARGB(current);
+        return current;
     }
 
-    int getABGRasARGB(int ABGR) {
-        return ColorHelper.Argb.getArgb(
-                ColorHelper.Abgr.getAlpha(ABGR),
-                ColorHelper.Abgr.getRed(ABGR),
-                ColorHelper.Abgr.getGreen(ABGR),
-                ColorHelper.Abgr.getBlue(ABGR));
-    }
+
 
     int getColorRed() {
-        return ColorHelper.Abgr.getRed(current);
+        return ColorHelper.getRed(current);
     }
 
     void setColorRed(int red255) {
-        setColor(ColorHelper.Abgr.getAbgr(
+        setColor(ColorHelper.getArgb(
                 getColorAlpha(),
-                getColorBlue(),
+                red255,
                 getColorGreen(),
-                red255));
+                getColorBlue()));
     }
 
     int getColorGreen() {
-        return ColorHelper.Abgr.getGreen(current);
+        return ColorHelper.getGreen(current);
     }
 
     void setColorGreen(int green255) {
-        setColor(ColorHelper.Abgr.getAbgr(
+        setColor(ColorHelper.getArgb(
                 getColorAlpha(),
-                getColorBlue(),
+                getColorRed(),
                 green255,
-                getColorRed()));
+                getColorBlue()
+                ));
     }
 
     int getColorBlue() {
-        return ColorHelper.Abgr.getBlue(current);
+        return ColorHelper.getBlue(current);
     }
 
     void setColorBlue(int blue255) {
-        setColor(ColorHelper.Abgr.getAbgr(
+        setColor(ColorHelper.getArgb(
                 getColorAlpha(),
-                blue255,
+                getColorRed(),
                 getColorGreen(),
-                getColorRed()));
+                blue255));
     }
 
     int getColorAlpha() {
-        return ColorHelper.Abgr.getAlpha(current);
+        return ColorHelper.getAlpha(current);
     }
 
     void setColorAlpha(int alpha255) {
-        setColor(ColorHelper.Abgr.getAbgr(
+        setColor(ColorHelper.getArgb(
                 alpha255,
-                getColorBlue(),
+                getColorRed(),
                 getColorGreen(),
-                getColorRed()));
+                getColorBlue()));
     }
 
     void saveColorInHistory() {
@@ -132,11 +130,11 @@ class ColorTool {
 
     int blendOver(int underColor) {
 
-        if (ColorHelper.Abgr.getAlpha(underColor) == 0) return getColor();
+        if (ColorHelper.getAlpha(underColor) == 0) return getColor();
 
-        var underR = ColorHelper.Abgr.getRed(underColor);
-        var underG = ColorHelper.Abgr.getGreen(underColor);
-        var underB = ColorHelper.Abgr.getBlue(underColor);
+        var underR = ColorHelper.getRed(underColor);
+        var underG = ColorHelper.getGreen(underColor);
+        var underB = ColorHelper.getBlue(underColor);
 
         int alpha = getColorAlpha();
         double alphaDelta = -alpha / 255f;
@@ -145,11 +143,11 @@ class ColorTool {
         int greenDifference = (int) Math.round((underG - getColorGreen()) * alphaDelta);
         int blueDifference = (int) Math.round((underB - getColorBlue()) * alphaDelta);
 
-        return ColorHelper.Abgr.getAbgr(
-                MathHelper.clamp(ColorHelper.Abgr.getAlpha(underColor) + alpha, 0, 255),
-                MathHelper.clamp(underB + blueDifference, 0, 255),
+        return ColorHelper.getArgb(
+                MathHelper.clamp(ColorHelper.getAlpha(underColor) + alpha, 0, 255),
+                MathHelper.clamp(underR + redDifference, 0, 255),
                 MathHelper.clamp(underG + greenDifference, 0, 255),
-                MathHelper.clamp(underR + redDifference, 0, 255)
+                MathHelper.clamp(underB + blueDifference, 0, 255)
         );
     }
 }

@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
@@ -14,8 +15,6 @@ import net.minecraft.util.Util;
 import org.jetbrains.annotations.NotNull;
 import traben.resource_explorer.explorer.ExplorerUtils;
 import traben.resource_explorer.explorer.display.resources.ResourceListWidget;
-
-import java.util.List;
 
 public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<ResourceEntry> implements Comparable<ResourceEntry> {
 
@@ -79,7 +78,7 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
 
     abstract OrderedText getDisplayText();
 
-    abstract List<Text> getExtraText(boolean smallMode);
+    abstract Text[] getExtraText(boolean smallMode);
 
     abstract String toString(int indent);
 
@@ -137,18 +136,18 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
             }
         }
 
-        context.drawTexture(getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+        context.drawTexture(RenderLayer::getGuiTextured, getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
 
         Identifier secondaryIcon = getIcon2OrNull(hovered);
         if (secondaryIcon != null) {
-            context.drawTexture(secondaryIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+            context.drawTexture(RenderLayer::getGuiTextured, secondaryIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
         }
         Identifier thirdIcon = getIcon3OrNull(hovered);
         if (thirdIcon != null) {
-            context.drawTexture(thirdIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+            context.drawTexture(RenderLayer::getGuiTextured, thirdIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
         }
         OrderedText orderedText = getDisplayText();
-        MultilineText multilineText = MultilineText.createFromTexts(MinecraftClient.getInstance().textRenderer, getExtraText(true));
+        MultilineText multilineText = MultilineText.create(MinecraftClient.getInstance().textRenderer, getExtraText(true));
 
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 32 + 2, y + 1, 16777215);
         multilineText.drawWithShadow(context, x + 32 + 2, y + 12, 10, -8355712);

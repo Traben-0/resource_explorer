@@ -92,7 +92,7 @@ public class ResourceFolderEntry extends ResourceEntry {
     }
 
     @Override
-    List<Text> getExtraText(boolean smallMode) {
+    Text[] getExtraText(boolean smallMode) {
         ArrayList<Text> text = new ArrayList<>();
 
         int sizeFolders = countOfFolderMatchingFilterAndSearch(ExplorerScreen.getSearchTerm());
@@ -113,11 +113,11 @@ public class ResourceFolderEntry extends ResourceEntry {
             text.add(trimmedTextToWidth(" " + sizeFiles + " " + fileWord));
         }
 
-        if (smallMode && text.size() >= 2) return text;
+        if (smallMode && text.size() >= 2) return text.toArray(new Text[0]);
 
         if (ExplorerUtils.ICON_FOLDER_BUILT.equals(folderIcon))
             text.add(trimmedTextToWidth("§8§o " + translated("resource_explorer.detail.built_msg")));
-        return text;
+        return text.toArray(new Text[0]);
     }
 
     @Override

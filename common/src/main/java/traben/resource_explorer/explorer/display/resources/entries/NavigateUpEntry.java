@@ -6,8 +6,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import traben.resource_explorer.explorer.ExplorerUtils;
 
-import java.util.List;
-
 public class NavigateUpEntry extends ResourceFolderEntry {
 
 
@@ -34,8 +32,8 @@ public class NavigateUpEntry extends ResourceFolderEntry {
     }
 
     @Override
-    List<Text> getExtraText(boolean ignored) {
-        return List.of(Text.of("§8§o move up directory"));
+    Text[] getExtraText(boolean ignored) {
+        return new Text[]{Text.of("§8§o move up directory")};
     }
 
     @Override

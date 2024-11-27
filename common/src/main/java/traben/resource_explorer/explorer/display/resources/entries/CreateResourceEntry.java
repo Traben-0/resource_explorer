@@ -7,11 +7,9 @@ import traben.resource_explorer.explorer.ExplorerUtils;
 import traben.resource_explorer.explorer.display.ExplorerScreen;
 import traben.resource_explorer.explorer.display.detail.entries.CreateResourceDisplayEntry;
 
-import java.util.List;
-
 public class CreateResourceEntry extends ResourceEntry {
     private final ExplorerScreen screen;
-    private final Identifier icon = new Identifier("resource_explorer:textures/file_add.png");
+    private final Identifier icon = Identifier.of("resource_explorer:textures/file_add.png");
 
     public CreateResourceEntry(ExplorerScreen screen) {
         this.screen = screen;
@@ -38,8 +36,8 @@ public class CreateResourceEntry extends ResourceEntry {
     }
 
     @Override
-    List<Text> getExtraText(boolean smallMode) {
-        return List.of();
+    Text[] getExtraText(boolean smallMode) {
+        return new Text[0];
     }
 
     @Override
