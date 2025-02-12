@@ -15,14 +15,15 @@ import java.util.Objects;
 public class SingleDisplayWidget extends AlwaysSelectedEntryListWidget<DisplayEntry> {
 
 
+    private boolean renderHeader = true;
     private Text title = null;
 
     public SingleDisplayWidget(MinecraftClient minecraftClient, int width, int height, @Nullable DisplayEntry initialDisplay) {
-        super(minecraftClient, width, height - 83, 32/*, height - 55 + 4*/, 32);
+        super(minecraftClient, width, height - 83, 32/*, height - 55 + 4*/, 32, (int) (9.0F * 1.5F));
         this.centerListVertically = false;
         //1.20.4
         Objects.requireNonNull(client.textRenderer);
-        this.setRenderHeader(true, (int) (9.0F * 1.5F));
+        //this.setRenderHeader(true, (int) (9.0F * 1.5F));
 
         if (initialDisplay != null) {
             setSelectedEntry(initialDisplay);
@@ -30,15 +31,20 @@ public class SingleDisplayWidget extends AlwaysSelectedEntryListWidget<DisplayEn
     }
 
     public void setSelectedEntry(@Nullable DisplayEntry newFile) {
-        setScrollAmount(0);
+        setScrollY(0);
         clearEntries();
         if (newFile != null) {
             ((EntryListWidgetAccessor) this).setItemHeight(newFile.getEntryHeight());
             title = Text.of(newFile.getDisplayName());
-            setRenderHeader(true, 10);
+//            setRenderHeader(true, 10);
+            renderHeader = true;
+            headerHeight = 10;
+
         } else {
             ((EntryListWidgetAccessor) this).setItemHeight(32);
-            setRenderHeader(false, 0);
+//            setRenderHeader(false, 0);
+            renderHeader = true;
+            headerHeight = 0;
             title = null;
         }
         addEntry(newFile);
@@ -76,7 +82,7 @@ public class SingleDisplayWidget extends AlwaysSelectedEntryListWidget<DisplayEn
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        this.setScrollAmount(this.getScrollAmount() - verticalAmount * 18);
+        this.setScrollY(this.getScrollY() - verticalAmount * 18);
         return true;
     }
 
@@ -116,7 +122,7 @@ public class SingleDisplayWidget extends AlwaysSelectedEntryListWidget<DisplayEn
 
     @Override
     protected void renderHeader(DrawContext context, int x, int y) {
-        if (title != null) {
+        if (title != null && renderHeader) {
             Text text = Text.empty().append(this.title).formatted(Formatting.UNDERLINE, Formatting.BOLD);
             context.drawText(this.client.textRenderer, text, x + this.width / 2 - this.client.textRenderer.getWidth(text) / 2, Math.min(this.getY() + 3, y), 16777215, false);
         }

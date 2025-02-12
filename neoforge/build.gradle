@@ -6,7 +6,7 @@ architectury {
     neoForge()
 }
 
-archivesBaseName = rootProject.archives_base_name + "_neoforge_1.21.3"
+archivesBaseName = rootProject.archives_base_name + "_neoforge_1.21.4"
 
 configurations {
     common
