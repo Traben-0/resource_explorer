@@ -62,7 +62,7 @@ jar {
     archiveClassifier.set("dev")
 }
 
-archivesBaseName = rootProject.archives_base_name + "_forge_1.21.3"
+archivesBaseName = rootProject.archives_base_name + "_forge_1.21.4"
 
 sourcesJar {
     def commonSources = project(":common").sourcesJar

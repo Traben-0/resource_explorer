@@ -14,7 +14,7 @@ public class ResourceListWidget extends AlwaysSelectedEntryListWidget<ResourceEn
     public ExplorerScreen explorerScreen;
 
     public ResourceListWidget(MinecraftClient minecraftClient, ExplorerScreen explorerScreen, int width, int height) {
-        super(minecraftClient, width, height - 83, 32/*, height - 55 + 4*/, 36);
+        super(minecraftClient, width, height - 83, 32/*, height - 55 + 4*/, 36, (int) (9.0F * 1.5F));
         this.centerListVertically = false;
         this.explorerScreen = explorerScreen;
         explorerScreen.getContentOfDirectoryAccordingToSearch().forEach(entry -> {
@@ -30,7 +30,7 @@ public class ResourceListWidget extends AlwaysSelectedEntryListWidget<ResourceEn
 
         //1.20.4
         Objects.requireNonNull(client.textRenderer);
-        this.setRenderHeader(true, (int) (9.0F * 1.5F));
+//        this.setRenderHeader(true, (int) (9.0F * 1.5F));
     }
 
     @Override
