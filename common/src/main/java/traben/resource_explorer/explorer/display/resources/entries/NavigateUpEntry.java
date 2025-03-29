@@ -33,7 +33,7 @@ public class NavigateUpEntry extends ResourceFolderEntry {
 
     @Override
     public Text[] getExtraText(boolean ignored) {
-        return new Text[]{Text.of("§8§o move up directory")};
+        return new Text[]{Text.translatable("resource_explorer.explorer.move_up")};
     }
 
     @Override

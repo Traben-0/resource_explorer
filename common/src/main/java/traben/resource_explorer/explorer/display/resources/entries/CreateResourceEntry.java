@@ -27,7 +27,7 @@ public class CreateResourceEntry extends ResourceEntry {
 
     @Override
     String getDisplayName() {
-        return "create resource";
+        return Text.translatable("resource_explorer.explorer.create_resource").getString();
     }
 
     @Override
