@@ -1,3 +1,8 @@
+
+[v1.3]
+- updated to 1.21.3
+- added more concurrent export preventions as well as display messages to inform users of an export in progress when attempting to export again
+
 [v1.2]
 - fixed forge 1.21
 - fixed a CME crash when exporting folders, also prevented exporting new files and folders while a previous large export is still running

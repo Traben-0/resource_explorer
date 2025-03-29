@@ -6,8 +6,6 @@ import traben.resource_explorer.explorer.ExplorerUtils;
 import traben.resource_explorer.explorer.display.detail.entries.DisplayEntry;
 import traben.resource_explorer.explorer.display.detail.entries.ExplorerDetailsDisplayEntry;
 
-import java.util.List;
-
 public class ExplorerDetailsEntry extends ResourceFileEntry {
 
     private final String[] message;
@@ -48,8 +46,8 @@ public class ExplorerDetailsEntry extends ResourceFileEntry {
     }
 
     @Override
-    public List<Text> getExtraText(final boolean smallMode) {
-        return List.of(Text.of(""));
+    public Text[] getExtraText(final boolean smallMode) {
+        return new Text[]{Text.of("")};
     }
 
     @Override

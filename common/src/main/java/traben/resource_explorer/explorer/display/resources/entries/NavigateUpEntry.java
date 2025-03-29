@@ -6,8 +6,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import traben.resource_explorer.explorer.ExplorerUtils;
 
-import java.util.List;
-
 public class NavigateUpEntry extends ResourceFolderEntry {
 
 
@@ -34,12 +32,12 @@ public class NavigateUpEntry extends ResourceFolderEntry {
     }
 
     @Override
-    public List<Text> getExtraText(boolean ignored) {
-        return List.of(Text.translatable("resource_explorer.explorer.move_up"));
+    public Text[] getExtraText(boolean ignored) {
+        return new Text[]{Text.translatable("resource_explorer.explorer.move_up")};
     }
 
     @Override
-    boolean canExport() {
+    protected boolean canExport() {
         return false;
     }
 

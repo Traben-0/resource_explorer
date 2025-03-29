@@ -26,7 +26,7 @@ public class ResourceFolderEntry extends ResourceEntry {
 
     private final String displayName;
     private final OrderedText displayText;
-    private final boolean topLevelDirectory;
+    private final boolean isRootDirectory;
     public Identifier contentIcon = null;
     private Identifier folderIcon = null;
     private ResourceFileEntry.FileType contentFileType = null;
@@ -36,11 +36,11 @@ public class ResourceFolderEntry extends ResourceEntry {
     public ResourceFolderEntry(String folderName) {
         this.displayName = folderName;
         this.displayText = trimmedTextToWidth(folderName).asOrderedText();
-        topLevelDirectory = false;
+        isRootDirectory = false;
     }
 
     private ResourceFolderEntry(List<ResourceEntry> initEntries) {
-        topLevelDirectory = true;
+        isRootDirectory = true;
         this.displayName = "";
         this.displayText = Text.of("").asOrderedText();
         for (ResourceEntry entry : initEntries) {
@@ -61,7 +61,7 @@ public class ResourceFolderEntry extends ResourceEntry {
     public DisplayEntry getDetailEntryIfRoot() {
         // returns only if this is the root directory, and it only contains a single file with a hash of -1 which
         // can only be the explorer feedback entry. hash faster than instance check.
-        if (topLevelDirectory && fileContent.size() == 1 && fileContent.getFirst().hashCode() == -1) {
+        if (isRootDirectory && fileContent.size() == 1 && fileContent.getFirst().hashCode() == -1) {
             return fileContent.getFirst().wrapEntryAsDetailed();
         }
         return null;
@@ -69,7 +69,7 @@ public class ResourceFolderEntry extends ResourceEntry {
 
 
     @Override
-    boolean canExport() {
+    protected boolean canExport() {
         return containsExportableFiles;
     }
 
@@ -96,7 +96,7 @@ public class ResourceFolderEntry extends ResourceEntry {
     }
 
     @Override
-    public List<Text> getExtraText(boolean smallMode) {
+    public Text[] getExtraText(boolean smallMode) {
         ArrayList<Text> text = new ArrayList<>();
 
         int sizeFolders = countOfFolderMatchingFilterAndSearch(ExplorerScreen.getSearchTerm());
@@ -117,11 +117,11 @@ public class ResourceFolderEntry extends ResourceEntry {
             text.add(trimmedTextToWidth(" " + sizeFiles + " " + fileWord));
         }
 
-        if (smallMode && text.size() >= 2) return text;
+        if (smallMode && text.size() >= 2) return text.toArray(new Text[0]);
 
         if (ExplorerUtils.ICON_FOLDER_BUILT.equals(folderIcon))
             text.add(trimmedTextToWidth("§8§o " + translated("resource_explorer.detail.built_msg")));
-        return text;
+        return text.toArray(new Text[0]);
     }
 
     @Override
@@ -197,7 +197,6 @@ public class ResourceFolderEntry extends ResourceEntry {
             subFolder.addResourceFile(resourceFile, stats);
         }
     }
-
 
     int countOfContentMatchingFilter() {
         return countOfFolderMatchingFilter() + countOfFilesMatchingFilter();
@@ -284,18 +283,19 @@ public class ResourceFolderEntry extends ResourceEntry {
         }
 
 
-        if (topLevelDirectory) {
-            //move minecraft namespace to top
-            final var mc = subFolders.get("minecraft");
-            if (mc != null && allContent.remove(mc)) {
-                allContent.addFirst(mc);
-            }
-        } else {
+        if (!isRootDirectory) {
             //append navigation up folder to top
             NavigateUpEntry upFolder = new NavigateUpEntry("...");
             upFolder.setWidget(this.widget);
             allContent.addFirst(upFolder);
         }
+//        else {
+//            //move minecraft namespace to top
+//            final var mc = subFolders.get("minecraft");
+//            if (mc != null && allContent.remove(mc)) {
+//                allContent.addFirst(mc);
+//            }
+//        }
 
         return allContent;
     }
@@ -392,13 +392,13 @@ public class ResourceFolderEntry extends ResourceEntry {
         }
 
         @Override
-        public List<Text> getExtraText(boolean ignored) {
-            return List.of(Text.translatable("resource_explorer.explorer.folder.fabric.1"),
-                    Text.translatable("resource_explorer.explorer.folder.fabric.2"));
+        public Text[] getExtraText(boolean ignored) {
+            return new Text[]{Text.translatable("resource_explorer.explorer.folder.fabric.1"),
+                    Text.translatable("resource_explorer.explorer.folder.fabric.2")};
         }
 
         @Override
-        boolean canExport() {
+        protected boolean canExport() {
             return true;
         }
     }

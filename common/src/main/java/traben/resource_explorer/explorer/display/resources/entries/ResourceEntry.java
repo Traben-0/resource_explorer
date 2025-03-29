@@ -6,19 +6,20 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import traben.resource_explorer.explorer.ExplorerUtils;
+import traben.resource_explorer.explorer.display.ExplorerScreen;
+import traben.resource_explorer.explorer.display.detail.entries.SimpleTextDisplayEntry;
 import traben.resource_explorer.explorer.display.resources.ResourceListWidget;
-
-import java.util.List;
 
 public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<ResourceEntry> implements Comparable<ResourceEntry> {
 
-    private final ButtonWidget exportButton;
+    protected final ButtonWidget exportButton;
     protected ResourceListWidget widget = null;
 
     ResourceEntry() {
@@ -30,6 +31,8 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
                             this.exportToOutputPack(context);
                             context.showExportToast();
                         });
+                    } else if (ExplorerScreen.currentDisplay != null) {
+                            ExplorerScreen.currentDisplay.setSelectedEntry(SimpleTextDisplayEntry.exportWaitMessage);
                     }
                 }).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip." + (isFolder() ? "folder" : "file"))))
                 .dimensions(0, 0, 42, 15).build();
@@ -40,7 +43,7 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
         MinecraftClient client = MinecraftClient.getInstance();
         int i = client.textRenderer.getWidth(text);
         if (i > 150) {
-            StringVisitable stringVisitable = StringVisitable.concat(client.textRenderer.trimToWidth(text, 150 - client.textRenderer.getWidth("...")), StringVisitable.plain("..."));
+            StringVisitable stringVisitable = StringVisitable.concat(client.textRenderer.trimToWidth(text, 157 - client.textRenderer.getWidth("...")), StringVisitable.plain("..."));
             return Text.of(stringVisitable.getString());
         } else {
             return text;
@@ -71,13 +74,13 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
         return false;
     }
 
-    abstract boolean canExport();
+    protected abstract boolean canExport();
 
     abstract String getDisplayName();
 
     abstract OrderedText getDisplayText();
 
-    abstract List<Text> getExtraText(boolean smallMode);
+    abstract Text[] getExtraText(boolean smallMode);
 
     abstract String toString(int indent);
 
@@ -103,12 +106,20 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (exportButton != null && exportButton.isMouseOver(mouseX, mouseY)) {
-            exportButton.onPress();
+        if (exportButton != null && isMouseOverExportButtonSkipActiveCheck(mouseX, mouseY)) {
+            if (exportButton.active) exportButton.onPress();
             return true;
         } else {
             return mouseClickExplorer();
         }
+    }
+
+    private boolean isMouseOverExportButtonSkipActiveCheck(double mouseX, double mouseY) {
+        return exportButton.visible
+                && mouseX >= exportButton.getX()
+                && mouseY >= exportButton.getY()
+                && mouseX < (exportButton.getX() + exportButton.getWidth())
+                && mouseY < (exportButton.getY() + exportButton.getHeight());
     }
 
     abstract boolean matchesSearch(final String search);
@@ -135,18 +146,18 @@ public abstract class ResourceEntry extends AlwaysSelectedEntryListWidget.Entry<
             }
         }
 
-        context.drawTexture(getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+        context.drawTexture(RenderLayer::getGuiTextured, getIcon(hovered), x, y, 0.0F, 0.0F, 32, 32, 32, 32);
 
         Identifier secondaryIcon = getIcon2OrNull(hovered);
         if (secondaryIcon != null) {
-            context.drawTexture(secondaryIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+            context.drawTexture(RenderLayer::getGuiTextured, secondaryIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
         }
         Identifier thirdIcon = getIcon3OrNull(hovered);
         if (thirdIcon != null) {
-            context.drawTexture(thirdIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
+            context.drawTexture(RenderLayer::getGuiTextured, thirdIcon, x, y, 0.0F, 0.0F, 32, 32, 32, 32);
         }
         OrderedText orderedText = getDisplayText();
-        MultilineText multilineText = MultilineText.create(MinecraftClient.getInstance().textRenderer, getExtraText(true).toArray(new Text[0]));
+        MultilineText multilineText = MultilineText.create(MinecraftClient.getInstance().textRenderer, getExtraText(true));
 
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 32 + 2, y + 1, 16777215);
         multilineText.drawWithShadow(context, x + 32 + 2, y + 12, 10, -8355712);

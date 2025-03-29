@@ -5,6 +5,7 @@ import net.minecraft.client.font.MultilineText;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +13,7 @@ import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.editor.png.PNGEditorScreen;
 import traben.resource_explorer.editor.txt.TXTEditorScreen;
 import traben.resource_explorer.explorer.ExplorerUtils;
+import traben.resource_explorer.explorer.display.ExplorerScreen;
 import traben.resource_explorer.explorer.display.resources.entries.ResourceFileEntry;
 
 import java.io.InputStream;
@@ -46,8 +48,9 @@ public class FileDisplayEntry extends DisplayEntry {
                                                 "resource_explorer.export_single.fail"
                                 ));
                             });
+                        } if (ExplorerScreen.currentDisplay != null) {//always true but just to be safe
+                            ExplorerScreen.currentDisplay.setSelectedEntry(SimpleTextDisplayEntry.exportWaitMessage);
                         }
-
                     }
             ).dimensions(0, 0, 150, 20).tooltip(Tooltip.of(Text.translatable("resource_explorer.export.tooltip.file"))).build();
         }
@@ -119,7 +122,7 @@ public class FileDisplayEntry extends DisplayEntry {
 
     public int getEntryHeight() {
         int entryWidth = 178;
-        int heightMargin = 100 + (fileEntry.getExtraText(false).size() * 11);
+        int heightMargin = 100 + (fileEntry.getExtraText(false).length * 11);
         return (int) (heightMargin + switch (fileEntry.fileType) {
             case PNG -> 82 + fileEntry.height * ((entryWidth + 0f) / fileEntry.width);
             case TXT, PROPERTIES, JEM, JPM, JSON -> 106 + fileEntry.getTextLines().count() * 10;
@@ -161,7 +164,7 @@ public class FileDisplayEntry extends DisplayEntry {
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.translatable("resource_explorer.explorer.details.details"), displayX, displayY + offset, 16777215);
         offset += 11;
 
-        MultilineText extraText = MultilineText.create(MinecraftClient.getInstance().textRenderer, fileEntry.getExtraText(false).toArray(new Text[0]));
+        MultilineText extraText = MultilineText.create(MinecraftClient.getInstance().textRenderer, fileEntry.getExtraText(false));
         extraText.drawWithShadow(context, displayX, displayY + offset, 10, -8355712);
         offset += extraText.count() * 11;
 
@@ -197,10 +200,10 @@ public class FileDisplayEntry extends DisplayEntry {
         offset += 13;
 
         //outline
-        context.fill(displayX - 2, displayY + offset - 2, displayX + displayX2 + 2, displayY + offset + displayY2 + 2, ColorHelper.Argb.getArgb(255, 255, 255, 255));
+        context.fill(displayX - 2, displayY + offset - 2, displayX + displayX2 + 2, displayY + offset + displayY2 + 2, ColorHelper.getArgb(255, 255, 255, 255));
         context.fill(displayX, displayY + offset, displayX + displayX2, displayY + offset + displayY2, -16777216);
         //image
-        context.drawTexture(fileEntry.identifier, displayX, displayY + offset, 0, 0, displayX2, displayY2, displayX2, displayY2);
+        context.drawTexture(RenderLayer::getGuiTextured, fileEntry.identifier, displayX, displayY + offset, 0, 0, displayX2, displayY2, displayX2, displayY2);
 
         offset += displayY2;
         return offset;

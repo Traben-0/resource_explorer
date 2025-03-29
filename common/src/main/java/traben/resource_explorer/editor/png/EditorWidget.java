@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.text.Text;
@@ -191,13 +192,13 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
     private boolean paintPixel(double mouseX, double mouseY) {
         return pixelAction(mouseX, mouseY, (x, y) -> {
             colorSource.saveColorInHistory();
-            int oldColor = image.getColor(x, y);
+            int oldColor = image.getColorArgb(x, y);
             if (colorSource.getColorAlpha() == 255 || colorSource.getColorAlpha() == 0) {
                 //solid pixel or eraser
-                image.setColor(x, y, colorSource.getColor());
+                image.setColorArgb(x, y, colorSource.getColor());
             } else {
                 //blend
-                image.setColor(x, y, colorSource.blendOver(oldColor));
+                image.setColorArgb(x, y, colorSource.blendOver(oldColor));
             }
             updateRenderedImage();
             undoHistory.push(ImmutableTriple.of(x, y, oldColor));
@@ -216,7 +217,7 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
     void undoLastPixel() {
         var lastAction = undoHistory.pop();
         try {
-            image.setColor(lastAction.left, lastAction.middle, lastAction.right);
+            image.setColorArgb(lastAction.left, lastAction.middle, lastAction.right);
             updateRenderedImage();
         } catch (Exception e) {
             //return to stack
@@ -228,7 +229,7 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
     private boolean pickPixel(double mouseX, double mouseY) {
         return pixelAction(mouseX, mouseY, (x, y) -> {
             colorSource.saveColorInHistory();
-            colorSource.setColor(image.getColor(x, y));
+            colorSource.setColor(image.getColorArgb(x, y));
             //flatten transparency to black transparency, good habit for png compression
             if (colorSource.getColorAlpha() == 0) colorSource.setColor(0);
             return true;
@@ -305,13 +306,13 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
 
             //allow transparency then render
             RenderSystem.enableBlend();
-            context.drawTexture(renderImage.getCurrent(),
+            context.drawTexture(RenderLayer::getGuiTextured, renderImage.getCurrent(),
                     imageBoxX, imageBoxY, imageU2, imageV2,
                     imageWidth2, imageHeight2, imageRenderWidth, imageRenderHeight);
 
             if (flashRedDelta > 0) {
-                int color = ColorHelper.Argb.getArgb((int) (255 * flashRedDelta), 255, 0, 0);
-                context.fill(imageBoxX, imageBoxY, imageBoxX + imageWidth2, imageBoxY + imageHeight2, color);
+                int color = ColorHelper.getArgb((int) (255 * flashRedDelta), 255, 0, 0);
+                context.fill(imageBoxX, imageBoxY, imageBoxX + imageWidth2, imageBoxY + imageHeight2, color);//argb
 
                 int fpsFactor = MinecraftClient.getInstance().getCurrentFps() / 4;
                 flashRedDelta = MathHelper.clamp(flashRedDelta - (flashRedDelta / fpsFactor), 0, 1);

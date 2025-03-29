@@ -31,7 +31,7 @@ class ColorHistoryWidget extends ClickableWidget {
 
             //render color
             RenderSystem.enableBlend();
-            context.fill(getX(), getY(), getX() + width, getY() + height, colorSource.getABGRasARGB(color));
+            context.fill(getX(), getY(), getX() + width, getY() + height, color);
             RenderSystem.disableBlend();
         }
     }

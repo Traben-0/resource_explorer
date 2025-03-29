@@ -9,6 +9,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -262,7 +263,7 @@ public class REConfig {
                 @Override
                 public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
                     Identifier identifier = this.isSelected() ? ExplorerUtils.ICON_FOLDER_OPEN : ExplorerUtils.ICON_MOD;
-                    context.drawTexture(identifier, this.getX(), this.getY(), 0, 0, this.width, this.height, this.width, this.height);
+                    context.drawTexture(RenderLayer::getGuiTextured, identifier, this.getX(), this.getY(), 0, 0, this.width, this.height, this.width, this.height);
                 }
 
             });

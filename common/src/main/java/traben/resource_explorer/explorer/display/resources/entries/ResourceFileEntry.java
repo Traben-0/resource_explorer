@@ -133,7 +133,7 @@ public class ResourceFileEntry extends ResourceEntry {
     }
 
     @Override
-    boolean canExport() {
+    protected boolean canExport() {
         return resource != null;
     }
 
@@ -160,7 +160,7 @@ public class ResourceFileEntry extends ResourceEntry {
     }
 
     @Override
-    public List<Text> getExtraText(boolean smallMode) {
+    public Text[] getExtraText(boolean smallMode) {
         ArrayList<Text> lines = new ArrayList<>();
         lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.type") + ": " + fileType.toString() +
                 (hasMetaData ? " + " + translated("resource_explorer.detail.metadata") : "")));
@@ -169,7 +169,7 @@ public class ResourceFileEntry extends ResourceEntry {
         } else {
             lines.add(trimmedTextToWidth("§8§o " + translated("resource_explorer.detail.built_msg")));
         }
-        if (smallMode) return lines;
+        if (smallMode) return lines.toArray(new Text[0]);
         switch (fileType) {
             case PNG -> {
                 lines.add(trimmedTextToWidth(" " + translated("resource_explorer.detail.height") + ": " + height));
@@ -187,7 +187,7 @@ public class ResourceFileEntry extends ResourceEntry {
             default -> {
             }//lines.add(trimmedTextToWidth(" //todo "));//todo
         }
-        return lines;
+        return lines.toArray(new Text[0]);
     }
 
     public MultilineText getTextLines() {

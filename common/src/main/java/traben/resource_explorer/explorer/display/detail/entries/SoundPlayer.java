@@ -7,6 +7,7 @@ import net.minecraft.client.sound.WeightedSoundSet;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
+import traben.resource_explorer.ResourceExplorerClient;
 import traben.resource_explorer.explorer.display.resources.entries.ResourceFileEntry;
 
 class SoundPlayer implements SoundInstance {
@@ -16,7 +17,8 @@ class SoundPlayer implements SoundInstance {
 
     SoundPlayer(ResourceFileEntry fileEntry) {
         id = "re_" + fileEntry.getDisplayName() + "2";
-        sound = new Sound(Identifier.of("re_" + fileEntry.getDisplayName()), (a) -> 1, (a) -> 1, 1, Sound.RegistrationType.FILE, true, true, 1) {
+        sound = new Sound(Identifier.of(ResourceExplorerClient.MOD_ID,"re_" + fileEntry.getDisplayName()),
+                (a) -> 1, (a) -> 1, 1, Sound.RegistrationType.FILE, true, true, 1) {
             @Override
             public Identifier getLocation() {
                 return fileEntry.identifier;
