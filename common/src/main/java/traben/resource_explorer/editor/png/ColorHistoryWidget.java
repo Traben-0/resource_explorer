@@ -1,6 +1,5 @@
 package traben.resource_explorer.editor.png;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
@@ -30,9 +29,9 @@ class ColorHistoryWidget extends ClickableWidget {
             context.fill(getX(), getY(), getX() + width, getY() + height, Colors.BLACK);
 
             //render color
-            RenderSystem.enableBlend();
+//            RenderSystem.enableBlend();
             context.fill(getX(), getY(), getX() + width, getY() + height, color);
-            RenderSystem.disableBlend();
+//            RenderSystem.disableBlend();
         }
     }
 

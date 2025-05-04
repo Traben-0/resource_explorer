@@ -2,7 +2,7 @@ package traben.resource_explorer.mixin;
 
 
 import com.mojang.serialization.DataResult;
-import net.minecraft.util.PathUtil;
+import net.minecraft.util.path.PathUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

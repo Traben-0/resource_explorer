@@ -81,7 +81,7 @@ public class ExplorerScreen extends Screen {
     private static void assertTexture(Identifier id) {
         NativeImage background = ResourceExplorerClient.getNativeImageElseNull(id);
         if (background == null) return;
-        MinecraftClient.getInstance().getTextureManager().registerTexture(id, new NativeImageBackedTexture(background));
+        MinecraftClient.getInstance().getTextureManager().registerTexture(id, new NativeImageBackedTexture(null, background));
     }
 
     public List<ResourceEntry> getContentOfDirectoryAccordingToSearch() {

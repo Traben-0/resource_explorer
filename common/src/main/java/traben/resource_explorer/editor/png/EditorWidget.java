@@ -1,6 +1,5 @@
 package traben.resource_explorer.editor.png;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -73,7 +72,7 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
         closableImage.copyFrom(image);
 
         MinecraftClient.getInstance().getTextureManager().registerTexture(
-                renderImage.getNext(), new NativeImageBackedTexture(closableImage));
+                renderImage.getNext(), new NativeImageBackedTexture(null,closableImage));
         renderImage.confirmNext();
 
         closableImage.close();
@@ -305,7 +304,7 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
             int imageHeight2 = MathHelper.clamp(imageRenderHeight - imageV2, 0, renderHeightMax);
 
             //allow transparency then render
-            RenderSystem.enableBlend();
+//            RenderSystem.enableBlend();
             context.drawTexture(RenderLayer::getGuiTextured, renderImage.getCurrent(),
                     imageBoxX, imageBoxY, imageU2, imageV2,
                     imageWidth2, imageHeight2, imageRenderWidth, imageRenderHeight);
@@ -317,7 +316,7 @@ class EditorWidget extends ClickableWidget implements ExportableFileContainerAnd
                 int fpsFactor = MinecraftClient.getInstance().getCurrentFps() / 4;
                 flashRedDelta = MathHelper.clamp(flashRedDelta - (flashRedDelta / fpsFactor), 0, 1);
             }
-            RenderSystem.disableBlend();
+//            RenderSystem.disableBlend();
 
         } catch (Exception e) {
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, Text.of("image broken..."),

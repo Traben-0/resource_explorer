@@ -279,7 +279,7 @@ public class ResourceFileEntry extends ResourceEntry {
                 try {
                     img = NativeImage.read(in);
                     in.close();
-                    NativeImageBackedTexture imageBackedTexture = new NativeImageBackedTexture(img);
+                    NativeImageBackedTexture imageBackedTexture = new NativeImageBackedTexture(null, img);
                     MinecraftClient.getInstance().getTextureManager().registerTexture(identifier, imageBackedTexture);
                     width = img.getWidth();
                     height = img.getHeight();
